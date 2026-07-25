@@ -2,9 +2,12 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
-## Unreleased
+## v7.0.0 (2026-07-25)
 
-Everything since the fork point. No Toolbelt release has been cut — the version string still reads `6.1.1`, inherited.
+The first Toolbelt release. Everything since the fork point, in one version — the
+major bump marks the break, not a single change within it. Installs are not
+compatible with the `superpowers`/`workstack-` names; see the migration table in
+[docs/ADOPTING-IN-A-PROJECT.md](docs/ADOPTING-IN-A-PROJECT.md).
 
 ### Identity
 
