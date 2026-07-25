@@ -1,6 +1,6 @@
-# Testing Superpowers
+# Testing Toolbelt
 
-Superpowers has two distinct kinds of tests, each in its own directory:
+Toolbelt has two distinct kinds of tests, each in its own directory:
 
 - **`tests/`** — does the plugin's non-LLM code work? Bash + node + python integration tests for brainstorm-server JS, codex-plugin sync, and analysis utilities.
 - **`evals/`** — do agents behave correctly on real LLM sessions? Python harness driving real tmux sessions of Claude Code / Codex, with an LLM actor and verifier judging skill compliance.
@@ -12,7 +12,7 @@ Live in `tests/`. Currently:
 - `tests/brainstorm-server/` — node test suite for the brainstorm server JS code.
 - `tests/codex/`, `tests/codex-plugin-sync/` — bash packaging and sync verification.
 - `tests/hooks/` — session-start hook output shape per harness.
-- `tests/workstack/` — checks for the delivery, routing, and gate skills.
+- `tests/toolbelt/` — checks for the delivery, routing, and gate skills.
 - `tests/claude-code/test-helpers.sh`, `analyze-token-usage.py` — utilities used by remaining bash tests.
 - `tests/claude-code/test-subagent-driven-development.sh` — agent-can-describe-SDD test (no drill counterpart; tests description-recall, not behavior).
 - `tests/claude-code/test-subagent-driven-development-integration.sh` — extended SDD integration with token analysis (drill covers the YAGNI subset; bash adds commit-count, Claude Code task-tracking, and token telemetry assertions).

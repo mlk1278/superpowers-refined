@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 skill="$repo_root/skills/delivery/SKILL.md"
 metadata="$repo_root/skills/delivery/agents/openai.yaml"
-workflow="$repo_root/workstack/WORKFLOW.md"
+workflow="$repo_root/docs/WORKFLOW.md"
 routing="$repo_root/skills/agent-routing/SKILL.md"
 
 assert_contains() {

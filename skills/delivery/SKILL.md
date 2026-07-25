@@ -57,4 +57,4 @@ The next task starts in its own worktree branched from the current base branch, 
 
 ## 6. Reconcile and clean up
 
-Reconcile Linear only when the plan is linked to Linear. After merge, confirm the remote state, then remove the worktree, branch, and ignored scratch. For interruption recovery, follow `workstack/WORKFLOW.md`; do not create separate resume bookkeeping.
+Reconcile Linear only when the plan is linked to Linear. After merge, confirm the remote state, then remove the worktree, branch, and ignored scratch. For interruption recovery, follow `docs/WORKFLOW.md`; do not create separate resume bookkeeping.

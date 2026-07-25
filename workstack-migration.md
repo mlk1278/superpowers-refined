@@ -19,7 +19,7 @@ Temporary. Steps to run on the dev machine after pulling the rename. Delete this
 ## In the workstack CRM repo
 
 - `git mv .workstack .toolbelt` if the directory exists (holds `agents.json`)
-- Re-copy the entry-point snippet into `AGENTS.md` from `workstack/AGENTS-SNIPPET.md`
+- Re-copy the entry-point snippet into `AGENTS.md` from `docs/AGENTS-SNIPPET.md`
 - Search and replace skill references (old on the left):
   - `superpowers:` → `toolbelt:`
   - `superpowers:using-superpowers` → `toolbelt:using-toolbelt`

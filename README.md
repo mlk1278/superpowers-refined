@@ -1,91 +1,57 @@
-# Superpowers
+# Toolbelt
 
-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
+A software development methodology for coding agents, built from composable skills plus a bootstrap that makes sure the agent actually uses them.
 
-
-## We're Hiring!
-
-We're hiring someone to help out full time with Superpowers community and code work. 
-You can read about the job at https://primeradiant.com/jobs/superpowers-community-engineer/
-If this sounds like someone you know, definitely send them our way.
-
-## Quickstart
-
-Give your agent Superpowers: [Claude Code](#claude-code), [Codex App](#codex-app), [Codex CLI](#codex-cli).
+Forked from [Superpowers](https://github.com/obra/superpowers) and since diverged: shorter skills written for current models, two harnesses instead of ten, and a delivery pipeline that carries work from an idea through a merged PR.
 
 ## How it works
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+It starts the moment you fire up your coding agent. As soon as it sees you're building something, it *doesn't* jump into writing code — it steps back and asks what you're actually trying to do.
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+Once the conversation has produced a design you've approved, it writes that into a spec, gates the spec with you and a reviewer from a different model family, then turns it into an implementation plan detailed enough that a subagent with no project context can execute it.
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+Then it runs the plan: a fresh subagent per task, each one reviewed before the next begins, with a broad review gating the whole slice before it becomes a pull request. It's not unusual for this to run autonomously for a couple of hours without drifting from the plan.
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for your agent to work autonomously for a couple hours at a time without deviating from the plan you put together.
-
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
-
-## Commercial Services
-
-If you're using Superpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
+The skills trigger themselves, so there's nothing to remember.
 
 ## Installation
 
-Installation differs by harness. If you use more than one, install Superpowers separately for each one.
+Install once per harness; the plugin is global and every project picks it up.
 
 ### Claude Code
 
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
+```bash
+/plugin marketplace add mlk1278/superpowers-workstack
+/plugin install toolbelt@toolbelt-dev
+```
 
-#### Official Marketplace
+Start a fresh session afterward — the session-start hook registers on load.
 
-- Install the plugin from Anthropic's official marketplace:
+### Codex
 
-  ```bash
-  /plugin install superpowers@claude-plugins-official
-  ```
+```bash
+/plugins
+```
 
-#### Superpowers Marketplace
+Search for `toolbelt` and select `Install Plugin`. Subagent dispatch needs multi-agent support, so make sure `~/.codex/config.toml` has:
 
-The Superpowers marketplace provides Superpowers and some other related plugins for Claude Code.
+```toml
+[features]
+multi_agent = true
+```
 
-- Register the marketplace:
+## Per-project configuration
 
-  ```bash
-  /plugin marketplace add obra/superpowers-marketplace
-  ```
+Nothing is required. Each is optional and read only when present:
 
-- Install the plugin from this marketplace:
+| File | Purpose |
+|---|---|
+| `.toolbelt/agents.json` | Agent routes — harness, model, effort, custom instructions per role |
+| `.toolbelt/pr-policy.md` | Which review providers to await, complexity lanes, timeouts |
+| `docs/REVIEW-GUIDANCE.md` | Project review conventions, given to reviewer subagents |
+| `AGENTS.md` | Entry-point summary — copy from [docs/AGENTS-SNIPPET.md](docs/AGENTS-SNIPPET.md) |
 
-  ```bash
-  /plugin install superpowers@superpowers-marketplace
-  ```
-
-### Codex App
-
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
-
-- In the Codex app, click on Plugins in the sidebar.
-- You should see `Superpowers` in the Coding section.
-- Click the `+` next to Superpowers and follow the prompts.
-
-### Codex CLI
-
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
-
-- Open the plugin search interface:
-
-  ```bash
-  /plugins
-  ```
-
-- Search for Superpowers:
-
-  ```bash
-  superpowers
-  ```
-
-- Select `Install Plugin`.
+Scratch lands in `.toolbelt/`; add it to `.gitignore`.
 
 ## The Basic Workflow
 
@@ -129,6 +95,13 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - **finishing-a-development-branch** - Merge/PR decision workflow
 - **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
 
+**Delivery**
+- **quick-task** - Small decision-complete changes, straight to one merged PR
+- **delivery** - An approved plan through one coherent slice to a merged PR
+- **agent-routing** - Resolves logical roles to concrete agent routes
+- **ux-gate** - Screenshot capture and vision review for user-visible changes
+- **pr-monitor** - CI, review providers, fix loops, and merge
+
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
 - **using-toolbelt** - Introduction to the skills system
@@ -140,38 +113,16 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - **Complexity reduction** - Simplicity as primary goal
 - **Evidence over claims** - Verify before declaring success
 
-Read [the original release announcement](https://blog.fsck.com/2025/10/09/superpowers/).
+## Working on this
 
-## Contributing
+See [CLAUDE.md](CLAUDE.md) for how skills are structured and what not to break, and `skills/writing-skills/SKILL.md` for the full guide to writing them.
 
-The general contribution process for Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
+Plugin-infrastructure tests live in `tests/` and run via the relevant `run-*.sh`. Skill-behavior evals use the drill harness from [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — not included here.
 
-1. Fork the repository
-2. Switch to the 'dev' branch
-3. Create a branch for your work
-4. Follow the `writing-skills` skill for creating and testing new and modified skills
-5. Submit a PR, being sure to fill in the pull request template.
+## Credit
 
-Skill-behavior tests use the drill eval harness from [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. Plugin-infrastructure tests live at `tests/` and run via the relevant `run-*.sh` or `npm test`.
-
-See `skills/writing-skills/SKILL.md` for the complete guide.
-
-## Updating
-
-Superpowers updates are somewhat coding-agent dependent, but are often automatic.
+Forked from [Superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://blog.fsck.com) and [Prime Radiant](https://primeradiant.com), which is where the methodology and most of the original skill content came from. Read [the release announcement](https://blog.fsck.com/2025/10/09/superpowers/) for the thinking behind it.
 
 ## License
 
 MIT License - see LICENSE file for details
-
-## Visual companion telemetry
-
-Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Superpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Superpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Superpowers and which version of Superpowers they're using. It's 100% optional. To disable this, set the environment variable `SUPERPOWERS_DISABLE_TELEMETRY` to any true value. Superpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
-
-## Community
-
-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
-
-- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Superpowers
-- **Issues**: https://github.com/obra/superpowers/issues
-- **Release announcements**: [Sign up](https://primeradiant.com/superpowers/) to get notified about new versions

@@ -13,7 +13,7 @@ assert_contains() {
   echo "ok - $description"
 }
 
-summary="$repo_root/workstack/AGENTS-SNIPPET.md"
+summary="$repo_root/docs/AGENTS-SNIPPET.md"
 [ -f "$summary" ] || { echo "not ok - workflow summary draft missing" >&2; exit 1; }
 assert_contains "$summary" "quick-task" "summary names quick task"
 assert_contains "$summary" "delivery" "summary names delivery"
