@@ -1,32 +1,77 @@
 {
   "version": 1,
+  "instructions": "Code changes go to the implementer. Always. Planning goes to the planner. Always. Cheap roles exist for side work, never as a shortcut for real work.",
   "roles": {
     "explorer": {
       "harness": "codex",
       "model": "gpt-5.6-sol",
-      "effort": "medium"
+      "effort": "medium",
+      "instructions": "Read-only. Gathers codebase context, architecture, prior art, and external references. Never edits files."
     },
     "planner": {
       "harness": "codex",
       "model": "gpt-5.6-sol",
-      "effort": "high"
+      "effort": "high",
+      "instructions": "Owns all planning work, however small it looks."
     },
     "implementer": {
       "harness": "codex",
       "model": "gpt-5.6-sol",
-      "effort": "high"
+      "effort": "high",
+      "instructions": "Owns all code operations. Every repository edit goes here."
     },
-    "operator": {
+    "errand": {
       "harness": "codex",
       "model": "gpt-5.6-sol",
-      "effort": "low"
+      "effort": "low",
+      "instructions": "Side errands only - tracker tickets, notifications, status checks, scripted browser capture. Never edits repository files. Code goes to the implementer, planning to the planner."
     },
     "monitor": {
       "harness": "codex",
       "model": "gpt-5.6-sol",
-      "effort": "medium"
+      "effort": "medium",
+      "instructions": "Owns a pull request through CI, review providers, fix loops, and merge. Verifies findings against the code, so this is judgment work, not polling."
     },
     "reviewer": {
+      "harness": "claude",
+      "model": "opus-4-8",
+      "effort": "high",
+      "instructions": "Must be independent of the author's model. Never dispatch a reviewer whose model matches the model that wrote the code.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.5",
+          "effort": "high"
+        }
+      ]
+    }
+  },
+  "reviewer_specialties": {
+    "code": {
+      "harness": "claude",
+      "model": "opus-4-8",
+      "effort": "high",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.5",
+          "effort": "high"
+        }
+      ]
+    },
+    "spec": {
+      "harness": "claude",
+      "model": "opus-4-8",
+      "effort": "high",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.5",
+          "effort": "high"
+        }
+      ]
+    },
+    "ux": {
       "harness": "claude",
       "model": "opus-4-8",
       "effort": "high",

@@ -35,9 +35,11 @@ Present everything you find as one batched question — each finding beside the 
 
 ## Model Selection
 
-**Caller routing takes precedence:** plan route, then project route, then your own judgment. A routed role bypasses selection for that role; the session agent remains the orchestrator.
+**Caller routing takes precedence:** plan route, then project route, then the session routing brief. A routed role bypasses selection for that role; the session agent remains the orchestrator.
 
-Absent a route, use the least powerful model that can handle the role, with these floors: **turn count beats token price** — the cheapest models routinely take 2-3× the turns on multi-step work and cost more overall. Mid-tier is the floor for reviewers and for implementers working from prose. Cheapest tier is right when the plan text contains the complete code to write (transcription plus testing) or for single-file mechanical fixes. The final whole-branch review gets the most capable model available.
+Every role you dispatch comes from the brief — implementer, reviewer, explorer, errand. If no route resolves, stop and tell your human partner; do not substitute your own judgment for a missing route.
+
+The brief's routes already encode the model floors that matter: **turn count beats token price** — the cheapest models routinely take 2-3× the turns on multi-step work and cost more overall. The final whole-branch review gets the most capable model available.
 
 **Always specify the model explicitly when dispatching.** An omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
@@ -75,7 +77,7 @@ Per-task reviews are task-scoped gates; the broad review happens once, at the en
 - **Don't add open-ended directives** ("check all uses", "run race tests if useful") without a concrete, task-specific reason, and don't ask a reviewer to re-run tests the implementer already ran on the same code.
 - **The global-constraints block is the reviewer's attention lens.** Copy binding requirements verbatim from the plan's Global Constraints or the spec: exact values, exact formats, stated relationships between components ("same layout as X", "matches Y"). The template already carries the process rules — this block is for what THIS project's spec demands.
 - **`[REVIEW_NUANCE]`** takes concise task-specific context and concrete risks. It may direct attention but must not override requirements, suppress findings, or pre-judge severity. Use `None` when there is none.
-- **`docs/REVIEW-GUIDANCE.md` is reviewer-only.** Do not read it while orchestrating or pass it to implementers, fixers, explorers, planners, operators, or monitors. Reviewer templates tell the reviewer to read it when it exists.
+- **`docs/REVIEW-GUIDANCE.md` is reviewer-only.** Do not read it while orchestrating or pass it to implementers, fixers, explorers, planners, errands, or monitors. Reviewer templates tell the reviewer to read it when it exists.
 - **A dispatch prompt describes one task, not the session's history.** Do not paste accumulated prior-task summaries ("state after Tasks 1-3") into later dispatches — a real session's dispatch hit 42k chars of which 99% was pasted history. A fresh subagent needs its task, the interfaces it touches, and the global constraints. Nothing else.
 - **Findings that conflict with the plan are the human's decision.** Present the finding and the plan text and ask which governs. Do not dismiss a finding because the plan mandates it, and do not dispatch a fix that contradicts the plan without asking.
 - **Fix dispatches carry the implementer contract:** the fixer re-runs the tests covering its change and reports results. Name the covering test files — a one-line fix does not need the whole suite. Before re-dispatching the reviewer, confirm the fix report contains the covering tests, the command, and the output.

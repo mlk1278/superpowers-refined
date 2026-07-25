@@ -47,7 +47,7 @@ then pass `None` and the reviewer falls back to git commands.
 
 **3. Dispatch code reviewer subagent:**
 
-Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
+Dispatch a subagent on the `reviewer` route (specialty `code`) from the session routing brief, filling the template at [code-reviewer.md](code-reviewer.md). Pass the author's model so the resolver can keep the review independent.
 
 Do not read `docs/REVIEW-GUIDANCE.md` yourself. The reviewer template loads it
 when it exists. Supply only concise review-specific nuance from the approved

@@ -42,6 +42,11 @@ def normalize_route(value: Any, location: str) -> dict[str, Any]:
         if not isinstance(item, str) or not item.strip():
             raise RoutingError(f"{location}.{field} must be a non-empty string")
         route[field] = item
+    instructions = value.get("instructions")
+    if instructions is not None:
+        if not isinstance(instructions, str):
+            raise RoutingError(f"{location}.instructions must be a string")
+        route["instructions"] = instructions
     fallbacks = value.get("fallbacks", [])
     if not isinstance(fallbacks, list):
         raise RoutingError(f"{location}.fallbacks must be an array")
@@ -77,7 +82,12 @@ def parse_fallback(value: str) -> dict[str, str]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", type=Path, required=True)
-    parser.add_argument("--role", required=True)
+    parser.add_argument("--role")
+    parser.add_argument(
+        "--brief",
+        action="store_true",
+        help="emit every role at once for the session-start briefing",
+    )
     parser.add_argument("--harness")
     parser.add_argument("--workflow")
     parser.add_argument("--reviewer-specialty")
@@ -192,8 +202,76 @@ def enforce_reviewer_independence(
     )
 
 
+def build_brief(
+    args: argparse.Namespace, bundled: dict[str, Any], project: dict[str, Any]
+) -> dict[str, Any]:
+    """Resolve every configured role in one pass, for the session-start briefing.
+
+    The reviewer row is emitted conditionally rather than resolved, because the
+    author's model is not knowable at session start. Enumerating the candidate
+    authors — every model the table can dispatch — keeps the independence rule
+    fail-closed without a second call at dispatch time.
+    """
+    roles = sorted({*bundled.get("roles", {}), *project.get("roles", {})})
+    brief: dict[str, Any] = {"roles": {}}
+
+    for role in roles:
+        resolved = argparse.Namespace(**vars(args))
+        resolved.role = role
+        resolved.author_model = None
+        resolved.reviewer_specialty = None
+        route, source = select_route(resolved, bundled, project)
+        brief["roles"][role] = {**route, "source": source}
+
+    specialties = {
+        **bundled.get("reviewer_specialties", {}),
+        **project.get("reviewer_specialties", {}),
+    }
+    if specialties:
+        brief["reviewer_specialties"] = {}
+        for specialty in sorted(specialties):
+            resolved = argparse.Namespace(**vars(args))
+            resolved.role = "reviewer"
+            resolved.author_model = None
+            resolved.reviewer_specialty = specialty
+            route, source = select_route(resolved, bundled, project)
+            brief["reviewer_specialties"][specialty] = {**route, "source": source}
+
+    reviewer = brief["roles"].get("reviewer")
+    if reviewer:
+        candidates = {
+            entry["model"]
+            for entry in brief["roles"].values()
+            if entry.get("model")
+        }
+        conditional = {}
+        for author in sorted(candidates):
+            try:
+                route, source, reason = enforce_reviewer_independence(
+                    "reviewer", reviewer, reviewer["source"], author
+                )
+            except RoutingError as error:
+                conditional[author] = {"error": str(error)}
+                continue
+            conditional[author] = {
+                k: v for k, v in route.items() if k != "fallbacks"
+            } | {"fallback_reason": reason}
+        brief["reviewer_by_author_model"] = conditional
+
+    for key in ("instructions", "custom_instructions"):
+        for config in (bundled, project):
+            if key in config:
+                brief.setdefault("instructions", config[key])
+
+    return brief
+
+
 def main() -> int:
     args = parse_args()
+    if args.brief and args.role:
+        raise RoutingError("--brief resolves every role; do not also pass --role")
+    if not args.brief and not args.role:
+        raise RoutingError("--role is required unless --brief is given")
     if args.reviewer_specialty and args.role != "reviewer":
         raise RoutingError("--reviewer-specialty is valid only for the reviewer role")
     if not args.project_root.is_dir():
@@ -204,6 +282,11 @@ def main() -> int:
     project = read_config(
         args.project_root / ".toolbelt" / "agents.json", optional=True
     )
+
+    if args.brief:
+        print(json.dumps(build_brief(args, bundled, project), separators=(",", ":")))
+        return 0
+
     route, source = select_route(args, bundled, project)
     route, source, fallback_reason = enforce_reviewer_independence(
         args.role, route, source, args.author_model

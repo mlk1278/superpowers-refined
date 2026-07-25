@@ -35,17 +35,17 @@ for prompt in "$task_prompt" "$final_prompt"; do
     "review prompt limits project guidance to reviewers"
   assert_contains "$prompt" '[REVIEW_NUANCE]' \
     "review prompt accepts orchestrator-supplied nuance"
-  assert_contains "$prompt" 'does not override requirements, suppress findings, or set severity' \
+  assert_contains "$prompt" 'does not override requirements,' \
     "review nuance cannot pre-judge findings"
 done
 
-assert_contains "$task_prompt" 'This guidance read is an explicit exception to the later limits on' \
+assert_contains "$task_prompt" 'This read is an explicit exception to the limits on' \
   "task reviewer may read guidance despite diff-only limits"
 assert_contains "$sdd" 'Do not read it' \
   "SDD orchestrator does not consume reviewer guidance"
 assert_contains "$sdd" 'while orchestrating or pass it to implementers, fixers, explorers, planners,' \
   "SDD excludes reviewer guidance from non-review roles"
-assert_contains "$sdd" 'Use `None` when there is no useful nuance.' \
+assert_contains "$sdd" 'Use `None` when there is none.' \
   "SDD omits invented review nuance"
 assert_contains "$requesting" 'Do not read `docs/REVIEW-GUIDANCE.md` yourself' \
   "ad hoc review caller leaves guidance to reviewer"

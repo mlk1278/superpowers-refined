@@ -26,25 +26,28 @@ assert_not_contains() {
   echo "ok - $description"
 }
 
-assert_contains 'Caller-provided routes take precedence: plan route, then project route, then the bundled model-selection defaults below.' \
+assert_contains 'plan route, then project route, then the session routing brief' \
   "caller routing precedence is explicit"
+
+assert_contains 'do not substitute your own judgment for a missing route' \
+  "a missing route escalates instead of being guessed"
 assert_contains 'If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review.' \
   "optional pre-final gate runs at the retained seam"
-assert_contains 'The final whole-branch review gets a package too: run' \
+assert_contains 'scripts/review-package MERGE_BASE HEAD` for the final review' \
   "broad final review still receives a review package"
-assert_contains 'If the final whole-branch review returns findings, dispatch ONE fix' \
+assert_contains '**Final-review findings get ONE fix subagent**' \
   "final findings are fixed together"
-assert_contains 'subagent with the complete findings list — not one fixer per finding.' \
+assert_contains 'with the complete list — not one fixer per finding.' \
   "one fixer receives the complete finding set"
-assert_contains 'contains the covering tests, the command run, and the output' \
+assert_contains 'contains the covering tests, the command, and the output' \
   "fix verification carries evidence"
-assert_contains 'recorded, commit-bound evidence to read rather than' \
+assert_contains "read the implementer's test evidence on unchanged source instead of re-running it" \
   "evidence reuse is commit-bound and actor-scoped"
-assert_contains 'implementers and fixers always produce their own fresh evidence' \
+assert_contains 'Implementers and fixers always produce their own fresh evidence' \
   "implementers never reuse evidence for their own claims"
-assert_contains 'The workspace-wide suite runs once, at the final gate' \
+assert_contains '**Workspace-wide suite:** once, at the final gate.' \
   "workspace suite is final-gate only"
-assert_contains 'Resume the same final reviewer thread with a `review-package` for the fix delta, and repeat until approved.' \
+assert_contains 'Resume the same reviewer thread with a `review-package` for the fix delta' \
   "same reviewer receives delta packages until approval"
 
 assert_not_contains '### Final whole-branch gate' "exact-head gate section removed"

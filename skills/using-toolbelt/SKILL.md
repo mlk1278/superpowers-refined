@@ -53,6 +53,10 @@ These thoughts mean STOP—you're rationalizing:
 
 If you are running in Codex, read `references/codex-tools.md` for special instructions.
 
+## Agent Routing
+
+Before dispatching your first subagent, load the session routing brief — see the agent-routing skill. It tells you which agent handles each logical role in this project. Route by role from there; never pick a concrete agent yourself. If the brief cannot be loaded, stop and tell your human partner rather than guessing a route.
+
 ## User Instructions
 
 User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.

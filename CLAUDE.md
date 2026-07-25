@@ -45,4 +45,4 @@ Clean session, send exactly:
 
 `tests/` holds plugin-infrastructure tests — packaging, hooks, the brainstorm server, and assertions about skill content. They are **not** a gate on skill wording; if a test asserts a phrase that should change, change the phrase and fix the test.
 
-Currently failing, all pre-existing: `tests/codex-plugin-sync` (23 assertions), `tests/toolbelt/test-agent-routing` (Windows path formatting), `tests/toolbelt/test-final-review-gate`, `tests/toolbelt/test-reviewer-context`.
+`tests/toolbelt/` and `tests/hooks/` pass. `tests/codex-plugin-sync` fails 23 assertions and has since before the fork work started — unrelated to skill content, and untouched.

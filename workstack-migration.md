@@ -39,6 +39,19 @@ Temporary. Steps to run on the dev machine after pulling the rename. Delete this
 - Optional per-project review conventions: `docs/REVIEW-GUIDANCE.md`
 - Optional entry-point snippet in `AGENTS.md`
 
+## Routing config
+
+The `operator` role is now `errand`, and reviewer specialties `code`/`spec`/`ux` exist. If `.toolbelt/agents.json` in the CRM repo overrides roles:
+
+- rename any `"operator"` key to `"errand"`
+- optionally add `"instructions"` strings — one project-wide, and one per role — which now surface in the session brief
+
+Check what the resolver actually returns for the repo:
+
+```bash
+<plugin>/skills/agent-routing/scripts/resolve-agent --project-root . --brief --harness claude
+```
+
 ## Verify
 
 - New session in the CRM repo: the routing brief should resolve at session start; if the script fails it should escalate to you, not fall back silently

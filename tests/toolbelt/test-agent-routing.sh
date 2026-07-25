@@ -26,6 +26,13 @@ import sys
 name, expected_text, actual_text = sys.argv[1:]
 expected = json.loads(expected_text)
 actual = json.loads(actual_text)
+
+# "instructions" is prose describing what a role is for. It churns, and pinning
+# it here would make every wording change a test failure. Compare it only when
+# the expectation actually asserts it.
+if "instructions" not in expected:
+    actual.pop("instructions", None)
+
 if actual != expected:
     raise SystemExit(
         f"not ok - {name}\nexpected: {json.dumps(expected, sort_keys=True)}"
@@ -154,7 +161,7 @@ done <<'CASES'
 explorer|gpt-5.6-sol|medium
 planner|gpt-5.6-sol|high
 implementer|gpt-5.6-sol|high
-operator|gpt-5.6-sol|low
+errand|gpt-5.6-sol|low
 monitor|gpt-5.6-sol|medium
 CASES
 
@@ -202,7 +209,10 @@ assert_failure "reviewer requires independent route" "no independent reviewer ro
   --project-root "$tmp/dependent" --role reviewer --author-model same-model
 assert_failure "unknown role" "no route found for role 'unknown'" \
   --project-root "$tmp/empty" --role unknown
-assert_failure "missing project root" "project root is not a directory: $tmp/missing" \
+# The path in this diagnostic is rendered by pathlib, so it comes back
+# backslashed on Windows and never matches the POSIX form built here. Assert
+# the message, not the path.
+assert_failure "missing project root" "project root is not a directory" \
   --project-root "$tmp/missing" --role implementer
 assert_failure "incomplete explicit override" \
   "explicit override requires --override-harness, --override-model, and --override-effort" \
@@ -212,5 +222,67 @@ assert_failure "specialty requires reviewer" \
   --project-root "$tmp/empty" --role implementer --reviewer-specialty security
 assert_failure "invalid project JSON" "invalid JSON" \
   --project-root "$tmp/invalid" --role implementer
+
+assert_failure "brief rejects a role" "do not also pass --role" \
+  --project-root "$tmp/empty" --brief --role implementer
+
+assert_failure "role is required without brief" "--role is required" \
+  --project-root "$tmp/empty"
+
+assert_brief() {
+  local name=$1
+  shift
+  local actual
+
+  if ! actual=$("$resolver" "$@" 2>"$tmp/stderr"); then
+    echo "not ok - $name" >&2
+    cat "$tmp/stderr" >&2
+    exit 1
+  fi
+
+  python3 - "$name" "$actual" <<'PY'
+import json
+import sys
+
+name, actual_text = sys.argv[1:]
+brief = json.loads(actual_text)
+
+
+def fail(message):
+    raise SystemExit(f"not ok - {name}\n{message}")
+
+
+expected_roles = {"explorer", "planner", "implementer", "errand", "monitor", "reviewer"}
+if set(brief["roles"]) != expected_roles:
+    fail(f"roles were {sorted(brief['roles'])}")
+
+for role, route in brief["roles"].items():
+    for field in ("harness", "model", "effort", "instructions"):
+        if not route.get(field):
+            fail(f"{role} is missing {field}")
+
+if set(brief["reviewer_specialties"]) != {"code", "spec", "ux"}:
+    fail(f"specialties were {sorted(brief['reviewer_specialties'])}")
+
+if not brief.get("instructions"):
+    fail("brief is missing project-wide instructions")
+
+# The reason the brief can replace a per-dispatch call: it answers the
+# independence question for every model the table can dispatch, so an author
+# never reviews its own work.
+conditional = brief["reviewer_by_author_model"]
+if "opus-4-8" not in conditional:
+    fail("brief does not cover the default reviewer's own model as an author")
+if conditional["opus-4-8"]["model"] == "opus-4-8":
+    fail("brief routes opus-4-8's author back to itself for review")
+if conditional["gpt-5.6-sol"]["model"] != "opus-4-8":
+    fail("brief should keep the primary reviewer for an independent author")
+PY
+  echo "ok - $name"
+  passes=$((passes + 1))
+}
+
+assert_brief "session brief resolves every role" \
+  --project-root "$tmp/empty" --brief
 
 echo "$passes routing tests passed"

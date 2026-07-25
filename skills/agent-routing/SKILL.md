@@ -1,24 +1,56 @@
 ---
 name: agent-routing
-description: Use when a delivery entry point must resolve a logical implementation, review, or monitoring role before dispatch.
+description: Use at session start to load the project's agent routing, and before any dispatch that needs a role resolved. Callers request logical roles and never pick concrete agents themselves.
 ---
 
 # Agent Routing
 
 Callers request logical roles; they never select concrete agents themselves.
 
-## Resolve a route
+## The session brief
 
-Run `scripts/resolve-agent --project-root <root> --role <role>` before dispatch. Add `--harness`, `--workflow`, `--reviewer-specialty`, or explicit `--override-*` arguments only when the caller has that context. Always pass `--author-model` for a reviewer.
+Once per session, before dispatching anything:
 
-Record the normalized JSON result in the work log before dispatch. Dispatch the returned primary route and retain `fallbacks` in their returned order. Do not reconstruct or guess a route when resolution fails. In particular, fail closed on reviewer-independence errors.
+```bash
+scripts/resolve-agent --project-root <root> --brief --harness <your harness>
+```
+
+It returns every role at once — harness, model, effort, and per-role instructions — plus reviewer specialties and the project's custom instructions. Keep it for the session and route from it.
+
+**If the script fails, stop and tell your human partner.** Do not fall back to dispatching a general-purpose agent of your own choosing, and do not guess a route. The one exception is a brief that fell out of context after compaction: re-run the script once, and escalate only if that fails too.
+
+## Roles
+
+| Role | Owns |
+|---|---|
+| `explorer` | Codebase context, architecture, prior art, external research. Read-only. |
+| `planner` | All planning work, however small it looks. |
+| `implementer` | All code operations. Every repository edit. |
+| `errand` | Tracker tickets, notifications, status checks, scripted browser capture. Never edits repository files. |
+| `monitor` | A pull request through CI, review providers, fix loops, and merge. |
+| `reviewer` | Review, with optional specialty `code`, `spec`, or `ux`. |
+
+The boundary that matters: **code goes to the implementer and planning goes to the planner, always.** `errand` is cheap because its work is small, not because it is a shortcut for real work.
+
+## Resolving a single route
+
+When you need one route and not the whole table — most often a reviewer, whose route depends on who wrote the code:
+
+```bash
+scripts/resolve-agent --project-root <root> --role <role> --author-model <model>
+```
+
+Add `--harness`, `--workflow`, `--reviewer-specialty`, or explicit `--override-*` arguments only when you have that context. `--author-model` is required for a reviewer.
+
+Record the normalized JSON in the work log before dispatch. Dispatch the returned primary route and retain `fallbacks` in their returned order. Never reconstruct or guess a route when resolution fails; fail closed on reviewer-independence errors in particular.
+
+The brief carries `reviewer_by_author_model`, which pre-resolves the same answer for every model the table can dispatch — enough for the common case without a second call.
 
 ## Provider-outage emergency override
 
 Reviewer independence has exactly one documented exception. The trigger is **dispatch-time provider failure, never a resolver error**: resolution succeeded (an independent route is configured), but dispatching the resolved reviewer and each of its configured independent fallbacks failed with provider availability errors on repeated attempts. A `RoutingError` (no independent route configured) is a configuration problem — fix the configuration; it never activates this override. When the trigger is met, the orchestrator may manually dispatch a **fresh instance** of the most capable reachable model as the reviewer, even when that matches the author's model. Constraints:
 
 - Record the audit trail before invoking it: each failed route, the error, and the attempt times.
-
 - Never the author's own thread or instance — always a fresh dispatch with independently constructed context.
 - The review report and any resulting PR body must carry an explicit `EMERGENCY SAME-MODEL REVIEW` flag naming the outage.
 - Do not downgrade to a lower-capability model to manufacture independence; a capable same-model review beats an incapable independent one.
@@ -32,9 +64,10 @@ Plan-supplied routes are explicit run overrides. For public workflow decisions, 
 Read optional overrides from `<project-root>/.toolbelt/agents.json`. It accepts these top-level keys:
 
 - `version`: integer `1`.
+- `instructions`: a string of project-wide dispatch guidance, surfaced in the brief.
 - `roles`: default role-to-route overrides.
 - `harnesses`: harness names containing role-to-route overrides.
 - `workflows`: workflow names containing role-to-route overrides.
 - `reviewer_specialties`: specialty-to-route overrides.
 
-Each route requires string `harness`, `model`, and `effort` values. It may contain `fallbacks`, an ordered array of routes. Treat invalid JSON or an incomplete selected route as a configuration error; never guess its meaning.
+Each route requires string `harness`, `model`, and `effort` values. It may carry `instructions` describing what that role is for, and `fallbacks`, an ordered array of routes. Treat invalid JSON or an incomplete selected route as a configuration error; never guess its meaning.
