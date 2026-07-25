@@ -1,4 +1,4 @@
 interface:
   display_name: "WorkStack Agent Routing"
   short_description: "Resolve logical roles to agent routes"
-  default_prompt: "Use $workstack-agent-routing to resolve a logical WorkStack agent role before dispatch."
+  default_prompt: "Use $agent-routing to resolve a logical WorkStack agent role before dispatch."

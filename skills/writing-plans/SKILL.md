@@ -13,7 +13,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
+**Context:** If working in an isolated worktree, it should have been created via the `toolbelt:using-git-worktrees` skill at execution time.
 
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
@@ -58,7 +58,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use toolbelt:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -159,6 +159,6 @@ After saving the plan, tell your human partner it's ready and hand off:
 
 > "Plan complete and saved to `docs/superpowers/plans/<filename>.md`. I'll execute it with subagent-driven development — a fresh subagent per task, reviewed between tasks."
 
-**REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development. Fresh
+**REQUIRED SUB-SKILL:** Use toolbelt:subagent-driven-development. Fresh
 subagent per task, task review (spec + quality) after each, broad
 whole-branch review at the end.

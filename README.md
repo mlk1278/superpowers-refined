@@ -131,7 +131,7 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
+- **using-toolbelt** - Introduction to the skills system
 
 ## Philosophy
 

@@ -1,5 +1,5 @@
 ---
-name: workstack-agent-routing
+name: agent-routing
 description: Use when a WorkStack entry point must resolve a logical implementation, review, or monitoring role before dispatch.
 ---
 
@@ -29,7 +29,7 @@ Plan-supplied routes are explicit run overrides. For public workflow decisions, 
 
 ## Project configuration
 
-Read optional overrides from `<project-root>/.workstack/agents.json`. It accepts these top-level keys:
+Read optional overrides from `<project-root>/.toolbelt/agents.json`. It accepts these top-level keys:
 
 - `version`: integer `1`.
 - `roles`: default role-to-route overrides.

@@ -126,7 +126,7 @@ write_metadata_fixture() {
   local skill
 
   while IFS= read -r skill; do
-    if [[ "$skill" == "workstack-agent-routing" ]]; then
+    if [[ "$skill" == "agent-routing" ]]; then
       continue
     fi
     mkdir -p "$destination/skills/$skill/agents"
@@ -209,11 +209,11 @@ assert_not_matches "$archive_paths" "$unexpected_pattern" "archive excludes sour
 assert_contains "$archive_paths" ".codex-plugin/plugin.json" "archive includes Codex manifest"
 assert_contains "$archive_paths" "skills/brainstorming/SKILL.md" "archive includes skills"
 assert_contains "$archive_paths" "skills/brainstorming/agents/openai.yaml" "archive includes OpenAI skill metadata"
-assert_contains "$archive_paths" "skills/workstack-agent-routing/SKILL.md" "archive includes WorkStack routing skill"
-assert_contains "$archive_paths" "skills/workstack-agent-routing/defaults.json" "archive includes WorkStack routing defaults"
-assert_contains "$archive_paths" "skills/workstack-agent-routing/scripts/resolve-agent" "archive includes WorkStack routing resolver"
-assert_contains "$archive_paths" "skills/workstack-agent-routing/agents/openai.yaml" "archive includes committed WorkStack routing metadata"
-for ws_skill in workstack-quick-task workstack-pr-monitor workstack-ux-gate workstack-delivery; do
+assert_contains "$archive_paths" "skills/agent-routing/SKILL.md" "archive includes WorkStack routing skill"
+assert_contains "$archive_paths" "skills/agent-routing/defaults.json" "archive includes WorkStack routing defaults"
+assert_contains "$archive_paths" "skills/agent-routing/scripts/resolve-agent" "archive includes WorkStack routing resolver"
+assert_contains "$archive_paths" "skills/agent-routing/agents/openai.yaml" "archive includes committed WorkStack routing metadata"
+for ws_skill in quick-task pr-monitor ux-gate delivery; do
   assert_contains "$archive_paths" "skills/$ws_skill/SKILL.md" "archive includes $ws_skill skill"
   assert_contains "$archive_paths" "skills/$ws_skill/agents/openai.yaml" "archive includes committed $ws_skill metadata"
 done
@@ -221,8 +221,8 @@ assert_not_matches "$archive_paths" '^skills/workstack-(start|resume|spec-review
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
 assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
 
-packaged_workstack_metadata="$(read_archive_file "$archive" skills/workstack-agent-routing/agents/openai.yaml)"
-committed_workstack_metadata="$(git -C "$REPO_ROOT" show HEAD:skills/workstack-agent-routing/agents/openai.yaml)"
+packaged_workstack_metadata="$(read_archive_file "$archive" skills/agent-routing/agents/openai.yaml)"
+committed_workstack_metadata="$(git -C "$REPO_ROOT" show HEAD:skills/agent-routing/agents/openai.yaml)"
 assert_equals "$packaged_workstack_metadata" "$committed_workstack_metadata" "committed WorkStack routing metadata is retained without an external fixture entry"
 
 manifest_summary="$(read_archive_file "$archive" .codex-plugin/plugin.json | python3 -c 'import json,sys; data=json.load(sys.stdin); print("\t".join([data["name"], data["version"], data["skills"], str(data.get("hooks"))]))')"
@@ -239,7 +239,7 @@ else
   fail "archive preserves executable script mode"
 fi
 
-if [[ -x "$extracted/skills/workstack-agent-routing/scripts/resolve-agent" ]]; then
+if [[ -x "$extracted/skills/agent-routing/scripts/resolve-agent" ]]; then
   pass "archive preserves WorkStack routing resolver executable mode"
 else
   fail "archive preserves WorkStack routing resolver executable mode"

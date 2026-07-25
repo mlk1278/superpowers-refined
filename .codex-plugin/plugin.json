@@ -1,14 +1,14 @@
 {
-  "name": "superpowers",
+  "name": "toolbelt",
   "version": "6.1.1",
   "description": "An agentic skills framework & software development methodology that works: planning, TDD, debugging, and collaboration workflows.",
   "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com",
-    "url": "https://github.com/obra"
+    "name": "Mike",
+    "email": "m.kirk12@outlook.com",
+    "url": "https://github.com/mlk1278"
   },
-  "homepage": "https://github.com/obra/superpowers",
-  "repository": "https://github.com/obra/superpowers",
+  "homepage": "https://github.com/mlk1278/superpowers-workstack",
+  "repository": "https://github.com/mlk1278/superpowers-workstack",
   "license": "MIT",
   "keywords": [
     "brainstorming",
@@ -23,10 +23,10 @@
   "skills": "./skills/",
   "hooks": {},
   "interface": {
-    "displayName": "Superpowers",
+    "displayName": "Toolbelt",
     "shortDescription": "Planning, TDD, debugging, and delivery workflows for coding agents",
-    "longDescription": "Use Superpowers to guide agent work through brainstorming, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and finish-the-branch workflows.",
-    "developerName": "Jesse Vincent",
+    "longDescription": "Use Toolbelt to guide agent work through brainstorming, specs, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and delivery.",
+    "developerName": "Mike",
     "category": "Developer Tools",
     "capabilities": [
       "Interactive",
@@ -37,7 +37,7 @@
       "I've got an idea for something I'd like to build.",
       "Let's add a feature to this project."
     ],
-    "websiteURL": "https://github.com/obra/superpowers",
+    "websiteURL": "https://github.com/mlk1278/superpowers-workstack",
     "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
     "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
     "brandColor": "#F59E0B",

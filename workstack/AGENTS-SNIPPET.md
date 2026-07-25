@@ -8,5 +8,5 @@ Delivery selects one coherent slice, runs upstream subagent-driven development i
 
 Two public entry points:
 
-- `workstack-quick-task`: a small decision-complete change, straight to one reviewed, merged PR.
-- `workstack-delivery`: an approved implementation plan, through one coherent slice to a reviewed, merged PR and cleanup.
+- `quick-task`: a small decision-complete change, straight to one reviewed, merged PR.
+- `delivery`: an approved implementation plan, through one coherent slice to a reviewed, merged PR and cleanup.

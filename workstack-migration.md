@@ -20,14 +20,17 @@ Temporary. Steps to run on the dev machine after pulling the rename. Delete this
 
 - `git mv .workstack .toolbelt` if the directory exists (holds `agents.json`)
 - Re-copy the entry-point snippet into `AGENTS.md` from `workstack/AGENTS-SNIPPET.md`
-- Search and replace skill references:
+- Search and replace skill references (old on the left):
   - `superpowers:` → `toolbelt:`
+  - `superpowers:using-superpowers` → `toolbelt:using-toolbelt`
   - `workstack-delivery` → `delivery`
   - `workstack-quick-task` → `quick-task`
   - `workstack-agent-routing` → `agent-routing`
   - `workstack-pr-monitor` → `pr-monitor`
   - `workstack-ux-gate` → `ux-gate`
 - Check `CLAUDE.md` / `AGENTS.md` for any other `superpowers`/`workstack-` skill names
+- Scratch/output directories moved under one dot-dir: `.superpowers/sdd/` and `.superpowers/quick/` are now `.toolbelt/sdd/` and `.toolbelt/quick/`. Update `.gitignore` — old entries can just be deleted, the contents are regenerated scratch.
+- `docs/superpowers/specs/` and `docs/superpowers/plans/` were left alone on purpose — those are durable artifacts you already have. Rename to `docs/toolbelt/` with `git mv` if you want the consistency; nothing depends on it.
 
 ## Any other project you want this in
 

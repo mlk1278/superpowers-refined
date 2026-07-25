@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-resolver="$repo_root/skills/workstack-agent-routing/scripts/resolve-agent"
+resolver="$repo_root/skills/agent-routing/scripts/resolve-agent"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
@@ -54,10 +54,10 @@ assert_failure() {
   passes=$((passes + 1))
 }
 
-mkdir -p "$tmp/empty" "$tmp/project/.workstack" "$tmp/reviewer/.workstack" \
-  "$tmp/dependent/.workstack" "$tmp/filtered/.workstack" "$tmp/invalid/.workstack"
+mkdir -p "$tmp/empty" "$tmp/project/.toolbelt" "$tmp/reviewer/.toolbelt" \
+  "$tmp/dependent/.toolbelt" "$tmp/filtered/.toolbelt" "$tmp/invalid/.toolbelt"
 
-cat >"$tmp/project/.workstack/agents.json" <<'JSON'
+cat >"$tmp/project/.toolbelt/agents.json" <<'JSON'
 {
   "version": 1,
   "roles": {
@@ -94,7 +94,7 @@ cat >"$tmp/project/.workstack/agents.json" <<'JSON'
 }
 JSON
 
-cat >"$tmp/reviewer/.workstack/agents.json" <<'JSON'
+cat >"$tmp/reviewer/.toolbelt/agents.json" <<'JSON'
 {
   "version": 1,
   "roles": {
@@ -111,7 +111,7 @@ cat >"$tmp/reviewer/.workstack/agents.json" <<'JSON'
 }
 JSON
 
-cat >"$tmp/dependent/.workstack/agents.json" <<'JSON'
+cat >"$tmp/dependent/.toolbelt/agents.json" <<'JSON'
 {
   "version": 1,
   "roles": {
@@ -127,7 +127,7 @@ cat >"$tmp/dependent/.workstack/agents.json" <<'JSON'
 }
 JSON
 
-cat >"$tmp/filtered/.workstack/agents.json" <<'JSON'
+cat >"$tmp/filtered/.toolbelt/agents.json" <<'JSON'
 {
   "version": 1,
   "roles": {
@@ -144,7 +144,7 @@ cat >"$tmp/filtered/.workstack/agents.json" <<'JSON'
 }
 JSON
 
-printf '{invalid json\n' >"$tmp/invalid/.workstack/agents.json"
+printf '{invalid json\n' >"$tmp/invalid/.toolbelt/agents.json"
 
 while IFS='|' read -r role model effort; do
   assert_route "bundled $role" \

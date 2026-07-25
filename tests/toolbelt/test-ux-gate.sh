@@ -2,8 +2,8 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-skill="$repo_root/skills/workstack-ux-gate/SKILL.md"
-metadata="$repo_root/skills/workstack-ux-gate/agents/openai.yaml"
+skill="$repo_root/skills/ux-gate/SKILL.md"
+metadata="$repo_root/skills/ux-gate/agents/openai.yaml"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -26,14 +26,14 @@ assert_no_model_names() {
 
 [ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
 
-assert_contains "$skill" "name: workstack-ux-gate" "frontmatter name"
+assert_contains "$skill" "name: ux-gate" "frontmatter name"
 assert_contains "$skill" "I'm running the UX gate for <surface>." "announce line"
 assert_contains "$skill" "\`Pass\` bound to the reviewed head SHA, or \`Changes Required\`" "verdict contract"
 assert_contains "$skill" "The gate does not fix anything." "gate does not fix"
 assert_contains "$skill" "nothing downstream may claim UX was verified" "runtime preflight is mandatory"
 assert_contains "$skill" "smallest set of navigation pathways covering what this diff changed" "pathways derive from the diff"
 assert_contains "$skill" "throwaway Playwright script" "capture is a throwaway script"
-assert_contains "$skill" ".superpowers/ux/" "script lives in ignored scratch"
+assert_contains "$skill" ".toolbelt/ux/" "script lives in ignored scratch"
 assert_contains "$skill" "<pathway>-<step>-<state>-<width>[-<theme>].png" "screenshot naming convention"
 assert_contains "$skill" "Enumerate the capture matrix" "matrix enumerated before capture"
 assert_contains "$skill" "including shared styling or layout the step consumes" "width trigger covers consumed shared styling"
@@ -43,7 +43,7 @@ assert_contains "$skill" "a conflict to surface, not obey" "plan-imposed matrice
 assert_contains "$skill" "one nearest previously passing unchanged state for each affected component" "fix rounds capture a minimum comparison"
 assert_contains "$skill" "a shared style or token change invalidates every consuming capture" "carry-forward invalidation"
 assert_contains "$skill" "pathways covered separately from raw screenshot count" "verdict reports pathways"
-assert_contains "$skill" "Resolve one \`reviewer\` with specialty \`ux\` via workstack-agent-routing" "routed ux reviewer"
+assert_contains "$skill" "Resolve one \`reviewer\` with specialty \`ux\` via agent-routing" "routed ux reviewer"
 assert_contains "$skill" "vision-capable model" "reviewer route must handle images"
 assert_contains "$skill" "without driving the browser" "reviewer judges images, not live UI"
 assert_contains "$skill" "docs/REVIEW-GUIDANCE.md" "reviewer-only guidance is offered to the reviewer"

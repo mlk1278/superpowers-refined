@@ -15,8 +15,8 @@ assert_contains() {
 
 summary="$repo_root/workstack/AGENTS-SNIPPET.md"
 [ -f "$summary" ] || { echo "not ok - workflow summary draft missing" >&2; exit 1; }
-assert_contains "$summary" "workstack-quick-task" "summary names quick task"
-assert_contains "$summary" "workstack-delivery" "summary names delivery"
+assert_contains "$summary" "quick-task" "summary names quick task"
+assert_contains "$summary" "delivery" "summary names delivery"
 assert_contains "$summary" "upstream \`brainstorming\` and \`writing-plans\`" "summary points ambiguous work upstream"
 assert_contains "$summary" "redesign the capability, not this summary" "summary is the simplicity forcing function"
 if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|phase plan|shepherd|implementation phase|living plan|active contract' "$summary"; then

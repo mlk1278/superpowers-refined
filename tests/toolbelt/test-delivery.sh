@@ -2,10 +2,10 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-skill="$repo_root/skills/workstack-delivery/SKILL.md"
-metadata="$repo_root/skills/workstack-delivery/agents/openai.yaml"
+skill="$repo_root/skills/delivery/SKILL.md"
+metadata="$repo_root/skills/delivery/agents/openai.yaml"
 workflow="$repo_root/workstack/WORKFLOW.md"
-routing="$repo_root/skills/workstack-agent-routing/SKILL.md"
+routing="$repo_root/skills/agent-routing/SKILL.md"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -51,19 +51,19 @@ assert_no_model_names() {
 [[ -f "$skill" ]] || { echo "not ok - delivery skill missing: $skill" >&2; exit 1; }
 [[ -f "$workflow" ]] || { echo "not ok - workflow document missing: $workflow" >&2; exit 1; }
 
-assert_contains "$skill" "name: workstack-delivery" "frontmatter name"
+assert_contains "$skill" "name: delivery" "frontmatter name"
 assert_contains "$skill" "Use when an approved implementation plan is ready to be implemented and shipped" "approved-plan trigger"
-assert_contains "$skill" "I'm using workstack-delivery to deliver this approved plan." "announce line"
+assert_contains "$skill" "I'm using delivery to deliver this approved plan." "announce line"
 assert_contains "$skill" "one coherent delivery slice" "single-slice scope"
 assert_contains "$skill" '## Agent Routing' "optional plan routing section"
 assert_contains "$skill" "plan route, then project route, then bundled default" "route precedence"
 assert_contains "$skill" "session agent remains the orchestrator" "plan cannot route orchestrator"
-assert_contains "$skill" "superpowers:using-git-worktrees" "isolated worktree handoff"
-assert_contains "$skill" "superpowers:subagent-driven-development" "SDD handoff"
-assert_contains "$skill" "workstack-ux-gate" "conditional UX gate"
+assert_contains "$skill" "toolbelt:using-git-worktrees" "isolated worktree handoff"
+assert_contains "$skill" "toolbelt:subagent-driven-development" "SDD handoff"
+assert_contains "$skill" "ux-gate" "conditional UX gate"
 assert_contains "$skill" "broad final review is the slice gate" "SDD final review is the slice gate"
-assert_contains "$skill" "superpowers:finishing-a-development-branch" "branch completion handoff"
-assert_contains "$skill" "workstack-pr-monitor" "PR monitor handoff"
+assert_contains "$skill" "toolbelt:finishing-a-development-branch" "branch completion handoff"
+assert_contains "$skill" "pr-monitor" "PR monitor handoff"
 assert_contains "$skill" "run it in the background" "background monitoring is allowed"
 assert_contains "$skill" "The next work is independent" "pipelining requires independence"
 assert_contains "$skill" "At most one PR is in background monitoring" "one monitored PR cap"
@@ -71,8 +71,8 @@ assert_contains "$skill" "Never report the slice complete or end the session whi
 assert_contains "$skill" "always before that lane's broad final review" "rebase precedes the lane's final review"
 assert_contains "$skill" "Reconcile Linear only when the plan is linked to Linear" "optional Linear reconciliation"
 assert_contains "$skill" "remove the worktree, branch, and ignored scratch" "post-merge cleanup"
-assert_before "$skill" "workstack-ux-gate" "broad final review is the slice gate" "UX runs before broad final review"
-assert_before "$skill" "broad final review is the slice gate" "superpowers:finishing-a-development-branch" "review precedes PR completion"
+assert_before "$skill" "ux-gate" "broad final review is the slice gate" "UX runs before broad final review"
+assert_before "$skill" "broad final review is the slice gate" "toolbelt:finishing-a-development-branch" "review precedes PR completion"
 assert_not_contains "$skill" "workstack-slice-gate" "no replacement slice-gate skill"
 assert_not_contains "$skill" "progress ledger" "no delivery ledger state machine"
 assert_no_model_names "$skill"

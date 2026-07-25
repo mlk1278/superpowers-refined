@@ -1,11 +1,11 @@
 {
-  "name": "superpowers-dev",
+  "name": "toolbelt-dev",
   "interface": {
-    "displayName": "Superpowers Dev"
+    "displayName": "Toolbelt Dev"
   },
   "plugins": [
     {
-      "name": "superpowers",
+      "name": "toolbelt",
       "source": {
         "source": "url",
         "url": "./"

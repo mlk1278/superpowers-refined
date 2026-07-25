@@ -1,11 +1,11 @@
 ---
-name: workstack-quick-task
+name: quick-task
 description: Use when a small, decision-complete change has one coherent outcome and can ship in one pull request without product shaping.
 ---
 
 # WorkStack Quick Task
 
-**Announce:** "I'm using workstack-quick-task to ship this."
+**Announce:** "I'm using quick-task to ship this."
 
 **Entry:** a small, decision-complete request — the ask itself is the spec.
 **Exit:** the shared delivery path returns merged and cleaned up, or the request is redirected to upstream planning.
@@ -16,8 +16,8 @@ Confirm the work has one coherent outcome, an established owner surface, no unre
 
 ## 2. Mini-plan
 
-Write an ignored one-task implementation plan at `.superpowers/quick/<slug>-plan.md` in upstream writing-plans format. Include the request, exact files, TDD steps, and verification commands. The mini-plan is scratch and is never committed.
+Write an ignored one-task implementation plan at `.toolbelt/quick/<slug>-plan.md` in upstream writing-plans format. Include the request, exact files, TDD steps, and verification commands. The mini-plan is scratch and is never committed.
 
 ## 3. Deliver
 
-Invoke `workstack-delivery` with the mini-plan path, using its absolute path so it remains available after entering the delivery worktree. Delivery owns the worktree, routing, SDD, optional UX gate, PR, merge, and cleanup.
+Invoke `delivery` with the mini-plan path, using its absolute path so it remains available after entering the delivery worktree. Delivery owns the worktree, routing, SDD, optional UX gate, PR, merge, and cleanup.

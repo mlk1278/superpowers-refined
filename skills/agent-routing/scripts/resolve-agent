@@ -202,7 +202,7 @@ def main() -> int:
     skill_root = Path(__file__).resolve().parent.parent
     bundled = read_config(skill_root / "defaults.json")
     project = read_config(
-        args.project_root / ".workstack" / "agents.json", optional=True
+        args.project_root / ".toolbelt" / "agents.json", optional=True
     )
     route, source = select_route(args, bundled, project)
     route, source, fallback_reason = enforce_reviewer_independence(

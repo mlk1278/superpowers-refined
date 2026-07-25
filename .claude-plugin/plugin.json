@@ -1,13 +1,13 @@
 {
-  "name": "superpowers",
-  "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
+  "name": "toolbelt",
+  "description": "Personal agent-skills framework: brainstorming, specs, plans, subagent-driven development, review, and delivery.",
   "version": "6.1.1",
   "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
+    "name": "Mike",
+    "email": "m.kirk12@outlook.com"
   },
-  "homepage": "https://github.com/obra/superpowers",
-  "repository": "https://github.com/obra/superpowers",
+  "homepage": "https://github.com/mlk1278/superpowers-workstack",
+  "repository": "https://github.com/mlk1278/superpowers-workstack",
   "license": "MIT",
   "keywords": [
     "skills",

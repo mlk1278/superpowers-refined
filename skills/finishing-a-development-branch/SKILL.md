@@ -32,7 +32,7 @@ its passing output (with the final pass/exit state visible), and the head
 SHA it ran against — read that output yourself and treat this step as
 satisfied; do not re-run the suite just to reproduce it. This is a
 deliberate, narrowly scoped exception to
-superpowers:verification-before-completion's run-it-yourself rule: it
+toolbelt:verification-before-completion's run-it-yourself rule: it
 applies only to this step, only to a full-suite run at the exact current
 head (or a head advanced from it solely by the recorded docs-only case
 below), only with a clean worktree, and only when you read the recorded
@@ -43,7 +43,7 @@ partial/filtered run. Without qualifying evidence, run the suite.
 
 **Docs-only cases** (both require a clean worktree; the allowlist is:
 Markdown files under `docs/**` or at the repository root, and
-`.superpowers/**` scratch — never a file the application builds, renders,
+`.toolbelt/**` scratch — never a file the application builds, renders,
 or serves, or that CI executes, regardless of path):
 - If every commit in the branch's entire base..head range matches the
   allowlist, verify and record that range instead — no application suite

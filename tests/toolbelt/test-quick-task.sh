@@ -2,8 +2,8 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-skill="$repo_root/skills/workstack-quick-task/SKILL.md"
-metadata="$repo_root/skills/workstack-quick-task/agents/openai.yaml"
+skill="$repo_root/skills/quick-task/SKILL.md"
+metadata="$repo_root/skills/quick-task/agents/openai.yaml"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -38,18 +38,18 @@ assert_before() {
 
 [ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
 
-assert_contains "$skill" "name: workstack-quick-task" "frontmatter name"
-assert_contains "$skill" "I'm using workstack-quick-task to ship this." "announce line"
+assert_contains "$skill" "name: quick-task" "frontmatter name"
+assert_contains "$skill" "I'm using quick-task to ship this." "announce line"
 assert_contains "$skill" "the ask itself is the spec" "entry condition"
 assert_contains "$skill" "use upstream \`brainstorming\` and \`writing-plans\`" "ambiguous work uses upstream planning"
 assert_contains "$skill" "never creates one to mirror a tiny local change" "no ticket mirroring"
-assert_contains "$skill" ".superpowers/quick/" "ignored mini-plan location"
+assert_contains "$skill" ".toolbelt/quick/" "ignored mini-plan location"
 assert_contains "$skill" "one-task implementation plan" "mini-plan shape"
-assert_contains "$skill" "Invoke \`workstack-delivery\` with the mini-plan path" "shared delivery path"
+assert_contains "$skill" "Invoke \`delivery\` with the mini-plan path" "shared delivery path"
 assert_contains "$skill" "Delivery owns the worktree, routing, SDD, optional UX gate, PR, merge, and cleanup." "delivery owns downstream workflow"
 assert_before "$skill" "## 1. Scope check" "## 2. Mini-plan" "scope check precedes the mini-plan"
 assert_before "$skill" "## 2. Mini-plan" "## 3. Deliver" "mini-plan precedes delivery"
-if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|## Global Constraints|superpowers:subagent-driven-development|superpowers:finishing-a-development-branch|workstack-pr-monitor|workstack-ux-gate' "$skill"; then
+if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|## Global Constraints|toolbelt:subagent-driven-development|toolbelt:finishing-a-development-branch|pr-monitor|ux-gate' "$skill"; then
   echo "not ok - quick task duplicates or references superseded delivery machinery" >&2
   exit 1
 fi

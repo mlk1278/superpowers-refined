@@ -1,4 +1,4 @@
 interface:
   display_name: "WorkStack Delivery"
   short_description: "Deliver an approved plan through one merged PR"
-  default_prompt: "Use $workstack-delivery to deliver this approved implementation plan."
+  default_prompt: "Use $delivery to deliver this approved implementation plan."

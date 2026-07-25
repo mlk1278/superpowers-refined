@@ -23,9 +23,9 @@ Execute a plan by dispatching a fresh implementer subagent per task, a task revi
    - Dispatch a fix subagent for Critical/Important findings, then re-review. Repeat until spec ✅ and quality approved.
    - Mark the task complete in the todo list and the ledger.
 3. After all tasks: dispatch the final whole-branch reviewer ([code-reviewer.md](../requesting-code-review/code-reviewer.md)).
-4. Hand off to superpowers:finishing-a-development-branch.
+4. Hand off to toolbelt:finishing-a-development-branch.
 
-**Optional pre-final gate:** If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review. Otherwise, follow the normal path unchanged. When the caller defines a role-ownership table (e.g. workstack-delivery's), it governs who runs each gate and who captures its evidence — task briefs must not reassign those roles.
+**Optional pre-final gate:** If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review. Otherwise, follow the normal path unchanged. When the caller defines a role-ownership table (e.g. delivery's), it governs who runs each gate and who captures its evidence — task briefs must not reassign those roles.
 
 ## Pre-Flight Plan Review
 
@@ -59,7 +59,7 @@ Verification is proportional to the change. Before any suite-level run, ask: wha
 - **Iterating:** focused tests for the code being changed.
 - **Task gate:** the affected package suite(s) once — the packages the diff touches plus direct consumers of a changed shared contract. High-risk changes (auth, tenancy, migrations, shared schemas, backend authority, cross-package behavior) add targeted cross-package checks, not a workspace run.
 - **Fix rounds:** covering tests only.
-- **Workspace-wide suite:** once, at the final gate. superpowers:finishing-a-development-branch Step 1 owns its evidence, reuse, and docs-only cases. Task gates never run it, and nobody reruns it because a PR opened — exact-head CI owns suite-level regression after push.
+- **Workspace-wide suite:** once, at the final gate. toolbelt:finishing-a-development-branch Step 1 owns its evidence, reuse, and docs-only cases. Task gates never run it, and nobody reruns it because a PR opened — exact-head CI owns suite-level regression after push.
 
 Do not repeat recorded verification. Reviewers and orchestrators read the implementer's test evidence on unchanged source instead of re-running it; a fresh worktree needs only the smallest checks proving a clean start, never a workspace baseline over an unchanged tree. Implementers and fixers always produce their own fresh evidence for the change they ship.
 
@@ -96,7 +96,7 @@ Everything you paste into a dispatch prompt — and everything a subagent prints
 
 Conversation memory does not survive compaction. In real sessions, controllers that lost their place have re-dispatched entire completed task sequences — the single most expensive failure observed. Track progress in a ledger file, not only in todos.
 
-At skill start, check for one: `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks marked complete there are DONE — do not re-dispatch them; resume at the first task not marked complete.
+At skill start, check for one: `cat "$(git rev-parse --show-toplevel)/.toolbelt/sdd/progress.md"`. Tasks marked complete there are DONE — do not re-dispatch them; resume at the first task not marked complete.
 
 Keep the ledger in this shape, updating it in the same message as your other bookkeeping:
 
@@ -134,8 +134,8 @@ After compaction, trust the ledger and `git log` over your own recollection — 
 
 ## Integration
 
-- **superpowers:using-git-worktrees** — isolated workspace, before you start
-- **superpowers:writing-plans** — creates the plan this skill executes
-- **superpowers:requesting-code-review** — template for the final whole-branch review
-- **superpowers:finishing-a-development-branch** — completes the branch after all tasks
-- **superpowers:test-driven-development** — subagents follow TDD per task
+- **toolbelt:using-git-worktrees** — isolated workspace, before you start
+- **toolbelt:writing-plans** — creates the plan this skill executes
+- **toolbelt:requesting-code-review** — template for the final whole-branch review
+- **toolbelt:finishing-a-development-branch** — completes the branch after all tasks
+- **toolbelt:test-driven-development** — subagents follow TDD per task

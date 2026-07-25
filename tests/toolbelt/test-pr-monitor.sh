@@ -2,8 +2,8 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-skill="$repo_root/skills/workstack-pr-monitor/SKILL.md"
-metadata="$repo_root/skills/workstack-pr-monitor/agents/openai.yaml"
+skill="$repo_root/skills/pr-monitor/SKILL.md"
+metadata="$repo_root/skills/pr-monitor/agents/openai.yaml"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -26,10 +26,10 @@ assert_no_model_names() {
 
 [ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
 
-assert_contains "$skill" "name: workstack-pr-monitor" "frontmatter name"
+assert_contains "$skill" "name: pr-monitor" "frontmatter name"
 assert_contains "$skill" "Own exactly one PR" "single-PR ownership"
 assert_contains "$skill" "sole source of WorkStack PR review, CI, fix-loop, and merge mechanics" "sole-source clause"
-assert_contains "$skill" ".workstack/pr-policy.md" "project policy file location"
+assert_contains "$skill" ".toolbelt/pr-policy.md" "project policy file location"
 assert_contains "$skill" "exact-head green CI, zero unresolved review threads, and no requested-changes review" "default conditions without a policy file"
 assert_contains "$skill" "Never hard-code a provider this file does not name." "no hard-coded providers"
 assert_contains "$skill" "The local final gate must have approved this exact head before monitoring begins." "local gate precedes monitoring"
@@ -37,7 +37,7 @@ assert_contains "$skill" "Bind all evidence to the current head" "exact-head evi
 assert_contains "$skill" "at most once per head request each policy-named provider" "single review request per head"
 assert_contains "$skill" "fail closed on unavailable" "CI unavailable fails closed"
 assert_contains "$skill" "Once every awaited provider has completed on the current head" "fix round waits for all awaited providers"
-assert_contains "$skill" "Dispatch fixer(s) routed via workstack-agent-routing" "fixers dispatched through routing"
+assert_contains "$skill" "Dispatch fixer(s) routed via agent-routing" "fixers dispatched through routing"
 assert_contains "$skill" "several in parallel when findings are independent" "fixer count matches finding spread"
 assert_contains "$skill" "push all fixes as one batch" "one push per fix round"
 assert_contains "$skill" "next round on the new head is the re-review" "providers re-review each push"
