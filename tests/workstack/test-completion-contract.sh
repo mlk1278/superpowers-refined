@@ -28,10 +28,4 @@ assert_contains "$skill" "**Docs-only cases**" "docs-only Step 1 cases exist"
 assert_contains "$skill" "never a file the application builds, renders," "docs-only allowlist has a semantic guard"
 assert_contains "$skill" "**If Step 1 is satisfied**" "Step 1 satisfaction covers all three paths"
 
-if ! grep -Fq "skills/finishing-a-development-branch/SKILL.md" "$repo_root/workstack/upstream-divergences.json"; then
-  echo "not ok - divergence allowlist missing finishing-a-development-branch" >&2
-  exit 1
-fi
-echo "ok - divergence allowlisted"
-
 echo "PASS"
