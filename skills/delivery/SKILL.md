@@ -3,7 +3,7 @@ name: delivery
 description: Use when an approved implementation plan is ready to be implemented and shipped.
 ---
 
-# WorkStack Delivery
+# Delivery
 
 **Announce:** "I'm using delivery to deliver this approved plan."
 
@@ -31,7 +31,7 @@ This table is authoritative for who does what across the slice. Task briefs, gat
 | Task reviews and the broad final review | Reviewer subagents routed via agent-routing |
 | PR publication | finishing-a-development-branch (step 5, declared completion route) |
 | GitHub review, exact-head CI, fix loops, merge | pr-monitor |
-| Linear reconciliation and cleanup | This skill, after the monitor returns |
+| Issue-tracker reconciliation and cleanup | This skill, after the monitor returns |
 
 ## 3. Prepare and execute
 
@@ -57,4 +57,6 @@ The next task starts in its own worktree branched from the current base branch, 
 
 ## 6. Reconcile and clean up
 
-Reconcile Linear only when the plan is linked to Linear. After merge, confirm the remote state, then remove the worktree, branch, and ignored scratch. For interruption recovery, follow `docs/WORKFLOW.md`; do not create separate resume bookkeeping.
+Reconcile the issue tracker only when the plan is linked to one. After merge, confirm the remote state, then remove the worktree, branch, and ignored scratch.
+
+Normal continuation stays in the current session. After an interruption, recover from the approved plan, git history, branch and worktree state, SDD scratch, and current PR state — do not create separate resume bookkeeping.

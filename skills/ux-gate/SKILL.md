@@ -1,9 +1,9 @@
 ---
 name: ux-gate
-description: Scripted-capture UX verification of changed user-visible surfaces against approved visual and interaction acceptance criteria. Internal WorkStack gate run before the final gate verdict; returns Pass or Changes Required.
+description: Scripted-capture UX verification of changed user-visible surfaces against approved visual and interaction acceptance criteria. Internal gate run before the final gate verdict; returns Pass or Changes Required.
 ---
 
-# WorkStack UX Gate
+# UX Gate
 
 **Announce:** "I'm running the UX gate for <surface>."
 

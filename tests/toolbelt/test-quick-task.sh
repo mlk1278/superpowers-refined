@@ -41,7 +41,7 @@ assert_before() {
 assert_contains "$skill" "name: quick-task" "frontmatter name"
 assert_contains "$skill" "I'm using quick-task to ship this." "announce line"
 assert_contains "$skill" "the ask itself is the spec" "entry condition"
-assert_contains "$skill" "use upstream \`brainstorming\` and \`writing-plans\`" "ambiguous work uses upstream planning"
+assert_contains "$skill" 'use `brainstorming` and `writing-plans`' "ambiguous work goes to planning"
 assert_contains "$skill" "never creates one to mirror a tiny local change" "no ticket mirroring"
 assert_contains "$skill" ".toolbelt/quick/" "ignored mini-plan location"
 assert_contains "$skill" "one-task implementation plan" "mini-plan shape"

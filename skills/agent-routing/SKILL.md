@@ -1,11 +1,11 @@
 ---
 name: agent-routing
-description: Use when a WorkStack entry point must resolve a logical implementation, review, or monitoring role before dispatch.
+description: Use when a delivery entry point must resolve a logical implementation, review, or monitoring role before dispatch.
 ---
 
-# WorkStack Agent Routing
+# Agent Routing
 
-Treat this as an internal helper owned by the public WorkStack entry points. Callers request logical roles; they do not select concrete agents themselves.
+Callers request logical roles; they never select concrete agents themselves.
 
 ## Resolve a route
 

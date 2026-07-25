@@ -28,7 +28,7 @@ assert_no_model_names() {
 
 assert_contains "$skill" "name: pr-monitor" "frontmatter name"
 assert_contains "$skill" "Own exactly one PR" "single-PR ownership"
-assert_contains "$skill" "sole source of WorkStack PR review, CI, fix-loop, and merge mechanics" "sole-source clause"
+assert_contains "$skill" "sole source of PR review, CI, fix-loop, and merge mechanics" "sole-source clause"
 assert_contains "$skill" ".toolbelt/pr-policy.md" "project policy file location"
 assert_contains "$skill" "exact-head green CI, zero unresolved review threads, and no requested-changes review" "default conditions without a policy file"
 assert_contains "$skill" "Never hard-code a provider this file does not name." "no hard-coded providers"

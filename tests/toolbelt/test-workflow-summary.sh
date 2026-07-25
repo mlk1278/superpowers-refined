@@ -17,7 +17,7 @@ summary="$repo_root/docs/AGENTS-SNIPPET.md"
 [ -f "$summary" ] || { echo "not ok - workflow summary draft missing" >&2; exit 1; }
 assert_contains "$summary" "quick-task" "summary names quick task"
 assert_contains "$summary" "delivery" "summary names delivery"
-assert_contains "$summary" "upstream \`brainstorming\` and \`writing-plans\`" "summary points ambiguous work upstream"
+assert_contains "$summary" '`brainstorming` and `writing-plans`' "summary points ambiguous work at planning"
 assert_contains "$summary" "redesign the capability, not this summary" "summary is the simplicity forcing function"
 if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|phase plan|shepherd|implementation phase|living plan|active contract' "$summary"; then
   echo "not ok - superseded workflow vocabulary in workflow summary" >&2
@@ -25,7 +25,7 @@ if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|phase plan|shepherd
 fi
 echo "ok - no superseded workflow vocabulary"
 
-entry_points=$(grep -Ec '^- `workstack-[^`]+`:' "$summary")
+entry_points=$(grep -Ec '^- `[a-z-]+`:' "$summary")
 if [[ "$entry_points" -ne 2 ]]; then
   echo "not ok - expected exactly two public entry points, found $entry_points" >&2
   exit 1

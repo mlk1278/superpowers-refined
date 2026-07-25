@@ -1,4 +1,4 @@
 interface:
-  display_name: "WorkStack Quick Task"
+  display_name: "Quick Task"
   short_description: "Ship a small decision-complete change through one PR"
   default_prompt: "Use $quick-task to ship this small change end to end."

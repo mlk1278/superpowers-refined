@@ -1,11 +1,11 @@
 ---
 name: pr-monitor
-description: Own one WorkStack pull request from its current head through CI, configured review providers, fix loops, and merge or a durable blocker. Internal helper started by WorkStack entry points after a slice PR opens.
+description: Own one pull request from its current head through CI, configured review providers, fix loops, and merge or a durable blocker. Internal helper started by delivery entry points after a slice PR opens.
 ---
 
-# WorkStack PR Monitor
+# PR Monitor
 
-Own exactly one PR and its worktree until it is merged or genuinely blocked. This skill is the sole source of WorkStack PR review, CI, fix-loop, and merge mechanics; callers start it once and wait for its return.
+Own exactly one PR and its worktree until it is merged or genuinely blocked. This skill is the sole source of PR review, CI, fix-loop, and merge mechanics; callers start it once and wait for its return.
 
 ## Project policy
 

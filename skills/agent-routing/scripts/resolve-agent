@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resolve a logical WorkStack role from bundled and project JSON config."""
+"""Resolve a logical role from bundled and project JSON config."""
 
 from __future__ import annotations
 

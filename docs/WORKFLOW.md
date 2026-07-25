@@ -1,6 +1,6 @@
-# WorkStack Workflow
+# Toolbelt Workflow
 
-New or ambiguous work uses upstream `brainstorming` and `writing-plans`. Planning decides behavior and divides work into coherent delivery slices; each slice must fit one pull request. WorkStack begins only when a decision-complete quick task or an approved implementation plan exists.
+New or ambiguous work uses `brainstorming` and `writing-plans`. Planning decides behavior and divides work into coherent delivery slices; each slice must fit one pull request. Delivery begins only when a decision-complete quick task or an approved implementation plan exists.
 
 An approved plan may include `## Agent Routing` entries for the implementer, task reviewer, and final reviewer. Those routes override project routing, which overrides bundled defaults. The session agent remains the orchestrator and is never selected by the plan.
 

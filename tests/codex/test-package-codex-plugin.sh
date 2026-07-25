@@ -209,21 +209,21 @@ assert_not_matches "$archive_paths" "$unexpected_pattern" "archive excludes sour
 assert_contains "$archive_paths" ".codex-plugin/plugin.json" "archive includes Codex manifest"
 assert_contains "$archive_paths" "skills/brainstorming/SKILL.md" "archive includes skills"
 assert_contains "$archive_paths" "skills/brainstorming/agents/openai.yaml" "archive includes OpenAI skill metadata"
-assert_contains "$archive_paths" "skills/agent-routing/SKILL.md" "archive includes WorkStack routing skill"
-assert_contains "$archive_paths" "skills/agent-routing/defaults.json" "archive includes WorkStack routing defaults"
-assert_contains "$archive_paths" "skills/agent-routing/scripts/resolve-agent" "archive includes WorkStack routing resolver"
-assert_contains "$archive_paths" "skills/agent-routing/agents/openai.yaml" "archive includes committed WorkStack routing metadata"
+assert_contains "$archive_paths" "skills/agent-routing/SKILL.md" "archive includes routing skill"
+assert_contains "$archive_paths" "skills/agent-routing/defaults.json" "archive includes routing defaults"
+assert_contains "$archive_paths" "skills/agent-routing/scripts/resolve-agent" "archive includes routing resolver"
+assert_contains "$archive_paths" "skills/agent-routing/agents/openai.yaml" "archive includes committed routing metadata"
 for ws_skill in quick-task pr-monitor ux-gate delivery; do
   assert_contains "$archive_paths" "skills/$ws_skill/SKILL.md" "archive includes $ws_skill skill"
   assert_contains "$archive_paths" "skills/$ws_skill/agents/openai.yaml" "archive includes committed $ws_skill metadata"
 done
-assert_not_matches "$archive_paths" '^skills/workstack-(start|resume|spec-review|slice-gate)(/|$)' "archive excludes superseded WorkStack skills"
+assert_not_matches "$archive_paths" '^skills/workstack-(start|resume|spec-review|slice-gate)(/|$)' "archive excludes superseded skills"
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
 assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
 
 packaged_workstack_metadata="$(read_archive_file "$archive" skills/agent-routing/agents/openai.yaml)"
 committed_workstack_metadata="$(git -C "$REPO_ROOT" show HEAD:skills/agent-routing/agents/openai.yaml)"
-assert_equals "$packaged_workstack_metadata" "$committed_workstack_metadata" "committed WorkStack routing metadata is retained without an external fixture entry"
+assert_equals "$packaged_workstack_metadata" "$committed_workstack_metadata" "committed routing metadata is retained without an external fixture entry"
 
 manifest_summary="$(read_archive_file "$archive" .codex-plugin/plugin.json | python3 -c 'import json,sys; data=json.load(sys.stdin); print("\t".join([data["name"], data["version"], data["skills"], str(data.get("hooks"))]))')"
 expected_version="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json"))["version"])')"
@@ -240,9 +240,9 @@ else
 fi
 
 if [[ -x "$extracted/skills/agent-routing/scripts/resolve-agent" ]]; then
-  pass "archive preserves WorkStack routing resolver executable mode"
+  pass "archive preserves routing resolver executable mode"
 else
-  fail "archive preserves WorkStack routing resolver executable mode"
+  fail "archive preserves routing resolver executable mode"
 fi
 
 zip_times="$(python3 - "$archive" <<'PY'

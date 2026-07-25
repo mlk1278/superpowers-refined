@@ -33,9 +33,10 @@ Never use `HEAD~1` as the base — it silently drops all but the last commit
 of a multi-commit change, and the reviewer approves a diff that isn't the
 work.
 
-**2. Build the review package:**
+**2. Build the review package** with `review-package` from the
+subagent-driven-development skill's `scripts/` directory:
 ```bash
-skills/subagent-driven-development/scripts/review-package $BASE_SHA $HEAD_SHA
+../subagent-driven-development/scripts/review-package $BASE_SHA $HEAD_SHA
 ```
 
 It writes the commit list, stat summary, and the diff with extended context
@@ -76,7 +77,7 @@ You: Let me request code review before proceeding.
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
-skills/subagent-driven-development/scripts/review-package $BASE_SHA $HEAD_SHA
+../subagent-driven-development/scripts/review-package $BASE_SHA $HEAD_SHA
   wrote /repo/.toolbelt/sdd/review-a7981ec..3df7661.diff: 3 commit(s), 21184 bytes
 
 [Dispatch code reviewer subagent]

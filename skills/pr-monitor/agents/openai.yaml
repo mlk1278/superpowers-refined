@@ -1,4 +1,4 @@
 interface:
-  display_name: "WorkStack PR Monitor"
+  display_name: "PR Monitor"
   short_description: "Own one PR through CI, review, fixes, and merge"
   default_prompt: "Use $pr-monitor to shepherd this pull request through merge."
