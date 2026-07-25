@@ -46,11 +46,18 @@ Clean session, send exactly:
 **Both harnesses install from a copy, not from this checkout.** `~/.claude/plugins/cache/toolbelt-dev/toolbelt/<version>/` and `~/.codex/plugins/cache/toolbelt-dev/toolbelt/<version>/` are independent copies made at install time. Editing a file here changes nothing in a live session, and the acceptance test above will silently test the old copy. Refresh before trusting any result:
 
 ```bash
-claude plugin marketplace update toolbelt-dev && claude plugin install toolbelt@toolbelt-dev
+# Claude Code — install is a no-op at an unchanged version, so uninstall first
+claude plugin marketplace update toolbelt-dev
+claude plugin uninstall toolbelt@toolbelt-dev --scope user -y
+claude plugin install toolbelt@toolbelt-dev --scope user
+
+# Codex — add overwrites the cache in place
 codex plugin marketplace upgrade && codex plugin add toolbelt@toolbelt-dev
 ```
 
-Then start a fresh session — the hook registers on load, never mid-session. A version bump changes the cache directory, so bumping without reinstalling leaves the old version installed.
+The uninstall step is not optional: `claude plugin install` reports "already installed" and leaves the stale copy untouched when the version string hasn't changed, which is every edit between releases. Verify with `grep` against the cache before trusting a test result.
+
+Then start a fresh session — the hook registers on load, never mid-session.
 
 `tests/` holds plugin-infrastructure tests — packaging, hooks, the brainstorm server, and assertions about skill content. They are **not** a gate on skill wording; if a test asserts a phrase that should change, change the phrase and fix the test.
 
