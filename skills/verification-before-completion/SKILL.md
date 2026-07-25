@@ -26,16 +26,25 @@ If you haven't run the verification command in this message, you cannot claim it
 ```
 BEFORE claiming any status or expressing satisfaction:
 
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
+1. IDENTIFY: What is the smallest command that proves this claim?
+2. RUN: Execute that command fresh, to completion — no partial run,
+   no filtered subset you then generalize from
 3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
+4. VERIFY: Does output confirm the claim, at the scope you are claiming?
    - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
+   - If YES: State claim WITH evidence, scoped to what you ran
 5. ONLY THEN: Make the claim
 
 Skip any step = lying, not verifying
 ```
+
+**Scope the claim to the evidence, not the evidence to the claim.** This rule
+governs honesty, not breadth: it never requires a broader run than the
+workflow's verification policy calls for. If you ran the affected package
+suite, say the affected package suite passed — do not say "all tests pass,"
+and do not run the whole workspace to earn the right to say it. A narrow
+claim backed by a real run is honest; a broad claim backed by a narrow run is
+the failure this skill exists to prevent.
 
 ## Common Failures
 
@@ -55,7 +64,7 @@ Skip any step = lying, not verifying
 - Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
 - About to commit/push/PR without verification
 - Trusting agent success reports
-- Relying on partial verification
+- Claiming more than the command you ran actually proves
 - Thinking "just this once"
 - Tired and wanting work over
 - **ANY wording implying success without having run verification**
@@ -70,15 +79,16 @@ Skip any step = lying, not verifying
 | "Linter passed" | Linter ≠ compiler |
 | "Agent said success" | Verify independently |
 | "I'm tired" | Exhaustion ≠ excuse |
-| "Partial check is enough" | Partial proves nothing |
+| "Partial check is enough" | Then make the partial claim, not the broad one |
 | "Different words so rule doesn't apply" | Spirit over letter |
 
 ## Key Patterns
 
 **Tests:**
 ```
-✅ [Run test command] [See: 34/34 pass] "All tests pass"
+✅ [Run the covering suite] [See: 34/34 pass] "auth package: 34/34 pass"
 ❌ "Should pass now" / "Looks correct"
+❌ [Run the auth package] "All tests pass"  ← claim outran the evidence
 ```
 
 **Regression tests (TDD Red-Green):**

@@ -40,6 +40,30 @@
     {
       "path": "skills/test-driven-development/SKILL.md",
       "reason": "Checklist scopes suite runs to covering tests per the workflow's verification policy."
+    },
+    {
+      "path": "skills/brainstorming/SKILL.md",
+      "reason": "Condensed for current models; question-quality guidance promoted over restated process. Spec authoring and its review gates split out to the fork-local writing-specs skill, so the terminal state is now writing-specs rather than writing-plans."
+    },
+    {
+      "path": "skills/brainstorming/spec-document-reviewer-prompt.md",
+      "reason": "Removed from the fork; the spec is self-reviewed inline and then gated by the user and an alternate-family model, so a third pass on the same document was redundant. Nothing referenced this template."
+    },
+    {
+      "path": "skills/brainstorming/visual-companion.md",
+      "reason": "Guide owns the browser-vs-terminal decision that SKILL.md now defers to; deduplicated launch blocks and file naming."
+    },
+    {
+      "path": "skills/verification-before-completion/SKILL.md",
+      "reason": "Gate function scopes the claim to the evidence instead of mandating a FULL command run, which contradicted the fork's proportional verification-scope policy."
+    },
+    {
+      "path": "skills/executing-plans/SKILL.md",
+      "reason": "Removed from the fork; subagent-driven-development is the only execution path."
+    },
+    {
+      "path": "skills/writing-plans/SKILL.md",
+      "reason": "Execution handoff drops the removed executing-plans option and hands off to subagent-driven-development directly."
     }
   ]
 }

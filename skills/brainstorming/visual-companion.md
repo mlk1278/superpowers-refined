@@ -6,21 +6,9 @@ Browser-based visual brainstorming companion for showing mockups, diagrams, and 
 
 Decide per-question, not per-session. The test: **would the user understand this better by seeing it than reading it?**
 
-**Use the browser** when the content itself is visual:
+**Use the browser** when the content itself is visual — UI mockups and wireframes, architecture diagrams, side-by-side layout or style comparisons, look-and-feel questions, and spatial relationships like flowcharts and state machines.
 
-- **UI mockups** — wireframes, layouts, navigation structures, component designs
-- **Architecture diagrams** — system components, data flow, relationship maps
-- **Side-by-side visual comparisons** — comparing two layouts, two color schemes, two design directions
-- **Design polish** — when the question is about look and feel, spacing, visual hierarchy
-- **Spatial relationships** — state machines, flowcharts, entity relationships rendered as diagrams
-
-**Use the terminal** when the content is text or tabular:
-
-- **Requirements and scope questions** — "what does X mean?", "which features are in scope?"
-- **Conceptual A/B/C choices** — picking between approaches described in words
-- **Tradeoff lists** — pros/cons, comparison tables
-- **Technical decisions** — API design, data modeling, architectural approach selection
-- **Clarifying questions** — anything where the answer is words, not a visual preference
+**Use the terminal** when the content is text or tabular — requirements and scope, conceptual A/B/C choices, tradeoff lists, technical decisions like API design and data modeling, and any clarifying question whose answer is words rather than a visual preference.
 
 A question *about* a UI topic is not automatically a visual question. "What kind of wizard do you want?" is conceptual — use the terminal. "Which of these wizard layouts feels right?" is visual — use the browser.
 
@@ -57,32 +45,12 @@ without repeating it.
 
 **Note:** Pass the project root as `--project-dir` so mockups persist in `.superpowers/brainstorm/` and survive server restarts. Without it, files go to `/tmp` and get cleaned up. Remind the user to add `.superpowers/` to `.gitignore` if it's not already there.
 
-**Launching the server by platform:**
+**Launching the server by platform:** the command above is the same everywhere; only the backgrounding differs. The server must keep running across conversation turns.
 
-**Claude Code:**
-```bash
-# Default mode works — the script backgrounds the server itself.
-scripts/start-server.sh --project-dir /path/to/project --open
-```
-
-On Windows, the script auto-detects and switches to foreground mode (which blocks the tool call). Use `run_in_background: true` on the Bash tool call so the server survives across conversation turns, then read `$STATE_DIR/server-info` on the next turn to get the URL and port.
-
-**Codex:**
-```bash
-# Codex reaps background processes. The script auto-detects CODEX_CI and
-# switches to foreground mode. Run it normally — no extra flags needed.
-scripts/start-server.sh --project-dir /path/to/project --open
-```
-
-**Copilot CLI:**
-```bash
-# Use --foreground and start the server via the bash tool with mode: "async"
-# so the process survives across turns. Capture the returned shellId for
-# read_bash / stop_bash if you need to interact with it later.
-scripts/start-server.sh --project-dir /path/to/project --open --foreground
-```
-
-**Other environments:** The server must keep running in the background across conversation turns. If your environment reaps detached processes, use `--foreground` and launch the command with your platform's background execution mechanism.
+- **Claude Code** — run it as-is; the script backgrounds itself. On Windows the script auto-detects and switches to foreground mode (which blocks the tool call), so pass `run_in_background: true` on the Bash call and read `$STATE_DIR/server-info` next turn for the URL and port.
+- **Codex** — run it as-is. Codex reaps background processes, so the script auto-detects `CODEX_CI` and switches to foreground mode itself.
+- **Copilot CLI** — add `--foreground` and start it via the bash tool with `mode: "async"`. Capture the returned shellId for `read_bash` / `stop_bash`.
+- **Other environments** — if your environment reaps detached processes, use `--foreground` and launch it with your platform's background execution mechanism.
 
 If the URL is unreachable from your browser (common in remote/containerized setups), bind a non-loopback host:
 
@@ -99,10 +67,9 @@ Use `--url-host` to control what hostname is printed in the returned URL JSON.
 
 1. **Check server is alive**, then **write HTML** to a new file in `screen_dir`:
    - **Required: confirm the server is alive before referring to the URL or pushing a screen.** Check that `$STATE_DIR/server-info` exists and `$STATE_DIR/server-stopped` does not. If it has shut down, restart it with `start-server.sh` using the **same `--project-dir`** — it reuses the same port, so the user's open tab reconnects on its own (it shows a "paused" overlay while the server is down) and you don't need to send a new URL. The server auto-exits after 4 hours idle (configurable with `--idle-timeout-minutes`).
-   - Use semantic filenames: `platform.html`, `visual-style.html`, `layout.html`
-   - **Never reuse filenames** — each screen gets a fresh file
+   - Use semantic filenames: `platform.html`, `visual-style.html`, `layout.html`; for iterations, append a version suffix — `layout-v2.html`, `layout-v3.html`
+   - **Never reuse filenames** — each screen gets a fresh file; the server serves the newest by modification time
    - Use your file-creation tool — **never use cat/heredoc** (dumps noise into terminal)
-   - Server automatically serves the newest file
 
 2. **Tell user what to expect and end your turn:**
    - Remind them of the URL (every step, not just first)
@@ -269,13 +236,6 @@ If `$STATE_DIR/events` doesn't exist, the user didn't interact with the browser 
 - **2-4 options max** per screen
 - **Use real content when it matters** — for a photography portfolio, use actual images (Unsplash). Placeholder content obscures design issues.
 - **Keep mockups simple** — focus on layout and structure, not pixel-perfect design
-
-## File Naming
-
-- Use semantic names: `platform.html`, `visual-style.html`, `layout.html`
-- Never reuse filenames — each screen must be a new file
-- For iterations: append version suffix like `layout-v2.html`, `layout-v3.html`
-- Server serves newest file by modification time
 
 ## Cleaning Up
 

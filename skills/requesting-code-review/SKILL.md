@@ -33,7 +33,18 @@ Never use `HEAD~1` as the base — it silently drops all but the last commit
 of a multi-commit change, and the reviewer approves a diff that isn't the
 work.
 
-**2. Dispatch code reviewer subagent:**
+**2. Build the review package:**
+```bash
+skills/subagent-driven-development/scripts/review-package $BASE_SHA $HEAD_SHA
+```
+
+It writes the commit list, stat summary, and the diff with extended context
+to one file and prints the path. Pass that path as `{DIFF_FILE}` — the
+reviewer reads one file instead of re-deriving the diff, and the diff never
+enters your own context. Skip this step only if the script isn't reachable;
+then pass `None` and the reviewer falls back to git commands.
+
+**3. Dispatch code reviewer subagent:**
 
 Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
 
@@ -47,8 +58,9 @@ requirements and concrete risks; use `None` when there is no useful nuance.
 - `{REVIEW_NUANCE}` - Concise review-specific context or concrete risks
 - `{BASE_SHA}` - Starting commit
 - `{HEAD_SHA}` - Ending commit
+- `{DIFF_FILE}` - Review package path from step 2 (`None` if unavailable)
 
-**3. Act on feedback:**
+**4. Act on feedback:**
 - Fix Critical issues immediately
 - Fix Important issues before proceeding
 - Note Minor issues for later
@@ -64,11 +76,15 @@ You: Let me request code review before proceeding.
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
+skills/subagent-driven-development/scripts/review-package $BASE_SHA $HEAD_SHA
+  wrote /repo/.superpowers/sdd/review-a7981ec..3df7661.diff: 3 commit(s), 21184 bytes
+
 [Dispatch code reviewer subagent]
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
   BASE_SHA: a7981ec
   HEAD_SHA: 3df7661
+  DIFF_FILE: /repo/.superpowers/sdd/review-a7981ec..3df7661.diff
 
 [Subagent returns]:
   Strengths: Clean architecture, real tests
@@ -87,10 +103,6 @@ You: [Fix progress indicators]
 - Review after EACH task
 - Catch issues before they compound
 - Fix before moving to next task
-
-**Executing Plans:**
-- Review after each task or at natural checkpoints
-- Get feedback, apply, continue
 
 **Ad-Hoc Development:**
 - Review before merge

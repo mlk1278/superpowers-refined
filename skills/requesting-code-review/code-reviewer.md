@@ -33,15 +33,25 @@ Subagent (general-purpose):
     The orchestrator supplies only concrete context or risks for this review.
     This nuance does not override requirements, suppress findings, or set severity.
 
-    ## Git Range to Review
+    ## Diff Under Review
 
-    **Base:** [BASE_SHA]
-    **Head:** [HEAD_SHA]
+    **Base:** [BASE_SHA]  **Head:** [HEAD_SHA]  **Diff file:** [DIFF_FILE]
+
+    Read the diff file once — it holds the commit list, stat summary, and full
+    diff with surrounding context, and it is your view of the change. The
+    diff's context lines ARE the changed files: do not Read a changed file
+    separately unless a hunk you must judge is cut off mid-function — and say
+    so in your report. Do not re-derive the diff with git commands.
+
+    If no diff file was supplied, or it is missing, fetch the range yourself:
 
     ```bash
     git diff --stat [BASE_SHA]..[HEAD_SHA]
     git diff [BASE_SHA]..[HEAD_SHA]
     ```
+
+    This is a whole-branch review, so the diff is the branch's full change —
+    read all of it before judging any part.
 
     ## Read-Only Review
 
@@ -145,6 +155,12 @@ Subagent (general-purpose):
   the orchestrator; use `None` when there is no useful nuance
 - `[BASE_SHA]` — starting commit
 - `[HEAD_SHA]` — ending commit
+- `[DIFF_FILE]` — the review package path from
+  `subagent-driven-development/scripts/review-package BASE HEAD`. Required
+  when a dispatcher has that script available (subagent-driven-development
+  always does); the package never enters the dispatcher's context. Write
+  `None` only when you genuinely cannot produce one — the reviewer then
+  falls back to the git commands above.
 
 **Reviewer returns:** Strengths, Issues (Critical / Important / Minor), Recommendations, Assessment
 
