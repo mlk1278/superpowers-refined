@@ -1,6 +1,6 @@
 # Toolbelt
 
-A personal agent-skills framework. Started as a fork of [Superpowers](https://github.com/obra/superpowers) and has diverged enough to stand on its own. There is no upstream remote and no plan to merge back.
+A personal agent-skills framework. It began as a fork of [Superpowers](https://github.com/obra/superpowers) — see the Credit section in the README — and has diverged enough to stand on its own. There is no upstream to merge back to.
 
 Installed globally for Claude Code and Codex, and used across every project. That constraint shapes most of what follows.
 
@@ -10,7 +10,7 @@ Installed globally for Claude Code and Codex, and used across every project. Tha
 
 `hooks/session-start` injects `using-toolbelt` at session start and after compaction. That bootstrap is what makes skills auto-trigger; without it the skills sit on disk and never load.
 
-Two harnesses: Claude Code and Codex. The rest were removed. `docs/porting-to-a-new-harness.md` still describes the hook contract if one gets added back — parts of it reference harnesses that no longer ship here.
+Two harnesses: Claude Code and Codex. The rest were removed. `docs/porting-to-a-new-harness.md` describes the hook contract a third harness would have to satisfy.
 
 ## Working on skills
 
@@ -45,4 +45,4 @@ Clean session, send exactly:
 
 `tests/` holds plugin-infrastructure tests — packaging, hooks, the brainstorm server, and assertions about skill content. They are **not** a gate on skill wording; if a test asserts a phrase that should change, change the phrase and fix the test.
 
-`tests/toolbelt/` and `tests/hooks/` pass. `tests/codex-plugin-sync` fails 23 assertions and has since before the fork work started — unrelated to skill content, and untouched.
+`tests/toolbelt/` and `tests/hooks/` pass and are the ones worth keeping green. `tests/claude-code/` and `tests/explicit-skill-requests/` shell out to the `claude` CLI — they cost real money and time, so run them deliberately, not as a reflex.

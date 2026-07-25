@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Regression check: Superpowers should not route new worktrees through the old
-# global worktree directory.
+# Regression check: Toolbelt should not route new worktrees through the old
+# global worktree directory. The `~/.config/superpowers/worktrees` literal below
+# is deliberately legacy - it is the pre-rename path this project must never
+# reintroduce.
 
 set -euo pipefail
 
@@ -9,8 +11,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 USING_SKILL="$REPO_ROOT/skills/using-git-worktrees/SKILL.md"
 FINISHING_SKILL="$REPO_ROOT/skills/finishing-a-development-branch/SKILL.md"
-ROTOTILL_SPEC="$REPO_ROOT/docs/superpowers/specs/2026-04-06-worktree-rototill-design.md"
-ROTOTILL_PLAN="$REPO_ROOT/docs/superpowers/plans/2026-04-06-worktree-rototill.md"
 
 failures=0
 
@@ -55,9 +55,9 @@ assert_contains "$USING_SKILL" 'default to `.worktrees/` at the project root' "u
 assert_not_contains "$FINISHING_SKILL" "~/.config/superpowers/worktrees" "finishing-a-development-branch does not treat old global path as owned"
 assert_contains "$FINISHING_SKILL" '`.worktrees/` or `worktrees/`' "finishing-a-development-branch keeps project-local cleanup ownership"
 
-assert_not_contains "$ROTOTILL_SPEC" "~/.config/superpowers/worktrees" "rototill spec does not preserve old global path policy"
-assert_not_contains "$ROTOTILL_PLAN" "~/.config/superpowers/worktrees" "rototill plan does not preserve old global path policy"
-assert_not_contains "$ROTOTILL_PLAN" "legacy path compat" "rototill plan does not advertise legacy path compatibility"
+# The worktree-rototill spec and plan that used to be asserted here were removed
+# from docs/ along with the rest of the pre-Toolbelt design notes, so there is
+# nothing left to check.
 
 echo ""
 

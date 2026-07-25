@@ -141,8 +141,8 @@ EOF
 echo "Codex package archive tests"
 
 metadata_source="$TEST_ROOT/metadata-source"
-archive="$TEST_ROOT/superpowers"
-tar_archive="$TEST_ROOT/superpowers.tar.gz"
+archive="$TEST_ROOT/toolbelt"
+tar_archive="$TEST_ROOT/toolbelt.tar.gz"
 extracted="$TEST_ROOT/extracted"
 tar_extracted="$TEST_ROOT/tar-extracted"
 write_metadata_fixture "$metadata_source"
@@ -204,7 +204,7 @@ assert_contains "$output" "SHA-256:" "reports archive checksum"
 extract_archive "$archive" "$extracted"
 
 archive_paths="$(list_archive "$archive" | normalize_archive_paths)"
-unexpected_pattern='(^superpowers/|^\.agents/|^hooks/|package\.json$|^\.git|^\.pytest_cache|^\.ruff_cache|^scripts/|^tests/|^docs/|^evals/|^lib/|^\.claude|^\.cursor|^\.kimi|^\.opencode|^\.pi|^AGENTS\.md$|^CLAUDE\.md$|^GEMINI\.md$|^RELEASE-NOTES\.md$|^CHANGELOG\.md$)'
+unexpected_pattern='(^toolbelt/|^\.agents/|^hooks/|package\.json$|^\.git|^\.pytest_cache|^\.ruff_cache|^scripts/|^tests/|^docs/|^evals/|^lib/|^\.claude|^\.cursor|^\.kimi|^\.opencode|^\.pi|^AGENTS\.md$|^CLAUDE\.md$|^GEMINI\.md$|^RELEASE-NOTES\.md$|^CHANGELOG\.md$)'
 assert_not_matches "$archive_paths" "$unexpected_pattern" "archive excludes source-only paths"
 assert_contains "$archive_paths" ".codex-plugin/plugin.json" "archive includes Codex manifest"
 assert_contains "$archive_paths" "skills/brainstorming/SKILL.md" "archive includes skills"
@@ -219,15 +219,15 @@ for ws_skill in quick-task pr-monitor ux-gate delivery; do
 done
 assert_not_matches "$archive_paths" '^skills/workstack-(start|resume|spec-review|slice-gate)(/|$)' "archive excludes superseded skills"
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
-assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
+assert_contains "$archive_paths" "assets/toolbelt-small.svg" "archive includes composer icon"
 
-packaged_workstack_metadata="$(read_archive_file "$archive" skills/agent-routing/agents/openai.yaml)"
-committed_workstack_metadata="$(git -C "$REPO_ROOT" show HEAD:skills/agent-routing/agents/openai.yaml)"
-assert_equals "$packaged_workstack_metadata" "$committed_workstack_metadata" "committed routing metadata is retained without an external fixture entry"
+packaged_routing_metadata="$(read_archive_file "$archive" skills/agent-routing/agents/openai.yaml)"
+committed_routing_metadata="$(git -C "$REPO_ROOT" show HEAD:skills/agent-routing/agents/openai.yaml)"
+assert_equals "$packaged_routing_metadata" "$committed_routing_metadata" "committed routing metadata is retained without an external fixture entry"
 
 manifest_summary="$(read_archive_file "$archive" .codex-plugin/plugin.json | python3 -c 'import json,sys; data=json.load(sys.stdin); print("\t".join([data["name"], data["version"], data["skills"], str(data.get("hooks"))]))')"
 expected_version="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json"))["version"])')"
-assert_equals "$manifest_summary" "superpowers	$expected_version	./skills/	$source_hooks" "archive manifest preserves source hooks"
+assert_equals "$manifest_summary" "toolbelt	$expected_version	./skills/	$source_hooks" "archive manifest preserves source hooks"
 
 skill_count="$(find "$extracted/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 metadata_count="$(find "$extracted/skills" -path '*/agents/openai.yaml' -type f | wc -l | tr -d ' ')"
@@ -282,8 +282,8 @@ assert_equals "$tar_metadata_times" "0" "tar.gz archive normalizes entry timesta
 
 metadata_archive="$TEST_ROOT/metadata-source.tar.gz"
 metadata_zip="$TEST_ROOT/metadata-source.zip"
-archive_from_tar_source="$TEST_ROOT/superpowers-from-tar-source.zip"
-archive_from_zip_source="$TEST_ROOT/superpowers-from-zip-source.zip"
+archive_from_tar_source="$TEST_ROOT/toolbelt-from-tar-source.zip"
+archive_from_zip_source="$TEST_ROOT/toolbelt-from-zip-source.zip"
 (
   cd "$metadata_source"
   tar -czf "$metadata_archive" .

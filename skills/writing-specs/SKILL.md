@@ -18,7 +18,7 @@ You normally arrive here from brainstorming, with a design the user has already 
 You MUST create a task for each of these items and complete them in order:
 
 1. **Gather context** — explore the codebase and the requirements you were given
-2. **Write the spec** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+2. **Write the spec** — save to `docs/toolbelt/specs/YYYY-MM-DD-<topic>-design.md` and commit
 3. **Self-review the spec** — placeholders, contradictions, ambiguity, scope
 4. **User reviews the written spec**
 5. **Alternate-family model review** — GPT reviews Claude, Claude reviews GPT
@@ -42,7 +42,7 @@ Cover architecture, components, data flow, error handling, and testing, scaling 
 - **In existing codebases, follow existing patterns.** Include targeted improvements where existing problems affect this work. No unrelated refactoring.
 - **No placeholders.** "TBD", "add error handling", "similar to the above" — a spec that defers a decision just relocates it into the plan.
 
-Use the elements-of-style:writing-clearly-and-concisely skill if available. Save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default) and commit it to git.
+Use the elements-of-style:writing-clearly-and-concisely skill if available. Save to `docs/toolbelt/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default) and commit it to git.
 
 ## Review Gates
 

@@ -1,6 +1,13 @@
 # WorkStack Simplification Design
 
-**Status:** Approved in conversation on 2026-07-20
+**Status:** Approved in conversation on 2026-07-20. **Historical — superseded.**
+
+Kept verbatim as the record of the design this framework came out of. It predates
+the rename to Toolbelt and uses the vocabulary of that time: "upstream Superpowers"
+for the inherited skills, "WorkStack" for the delivery layer on top, and
+`workstack-`-prefixed skill names that no longer exist. The prefix is gone and the
+two layers are one framework. `docs/WORKFLOW.md` describes the current design; read
+that instead unless you want the reasoning behind it.
 
 ## Goal
 

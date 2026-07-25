@@ -1,0 +1,55 @@
+# Adopting Toolbelt in a Project
+
+The plugin is global. There is nothing to install per project, and a project with no
+configuration at all works — it gets the bundled defaults. Everything below is optional
+and read only when present.
+
+## Optional per-project files
+
+| File | Purpose |
+|---|---|
+| `.toolbelt/agents.json` | Agent routes — harness, model, effort, and instructions per role. Schema in `skills/agent-routing/SKILL.md`; bundled defaults in `skills/agent-routing/defaults.json`. |
+| `.toolbelt/pr-policy.md` | Which review providers to await, complexity lanes, timeouts. |
+| `docs/REVIEW-GUIDANCE.md` | Review conventions for this codebase, handed to reviewer subagents. |
+| `AGENTS.md` | Entry-point summary. Copy from [AGENTS-SNIPPET.md](AGENTS-SNIPPET.md). |
+
+`.toolbelt/` is also where scratch lands — `sdd/`, `quick/`, `brainstorm/`. Add it to
+`.gitignore`; the contents are regenerated.
+
+## Checking what a project actually resolves
+
+```bash
+<plugin-root>/skills/agent-routing/scripts/resolve-agent --project-root . --brief --harness claude
+```
+
+If this fails, the correct behavior is to stop and escalate — never to fall back to an
+agent of your own choosing. Confirm that's what happens before trusting a config.
+
+## Verifying the install in a project
+
+Start a clean session and send exactly:
+
+> Let's make a react todo list
+
+`brainstorming` must auto-trigger before any code is written. If it doesn't, the
+session-start bootstrap isn't loading and nothing else is worth debugging yet. The hook
+registers on session load, so a mid-session install won't take effect until you restart.
+
+## Migrating a project that used the pre-rename names
+
+Skills were once prefixed. If a project's `AGENTS.md`, `CLAUDE.md`, or docs still
+reference the old names, replace them (old on the left):
+
+| Old | New |
+|---|---|
+| `superpowers:` | `toolbelt:` |
+| `superpowers:using-superpowers` | `toolbelt:using-toolbelt` |
+| `workstack-delivery` | `delivery` |
+| `workstack-quick-task` | `quick-task` |
+| `workstack-agent-routing` | `agent-routing` |
+| `workstack-pr-monitor` | `pr-monitor` |
+| `workstack-ux-gate` | `ux-gate` |
+
+Config and scratch moved under one dot-dir: `.workstack/` and `.superpowers/` are now
+`.toolbelt/`. In `agents.json`, the `operator` role is now `errand`, and reviewer
+specialties `code`, `spec`, and `ux` exist.

@@ -15,7 +15,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `toolbelt:using-git-worktrees` skill at execution time.
 
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+**Save plans to:** `docs/toolbelt/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -157,7 +157,7 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 After saving the plan, tell your human partner it's ready and hand off:
 
-> "Plan complete and saved to `docs/superpowers/plans/<filename>.md`. I'll execute it with subagent-driven development — a fresh subagent per task, reviewed between tasks."
+> "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`. I'll execute it with subagent-driven development — a fresh subagent per task, reviewed between tasks."
 
 **REQUIRED SUB-SKILL:** Use toolbelt:subagent-driven-development. Fresh
 subagent per task, task review (spec + quality) after each, broad

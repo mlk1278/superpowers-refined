@@ -51,7 +51,7 @@ Explore rather than asking what you could find out yourself — check the curren
 
 ## After the Design
 
-Once the user has approved every section, **invoke the writing-specs skill.** It writes the design to `docs/superpowers/specs/`, gates it with the user and an alternate-family reviewer, and hands off to planning. Do NOT invoke any other skill. writing-specs is the next step.
+Once the user has approved every section, **invoke the writing-specs skill.** It writes the design to `docs/toolbelt/specs/`, gates it with the user and an alternate-family reviewer, and hands off to planning. Do NOT invoke any other skill. writing-specs is the next step.
 
 ## Visual Companion
 

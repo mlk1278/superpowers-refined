@@ -2,7 +2,7 @@
 
 A software development methodology for coding agents, built from composable skills plus a bootstrap that makes sure the agent actually uses them.
 
-Forked from [Superpowers](https://github.com/obra/superpowers) and since diverged: shorter skills written for current models, two harnesses instead of ten, and a delivery pipeline that carries work from an idea through a merged PR.
+Short skills written for current models, two harnesses, and a delivery pipeline that carries work from an idea through a merged PR. It installs globally and assumes nothing about the project it lands in.
 
 ## How it works
 
@@ -21,7 +21,7 @@ Install once per harness; the plugin is global and every project picks it up.
 ### Claude Code
 
 ```bash
-/plugin marketplace add mlk1278/superpowers-workstack
+/plugin marketplace add mlk1278/toolbelt
 /plugin install toolbelt@toolbelt-dev
 ```
 
@@ -51,7 +51,7 @@ Nothing is required. Each is optional and read only when present:
 | `docs/REVIEW-GUIDANCE.md` | Project review conventions, given to reviewer subagents |
 | `AGENTS.md` | Entry-point summary — copy from [docs/AGENTS-SNIPPET.md](docs/AGENTS-SNIPPET.md) |
 
-Scratch lands in `.toolbelt/`; add it to `.gitignore`.
+Scratch lands in `.toolbelt/`; add it to `.gitignore`. See [docs/ADOPTING-IN-A-PROJECT.md](docs/ADOPTING-IN-A-PROJECT.md) for the adoption checklist and how to verify a project resolves its routes.
 
 ## The Basic Workflow
 
@@ -117,11 +117,11 @@ Scratch lands in `.toolbelt/`; add it to `.gitignore`.
 
 See [CLAUDE.md](CLAUDE.md) for how skills are structured and what not to break, and `skills/writing-skills/SKILL.md` for the full guide to writing them.
 
-Plugin-infrastructure tests live in `tests/` and run via the relevant `run-*.sh`. Skill-behavior evals use the drill harness from [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — not included here.
+Plugin-infrastructure tests live in `tests/` and run via the relevant `run-*.sh`. Skill-behavior evals use an external drill harness cloned into `evals/`, which is gitignored and not included here.
 
 ## Credit
 
-Forked from [Superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://blog.fsck.com) and [Prime Radiant](https://primeradiant.com), which is where the methodology and most of the original skill content came from. Read [the release announcement](https://blog.fsck.com/2025/10/09/superpowers/) for the thinking behind it.
+Toolbelt began as a fork of [Superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://blog.fsck.com) and [Prime Radiant](https://primeradiant.com). The methodology and much of the original skill content came from there. It has since diverged and is maintained independently.
 
 ## License
 

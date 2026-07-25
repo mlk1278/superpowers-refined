@@ -161,6 +161,9 @@ assert_command_output \
     "$codex_home" \
     bash "$HOOK_UNDER_TEST"
 
+# The "superpowers" literals below are deliberately legacy: they are the
+# pre-rename custom-skill directory and the warning text the hook used to emit
+# for it. This asserts that warning never comes back.
 legacy_home="$(make_home legacy-warning-removed)"
 mkdir -p "$legacy_home/.config/superpowers/skills"
 assert_command_output \
