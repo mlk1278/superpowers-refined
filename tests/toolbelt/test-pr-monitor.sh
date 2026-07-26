@@ -52,6 +52,10 @@ assert_contains "$skill" "you do not overrule a reviewer" \
   "monitor does not adjudicate reviewer findings"
 assert_contains "$skill" "or to a high-effort reviewer for a second opinion" \
   "suspected-invalid findings escalate"
+assert_contains "$skill" "provider stale:" \
+  "provider staleness is a named condition, not a quiet fallback"
+assert_contains "$skill" "in the PR body before merging" \
+  "staleness surfaces before the merge, not only in the return"
 
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
 grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }

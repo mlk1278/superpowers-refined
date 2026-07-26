@@ -13,6 +13,8 @@ Execute a plan by dispatching a fresh implementer subagent per task, a task revi
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
+When you were dispatched as an orchestrator, the same rule governs your own return: return to ask for a decision you cannot make, to deliver a completed handoff, or to report a durable block. A status-only return is none of those three and costs a full round trip. If your harness cannot wait on a background child, say so explicitly rather than substituting status returns.
+
 ## The Process
 
 1. Read the plan once. Note context and global constraints; create todos and a progress ledger.
@@ -91,7 +93,7 @@ Verification is proportional to the change. Before any suite-level run, ask: wha
 
 Do not repeat recorded verification. Reviewers and orchestrators read the implementer's test evidence on unchanged source instead of re-running it; a fresh worktree needs only the smallest checks proving a clean start, never a workspace baseline over an unchanged tree. Implementers and fixers always produce their own fresh evidence for the change they ship.
 
-Keep suite output out of context: run through the project's quiet-run wrapper when it provides one and read back exit status, pass count, and failure tail only.
+Keep suite output out of context: run through the project's quiet-run wrapper when it provides one and read back exit status, pass count, and failure tail only. A buffered wrapper releases nothing until the command exits, so it never carries a check that gates that command — a gate is a separate command, run to completion first.
 
 A plan or brief mandating broader verification than this policy is a conflict to surface to your human partner — do not silently obey or silently override it.
 
@@ -124,7 +126,7 @@ Everything you paste into a dispatch prompt — and everything a subagent prints
 
 Conversation memory does not survive compaction. In real sessions, controllers that lost their place have re-dispatched entire completed task sequences — the single most expensive failure observed. Track progress in a ledger file, not only in todos.
 
-**Each plan owns a workspace.** At skill start run `scripts/sdd-workspace PLAN_FILE`; it prints this plan's git-ignored directory (`<repo-root>/.toolbelt/sdd/<plan-basename>/`), home to every artifact for THIS plan — ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. Two plans both have a "Task 2"; unscoped, they overwrite each other's briefs and each other's progress.
+**Each plan owns a workspace.** At skill start run `scripts/sdd-workspace PLAN_FILE`; it prints this plan's git-ignored directory (`<repo-root>/.toolbelt/sdd/<plan-basename>-<digest>/`), home to every artifact for THIS plan — ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. Two plans both have a "Task 2"; unscoped, they overwrite each other's briefs and each other's progress.
 
 Check for this plan's ledger at `<workspace>/progress.md`. Tasks marked complete there are DONE — do not re-dispatch them; resume at the first task not marked complete. A ledger whose header names a different plan file — or a stray ledger at the old flat path `.toolbelt/sdd/progress.md` — is another plan's progress: leave it in place and start your own, fresh.
 

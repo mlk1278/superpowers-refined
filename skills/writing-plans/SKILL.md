@@ -37,7 +37,8 @@ End every explorer brief with the same question: **"What would a competent imple
 Gotchas are the point of this pass. They prevent an implementer meeting a trap mid-task and inventing a way around it. Point explorers at these classes:
 
 - **Assertions that can never pass.** An absence check must exclude its own evidence — applied migrations, lockfiles and vendored trees in scope, or a sweep that includes the doc naming the string being retired.
-- **Checks that can't fail.** A guard or negative assertion that passes because setup never reached the branch it claims to cover.
+- **Checks that can't fail.** A guard or negative assertion that passes because setup never reached the branch it claims to cover. Timing counts too: a precondition read from output the gated command itself produces is a post-mortem, since the command has already run by the time the line is readable. A gate is a separate command that exits first.
+- **Coverage that leaves with the code.** Tests for behaviour a deletion keeps share files, blocks, and fixtures with tests for behaviour it removes. Name which kept surfaces lose assertions, relocate that coverage and prove it green, then delete — in that order, since relocating afterwards leaves a window with no coverage and the suite is green either way.
 - **Tooling traps.** Inverted exit codes (`git grep` 0 = matched = FAIL), tools absent on the CI runner.
 - **Order and prerequisites.** Codegen, migrations, or fixtures that must run before the task's tests mean anything.
 - **Shared contracts.** Who else consumes this signature, table, or event.

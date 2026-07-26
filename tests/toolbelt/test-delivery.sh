@@ -102,5 +102,7 @@ assert_contains "$skill" "check that state directly" \
   "external state is checked before re-dispatch"
 assert_contains "$skill" "never commit ancestry" \
   "squash merges are not confirmed from ancestry"
+assert_contains "$skill" "A completion notification is not that return" \
+  "terminality is verified, not inferred from a completion notification"
 
 echo "PASS"

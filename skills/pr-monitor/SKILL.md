@@ -29,6 +29,8 @@ Capture the PR number, branch, current full head SHA, merge state, and the appro
 
 A provider that reaches the policy timeout on one head (default 60 minutes), or explicitly fails, skips, or rate-limits, drops out of the awaited set for that head. Record the fallback reason. Every remaining condition still applies — the other awaited providers, exact-head green CI, and the recorded local gate approval. Do not switch to a provider the policy does not name.
 
+Keep a consecutive-miss count per provider: increment it when a requested head ends with that provider in fallback, reset it when that provider completes a requested head. Two consecutive misses make the provider stale. Staleness is a named condition rather than a quiet fallback — record `provider stale: <name>, <n> heads` in the PR body before merging and in your return, and let the policy file decide whether it blocks. A provider that never recovers withdraws its independent judgement from every head after the first while all the merge conditions still read clean.
+
 ## Merge and return
 
 Immediately before merging, re-verify on the expected head (or a head that differs from it only by recorded docs-only carry-forward commits): policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit — to the caller. The caller owns post-merge reconciliation.

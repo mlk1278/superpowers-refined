@@ -105,7 +105,10 @@ Subagent (role: reviewer):
       asserting an absence, a guard, or a negative, the report must carry
       evidence it can fail — its TDD RED, or a recorded mutate-and-revert.
       A test you can read as unable to fail is Important whatever the
-      report claims.
+      report claims. When the diff deletes tests, name any surface the
+      change keeps that loses assertions, and where that coverage moved.
+      Coverage for a kept surface that disappears with deleted behaviour is
+      a finding, and a passing suite never shows it.
     - **Structure:** does each file have one clear responsibility and a
       well-defined interface? are units testable independently? does the
       implementation follow the plan's file structure? did this change create

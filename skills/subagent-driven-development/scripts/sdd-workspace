@@ -4,7 +4,7 @@
 # progress ledger. Print the directory's absolute path.
 #
 # With PLAN_FILE, the workspace is scoped to that plan
-# (.toolbelt/sdd/<plan-basename>/) so a follow-up plan in the same working
+# (.toolbelt/sdd/<plan-basename>-<digest>/) so a follow-up plan in the same working
 # tree can never read or overwrite another plan's artifacts. Two plans both
 # have a "Task 2"; unscoped, the second overwrites the first's brief, and a
 # stale ledger misread as current progress makes controllers skip whole task

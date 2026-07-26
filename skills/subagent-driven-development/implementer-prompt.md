@@ -60,6 +60,11 @@ Subagent (role: implementer):
     status, pass count, and any failure tail. A passing run is a pass count,
     not a transcript.
 
+    Never gate a command on output from the same invocation. A check that
+    decides whether something runs is its own command, run to completion
+    first — a target name read from buffered output confirms it only after
+    every write has landed.
+
     ## Code Organization
 
     You reason best about code you can hold in context at once, and your

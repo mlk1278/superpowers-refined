@@ -55,6 +55,12 @@ assert_contains '**Gotchas:**' "task structure carries task-local gotchas"
 assert_contains 'A named gotcha carrying neither a decision nor an instruction to escalate' \
   "a bare gotcha is a placeholder failure"
 
+# Gotcha classes added after the Phase 7 run.
+assert_contains 'Coverage that leaves with the code' \
+  "deletion slices must inventory coverage they strip from kept surfaces"
+assert_contains 'a precondition read from output the gated command itself produces' \
+  "a gate cannot observe the command it gates"
+
 # The plan review gate, and its new powers.
 assert_contains 'It may fan out its own explorers' "plan reviewer may explore too"
 assert_contains '**Unflagged gotchas**' "plan reviewer judges unflagged gotchas"

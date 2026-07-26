@@ -2,6 +2,17 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.2.0 (2026-07-26)
+
+Six guardrails closing gaps the same parallel-lane run exposed after v7.1.0 shipped.
+
+- **A gate is a separate command.** Toolbelt mandates a project's quiet-run wrapper for suite output but never said what it costs: a buffered wrapper releases nothing until the command exits, so any check reading that command's own output confirms the precondition only after every write has landed. `subagent-driven-development` and the implementer prompt now state that a check deciding whether something runs is its own command, run to completion first, and `writing-plans` carries the timing variant of "checks that can't fail."
+- **Deletions account for the coverage they remove.** Tests for behaviour a deletion keeps share files, blocks, and fixtures with tests for behaviour it removes, so a change correct about code is silently wrong about coverage — the compiler is quiet, the suite is green, and the assertions are gone. A new gotcha class requires the coverage-delta inventory and relocation proved green before the delete lands; the task reviewer checks for it.
+- **Orchestrator returns carry a question.** The rule against progress check-ins covered only a human partner. It now covers a dispatched orchestrator returning to its dispatcher: return a decision you cannot make, a completed handoff, or a durable block.
+- **Completion notifications are not terminality.** Background agents notify whenever they momentarily hold no live children, and one task may notify several times. `delivery` reads terminality from the monitor's returned merge state and the PR itself.
+- **Provider staleness is a named condition.** `pr-monitor` keeps a consecutive-miss count per provider and records a provider silent across two requested heads in the PR body *before* merging, leaving the policy file to decide whether it blocks. A provider that never recovers withdraws its independent judgement from every head after the first while all the merge conditions still read clean.
+- **The documented SDD workspace path matches the one the script creates** (`<plan-basename>-<digest>`).
+
 ## v7.1.0 (2026-07-26)
 
 A comparison against upstream Superpowers v6.2.0, plus findings from an overnight run of eight PRs across five parallel worktree lanes. The theme is catching problems before implementation rather than improvising around them mid-task.
