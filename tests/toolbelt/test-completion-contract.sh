@@ -23,9 +23,17 @@ assert_contains "$skill" "This changes only who chooses the option; every verifi
 assert_contains "$skill" "present exactly these 4 options" "default 4-option menu still present"
 assert_contains "$skill" "Type 'discard' to confirm." "destructive confirmation gate still present"
 assert_contains "$skill" "If tests fail:" "test verification step still present"
-assert_contains "$skill" "only with a clean worktree" "evidence reuse requires a clean worktree"
+assert_contains "$skill" "Without qualifying evidence, run the suite" "evidence reuse falls back to running the suite"
+assert_contains "$skill" "require a clean worktree" "docs-only cases require a clean worktree"
 assert_contains "$skill" "**Docs-only cases**" "docs-only Step 1 cases exist"
 assert_contains "$skill" "never a file the application builds, renders," "docs-only allowlist has a semantic guard"
-assert_contains "$skill" "**If Step 1 is satisfied**" "Step 1 satisfaction covers all three paths"
+assert_contains "$skill" "Satisfy Step 1's verification requirement before offering options" "Step 1 must be satisfied before the menu"
+
+assert_contains "$skill" '"PR is open" is not a terminal state' \
+  "an opened PR must end in a named owner"
+assert_contains "$skill" "or return it to a caller that already declared it owns the monitoring" \
+  "delivery's existing monitor is not double-started"
+assert_contains "$skill" "Never conclude from ancestry alone" \
+  "squash-merge teardown guard present"
 
 echo "PASS"

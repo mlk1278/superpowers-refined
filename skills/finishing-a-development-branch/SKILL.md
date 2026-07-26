@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work
 ---
 
 # Finishing a Development Branch
@@ -21,37 +21,20 @@ Guide completion of development work by presenting clear options and handling ch
 
 **Before presenting options, verify tests pass:**
 
-```bash
-# Run project's test suite
-npm test / cargo test / pytest / go test ./...
-```
-
 **Exact-head evidence reuse:** If the caller supplies evidence of a
 full-suite run at the exact current head SHA — the command that was run,
 its passing output (with the final pass/exit state visible), and the head
 SHA it ran against — read that output yourself and treat this step as
-satisfied; do not re-run the suite just to reproduce it. This is a
+satisfied. This is a
 deliberate, narrowly scoped exception to
-toolbelt:verification-before-completion's run-it-yourself rule: it
-applies only to this step, only to a full-suite run at the exact current
-head (or a head advanced from it solely by the recorded docs-only case
-below), only with a clean worktree, and only when you read the recorded
-output itself. A review
-approval, an agent's "tests pass" claim, or a report missing the command,
-the output, or the SHA never qualifies — nor does a failing run or a
-partial/filtered run. Without qualifying evidence, run the suite.
+toolbelt:verification-before-completion's run-it-yourself rule.
+Without qualifying evidence, run the suite.
 
 **Docs-only cases** (both require a clean worktree; the allowlist is:
 Markdown files under `docs/**` or at the repository root, and
 `.toolbelt/**` scratch — never a file the application builds, renders,
-or serves, or that CI executes, regardless of path):
-- If every commit in the branch's entire base..head range matches the
-  allowlist, verify and record that range instead — no application suite
-  is required.
-- A head that differs from a qualifying evidenced head only by allowlist
-  commits still qualifies for the reuse above; record it explicitly
-  ("suite at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). Any
-  other head difference disqualifies as before.
+or serves, or that CI executes, regardless of path). If the files changed
+in the branch match that allowlist, no need to run tests.
 
 **If tests fail:**
 ```
@@ -63,9 +46,6 @@ Cannot proceed with merge/PR until tests pass.
 ```
 
 Stop. Don't proceed to Step 2.
-
-**If Step 1 is satisfied** (fresh passing run, qualifying evidence read,
-or a recorded docs-only case): Continue to Step 2.
 
 ### Step 2: Detect Environment
 
@@ -151,11 +131,13 @@ git branch -d <feature-branch>
 #### Option 2: Push and Create PR
 
 ```bash
-# Push branch
 git push -u origin <feature-branch>
+gh pr create --base <base-branch> --title <title> --body <body>
 ```
 
-**Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
+End in a named owner: hand the PR to toolbelt:pr-monitor, or return it to a caller that already declared it owns the monitoring (delivery does — don't start a second monitor on top of it). "PR is open" is not a terminal state. The owner requests reviews; don't request them here, or providers get asked twice for the same head.
+
+**Do NOT clean up worktree** — it stays alive to iterate on PR feedback.
 
 #### Option 3: Keep As-Is
 
@@ -199,6 +181,10 @@ WORKTREE_PATH=$(git rev-parse --show-toplevel)
 ```
 
 **If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
+
+If `.toolbelt/worktree-policy.md` defines teardown — sidecar containers, allocated ports, per-worktree data — release those before removing the worktree.
+
+**Squash-merge guard:** after a squash merge, `git log <base>..HEAD` lists every branch commit as unmerged — none is an ancestor of the squash commit. Never conclude from ancestry alone that work did or didn't land. Compare the branch's own files against the base for content equality, and use `git rev-list --left-right --count <base>...HEAD`, before removing anything.
 
 **If worktree path is under `.worktrees/` or `worktrees/`:** Toolbelt created this worktree — we own cleanup.
 
@@ -260,6 +246,8 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - Remove a worktree before confirming merge success
 - Clean up worktrees you didn't create (provenance check)
 - Run `git worktree remove` from inside the worktree
+- Leave a PR open with no requested reviewer and no named owner — that is an incomplete handoff, not a finished branch
+- Judge from commit ancestry alone whether a squash-merged branch landed
 
 **Always:**
 - Satisfy Step 1's verification requirement before offering options

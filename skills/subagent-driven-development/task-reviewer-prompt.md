@@ -101,7 +101,11 @@ Subagent (role: reviewer):
     - **Code:** clean separation of concerns? proper error handling? DRY
       without premature abstraction? edge cases handled?
     - **Tests:** do the new and changed tests verify real behavior rather
-      than mocks? are the task's edge cases covered?
+      than mocks? are the task's edge cases covered? For every test
+      asserting an absence, a guard, or a negative, the report must carry
+      evidence it can fail — its TDD RED, or a recorded mutate-and-revert.
+      A test you can read as unable to fail is Important whatever the
+      report claims.
     - **Structure:** does each file have one clear responsibility and a
       well-defined interface? are units testable independently? does the
       implementation follow the plan's file structure? did this change create

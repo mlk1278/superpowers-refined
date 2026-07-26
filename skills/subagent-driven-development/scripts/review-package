@@ -4,14 +4,24 @@
 # call. Using the recorded per-task BASE (not HEAD~1) keeps multi-commit
 # tasks intact.
 #
-# Usage: review-package BASE HEAD [OUTFILE]
-# Default OUTFILE: <repo-root>/.toolbelt/sdd/review-<base7>..<head7>.diff
-# (named per range, so a re-review after fixes gets a distinct fresh file).
+# Usage: review-package [--plan PLAN_FILE] BASE HEAD [OUTFILE]
+# Default OUTFILE: <workspace>/review-<base7>..<head7>.diff, named per range so
+# a re-review after fixes gets a distinct fresh file. --plan scopes the
+# workspace to one plan; without it the shared base directory is used, which is
+# what callers with no plan (requesting-code-review, quick-task) want.
 set -euo pipefail
 
+usage() { echo "usage: review-package [--plan PLAN_FILE] BASE HEAD [OUTFILE]" >&2; exit 2; }
+
+plan=
+if [ "${1-}" = "--plan" ]; then
+  [ $# -ge 2 ] || usage
+  plan=$2
+  shift 2
+fi
+
 if [ $# -lt 2 ] || [ $# -gt 3 ]; then
-  echo "usage: review-package BASE HEAD [OUTFILE]" >&2
-  exit 2
+  usage
 fi
 
 base=$1
@@ -23,7 +33,12 @@ git rev-parse --verify --quiet "$head" >/dev/null || { echo "bad HEAD: $head" >&
 if [ $# -eq 3 ]; then
   out=$3
 else
-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
+  workspace="$(cd "$(dirname "$0")" && pwd)/sdd-workspace"
+  if [ -n "$plan" ]; then
+    dir=$("$workspace" "$plan")
+  else
+    dir=$("$workspace")
+  fi
   out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
 fi
 

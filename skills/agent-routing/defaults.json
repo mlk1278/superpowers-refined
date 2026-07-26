@@ -71,6 +71,19 @@
         }
       ]
     },
+    "plan": {
+      "harness": "claude",
+      "model": "opus-4-8",
+      "effort": "high",
+      "instructions": "Reviews implementation plans before execution: spec coverage, task decomposition, interface consistency across tasks, placeholders, global constraints. Must be a different model family than the one that wrote the plan.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.5",
+          "effort": "high"
+        }
+      ]
+    },
     "ux": {
       "harness": "claude",
       "model": "opus-4-8",

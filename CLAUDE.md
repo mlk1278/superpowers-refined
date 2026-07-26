@@ -28,6 +28,7 @@ This installs globally, so no file under `skills/` may hard-code anything about 
 
 - `.toolbelt/agents.json` — agent routes, models, effort, custom instructions
 - `.toolbelt/pr-policy.md` — review providers to await, complexity lanes, timeouts
+- `.toolbelt/worktree-policy.md` — port ranges, sidecar containers, per-worktree resources
 - `docs/REVIEW-GUIDANCE.md` — review conventions, read when present
 - `AGENTS.md` — entry-point summary, copied from `docs/AGENTS-SNIPPET.md`
 

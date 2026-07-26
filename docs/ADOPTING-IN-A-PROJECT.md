@@ -10,6 +10,7 @@ and read only when present.
 |---|---|
 | `.toolbelt/agents.json` | Agent routes — harness, model, effort, and instructions per role. Schema in `skills/agent-routing/SKILL.md`; bundled defaults in `skills/agent-routing/defaults.json`. |
 | `.toolbelt/pr-policy.md` | Which review providers to await, complexity lanes, timeouts. |
+| `.toolbelt/worktree-policy.md` | Port ranges and how to claim a non-conflicting set, sidecar containers and their naming, per-worktree data directories, teardown at finish. Read by `using-git-worktrees` before it creates anything. |
 | `docs/REVIEW-GUIDANCE.md` | Review conventions for this codebase, handed to reviewer subagents. |
 | `AGENTS.md` | Entry-point summary. Copy from [AGENTS-SNIPPET.md](AGENTS-SNIPPET.md). |
 

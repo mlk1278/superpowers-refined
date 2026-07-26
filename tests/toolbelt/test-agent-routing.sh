@@ -96,6 +96,11 @@ cat >"$tmp/project/.toolbelt/agents.json" <<'JSON'
       "fallbacks": [
         {"harness": "specialty-fallback", "model": "specialty-fallback-route", "effort": "high"}
       ]
+    },
+    "plan": {
+      "harness": "project-plan-harness",
+      "model": "project-plan-route",
+      "effort": "high"
     }
   }
 }
@@ -189,6 +194,18 @@ assert_route "reviewer specialty" \
   '{"role":"reviewer","harness":"specialty-harness","model":"specialty-route","effort":"high","fallbacks":[{"harness":"specialty-fallback","model":"specialty-fallback-route","effort":"high"}],"source":"project:reviewer-specialty","fallback_reason":null}' \
   --project-root "$tmp/project" --role reviewer --reviewer-specialty security --author-model author-model
 
+assert_route "project specialty beats bundled specialty" \
+  '{"role":"reviewer","harness":"project-plan-harness","model":"project-plan-route","effort":"high","fallbacks":[],"source":"project:reviewer-specialty","fallback_reason":null}' \
+  --project-root "$tmp/project" --role reviewer --reviewer-specialty plan --author-model author-model
+
+assert_route "bundled specialty resolves when project has none" \
+  '{"role":"reviewer","harness":"claude","model":"opus-4-8","effort":"high","instructions":"Reviews implementation plans before execution: spec coverage, task decomposition, interface consistency across tasks, placeholders, global constraints. Must be a different model family than the one that wrote the plan.","fallbacks":[{"harness":"codex","model":"gpt-5.5","effort":"high"}],"source":"bundled:reviewer-specialty","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty plan --author-model author-model
+
+assert_route "unknown specialty falls through to role" \
+  '{"role":"reviewer","harness":"claude","model":"opus-4-8","effort":"high","instructions":"Must be independent of the author'"'"'s model. Never dispatch a reviewer whose model matches the model that wrote the code.","fallbacks":[{"harness":"codex","model":"gpt-5.5","effort":"high"}],"source":"bundled:role","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty nonesuch --author-model author-model
+
 assert_route "explicit override" \
   '{"role":"implementer","harness":"run-harness","model":"run-model","effort":"medium","fallbacks":[{"harness":"run-fallback","model":"run-fallback-model","effort":"low"}],"source":"explicit","fallback_reason":null}' \
   --project-root "$tmp/project" --role implementer --override-harness run-harness \
@@ -261,7 +278,7 @@ for role, route in brief["roles"].items():
         if not route.get(field):
             fail(f"{role} is missing {field}")
 
-if set(brief["reviewer_specialties"]) != {"code", "spec", "ux"}:
+if set(brief["reviewer_specialties"]) != {"code", "spec", "plan", "ux"}:
     fail(f"specialties were {sorted(brief['reviewer_specialties'])}")
 
 if not brief.get("instructions"):

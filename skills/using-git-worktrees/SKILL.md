@@ -44,6 +44,12 @@ Has the user already indicated their worktree preference in your instructions? I
 
 Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 2.
 
+## Project Worktree Policy
+
+If `<repo-root>/.toolbelt/worktree-policy.md` exists, read it before creating anything and follow it for the rest of this skill. It carries what only this project knows about running several worktrees at once — port ranges and how to pick a non-conflicting set, sidecar containers and their naming, per-worktree data directories, environment files to derive rather than copy, and anything to tear down at finish.
+
+Two worktrees that each grab the default database, API, and web ports collide the moment both run, and the failure looks like a bug in the code rather than a clash in the environment. When the policy defines an allocation scheme, follow it exactly and report the set you claimed. When there is no policy file, proceed with the defaults below; do not invent a scheme of your own.
+
 ## Step 1: Create Isolated Workspace
 
 **You have two mechanisms. Try them in this order.**
@@ -101,7 +107,7 @@ cd "$path"
 
 ## Step 2: Project Setup
 
-Auto-detect and run appropriate setup:
+Apply the worktree policy's setup rules first when one exists — allocated ports, sidecar containers, per-worktree data directories — then auto-detect and run appropriate setup:
 
 ```bash
 # Node.js
@@ -140,6 +146,7 @@ npm test path/to/relevant / cargo test module / pytest tests/relevant
 ```
 Worktree ready at <full-path>
 Baseline: <focused tests passing (N tests, 0 failures) | cited base CI/evidence <ref> | docs-only, no suite required>
+Resources: <ports/containers claimed per worktree policy, or "project defaults, no policy file">
 Ready to implement <feature-name>
 ```
 
@@ -147,6 +154,7 @@ Ready to implement <feature-name>
 
 | Situation | Action |
 |-----------|--------|
+| `.toolbelt/worktree-policy.md` exists | Read it first, follow it throughout |
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
 | Native worktree tool available | Use it (Step 1a) |
@@ -160,47 +168,14 @@ Ready to implement <feature-name>
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
-## Common Mistakes
+## Common Rationalizations
 
-### Fighting the harness
-
-- **Problem:** Using `git worktree add` when the platform already provides isolation
-- **Fix:** Step 0 detects existing isolation. Step 1a defers to native tools.
-
-### Skipping detection
-
-- **Problem:** Creating a nested worktree inside an existing one
-- **Fix:** Always run Step 0 before creating anything
-
-### Skipping ignore verification
-
-- **Problem:** Worktree contents get tracked, pollute git status
-- **Fix:** Always use `git check-ignore` before creating project-local worktree
-
-### Assuming directory location
-
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: explicit instructions > existing project-local directory > default
-
-### Proceeding with failing tests
-
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
-
-## Red Flags
-
-**Never:**
-- Create a worktree when Step 0 detects existing isolation
-- Use `git worktree add` when you have a native worktree tool (e.g., `EnterWorktree`). This is the #1 mistake — if you have it, use it.
-- Skip Step 1a by jumping straight to Step 1b's git commands
-- Create worktree without verifying it's ignored (project-local)
-- Skip Step 3's baseline-evidence requirement (focused checks, cited base evidence, or the docs-only case)
-- Proceed with failing tests without asking
-
-**Always:**
-- Run Step 0 detection first
-- Prefer native tools over git fallback
-- Follow directory priority: explicit instructions > existing project-local directory > default
-- Verify directory is ignored for project-local
-- Auto-detect and run project setup
-- Satisfy Step 3's baseline-evidence requirement
+| Excuse | Reality |
+|--------|---------|
+| "I'm obviously not in a worktree — no need to check" | Run Step 0. Harness-created isolation and submodules both fool eyeballing; the detection commands settle it. |
+| "`git worktree add` is quicker than hunting for a native tool" | A native tool (e.g. `EnterWorktree`) owns placement, branching, and cleanup. Bypassing it is the #1 mistake — it creates phantom state your harness can't see or manage. |
+| "The worktree directory is surely ignored already" | Run `git check-ignore`. An unignored worktree directory commits the whole tree into the repo. |
+| "Any directory name works" | Explicit instructions beat an existing project-local directory, which beats the `.worktrees/` default. |
+| "Default ports are fine, nothing else is running" | Another worktree probably is. Read the worktree policy and claim a non-conflicting set; a port clash reads as a code bug for hours. |
+| "I'll pick my own port scheme, the policy is vague" | Report the gap instead. An invented scheme collides with the next worktree that invents one too. |
+| "The workspace is fresh — baseline checks can wait" | A dirty baseline makes every later failure ambiguous. Satisfy Step 3 now — focused checks, cited base evidence, or the docs-only case; proceeding past failures is your human partner's call. |

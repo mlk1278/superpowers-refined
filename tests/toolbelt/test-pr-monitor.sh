@@ -48,6 +48,11 @@ assert_contains "$skill" "The caller owns post-merge reconciliation." "reconcili
 assert_contains "$skill" "Do not nest another watcher." "no nested watchers"
 assert_no_model_names "$skill"
 
+assert_contains "$skill" "you do not overrule a reviewer" \
+  "monitor does not adjudicate reviewer findings"
+assert_contains "$skill" "or to a high-effort reviewer for a second opinion" \
+  "suspected-invalid findings escalate"
+
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
 grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
 echo "ok - committed OpenAI metadata present"

@@ -22,6 +22,33 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
+## Exploration Before Drafting
+
+A plan is only as good as its author's grasp of the code it touches. Before mapping file structure or drafting a single task, fan out explorers — one per surface the plan will touch, all dispatched in the same message so they run concurrently (toolbelt:dispatching-parallel-agents). Route them through toolbelt:agent-routing's `explorer` role; they are read-only.
+
+Breadth scales with the plan: a single-surface change gets one explorer, a change crossing API, schema, and UI gets one each. Slice by surface, not by task — tasks don't exist yet, and their boundaries are one of the things this pass decides.
+
+Each explorer returns, for its surface: exact paths and line ranges; the pattern already in use, with one reference implementation worth copying; the contracts the plan must match; what must exist or run first; and gotchas.
+
+End every explorer brief with the same question: **"What would a competent implementer, working only from a written plan and unable to see this code, get wrong here?"** That question is what turns an inventory into a warning.
+
+### The Gotcha Hunt
+
+Gotchas are the point of this pass. They prevent an implementer meeting a trap mid-task and inventing a way around it. Point explorers at these classes:
+
+- **Assertions that can never pass.** An absence check must exclude its own evidence — applied migrations, lockfiles and vendored trees in scope, or a sweep that includes the doc naming the string being retired.
+- **Checks that can't fail.** A guard or negative assertion that passes because setup never reached the branch it claims to cover.
+- **Tooling traps.** Inverted exit codes (`git grep` 0 = matched = FAIL), tools absent on the CI runner.
+- **Order and prerequisites.** Codegen, migrations, or fixtures that must run before the task's tests mean anything.
+- **Shared contracts.** Who else consumes this signature, table, or event.
+- **Environment drift.** Where local and CI disagree.
+
+Findings go into the plan, not into your head — a gotcha you route around silently while drafting is one the implementer rediscovers.
+
+### Resolve, Don't Defer
+
+Every gotcha leaves this pass **resolved** — the plan decides, and shows the code, exclusion, or ordering that handles it — or **named**, stating the trap and the constraint and saying to escalate rather than improvise. A gotcha that is neither is a plan defect: "watch out for X" with no decision is the same failure as "add appropriate error handling."
+
 ## File Structure
 
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
@@ -73,6 +100,12 @@ naming and copy rules, platform requirements — one line each, with exact
 values copied verbatim from the spec. Every task's requirements implicitly
 include this section.]
 
+## Known Gotchas
+
+[Cross-cutting traps exploration surfaced, one line each, with the decision
+that handles each. Task-specific traps belong on their task instead. Every
+task implicitly includes this section.]
+
 ---
 ```
 
@@ -91,6 +124,10 @@ include this section.]
 - Produces: [what later tasks rely on — exact function names, parameter
   and return types. A task's implementer sees only their own task; this
   block is how they learn the names and types neighboring tasks use.]
+
+**Gotchas:**
+- [Traps in this task's code, each with the decision that handles it, or
+  the constraint and an instruction to escalate. Omit the field if none.]
 
 - [ ] **Step 1: Write the failing test**
 
@@ -134,6 +171,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
+- A named gotcha carrying neither a decision nor an instruction to escalate
 
 ## Remember
 - Exact file paths always
@@ -151,13 +189,39 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
+Fix what you find inline. If you find a spec requirement with no task, add the task.
+
+## Plan Review Gate
+
+**Required.** After self-review, save the plan and have it reviewed by a model independent of the one that wrote it. A plan is the most expensive artifact to get wrong — every task inherits its mistakes, and the implementer executing Task 7 has no way to see that Task 3 made it impossible.
+
+The resolver enforces independence on model *identity*, not family, so a same-family pairing can satisfy it. Cross-family review (Claude reviews GPT, GPT reviews Claude) is worth having: configure the project's `plan` specialty to a different family than its `planner` route.
+
+Resolve the reviewer through toolbelt:agent-routing, which reads the project's `.toolbelt/agents.json`:
+
+```bash
+scripts/resolve-agent --project-root <root> --role reviewer \
+  --reviewer-specialty plan --author-model <model that wrote the plan>
+```
+
+The `plan` specialty is where a project names its dedicated plan-review route; `--author-model` is what enforces family independence. If resolution fails, stop and tell your human partner — do not review the plan with the model that wrote it, and do not pick a reviewer yourself.
+
+Dispatch the resolved reviewer with the plan path and the spec path. It may fan out its own explorers — judging a plan against the real code beats reading it as a document. Ask it to judge:
+
+- **Spec coverage** — every spec requirement traceable to a task; nothing invented that the spec doesn't ask for
+- **Task decomposition** — each task independently testable, right-sized, in a workable order
+- **Interface consistency** — types, signatures, and names agree across tasks
+- **Placeholders** — any step that defers a decision instead of making it
+- **Unflagged gotchas** — traps in the touched code the plan does not warn about
+- **Global Constraints** — present, with exact values copied from the spec
+
+Handle what comes back the way writing-specs does: small technical gaps — fix the plan and proceed. A rework large enough to change the approach — bring it to your human partner. Unsure — ask.
 
 ## Execution Handoff
 
-After saving the plan, tell your human partner it's ready and hand off:
+After the plan review is clean, tell your human partner it's ready and hand off:
 
-> "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`. I'll execute it with subagent-driven development — a fresh subagent per task, reviewed between tasks."
+> "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`, reviewed by <reviewer model>. I'll execute it with subagent-driven development — a fresh subagent per task, reviewed between tasks."
 
 **REQUIRED SUB-SKILL:** Use toolbelt:subagent-driven-development. Fresh
 subagent per task, task review (spec + quality) after each, broad

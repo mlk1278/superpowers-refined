@@ -35,6 +35,13 @@ Subagent (role: implementer):
     edge cases, and leave pristine output — stray warnings or noise in a
     passing run are defects the reviewer will flag.
 
+    Every test asserting an absence, a guard, or a negative needs evidence
+    it can fail. Written test-first, its TDD RED already is that evidence —
+    report it and move on. Otherwise make it fail once: mutate the
+    production code so the defect is present, record the RED output, revert,
+    and report how. A negative assertion nobody has seen fail is the most
+    common way a suite passes while proving nothing.
+
     Do not dispatch subagents of your own — in particular, **never arrange
     your own code review.** The controller owns review dispatch; a review you
     commission yourself does not count and wastes a review cycle.

@@ -33,7 +33,7 @@ assert_contains 'do not substitute your own judgment for a missing route' \
   "a missing route escalates instead of being guessed"
 assert_contains 'If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review.' \
   "optional pre-final gate runs at the retained seam"
-assert_contains 'scripts/review-package MERGE_BASE HEAD` for the final review' \
+assert_contains 'scripts/review-package --plan PLAN_FILE MERGE_BASE HEAD` for the final review' \
   "broad final review still receives a review package"
 assert_contains '**Final-review findings get ONE fix subagent**' \
   "final findings are fixed together"
@@ -47,8 +47,16 @@ assert_contains 'Implementers and fixers always produce their own fresh evidence
   "implementers never reuse evidence for their own claims"
 assert_contains '**Workspace-wide suite:** once, at the final gate.' \
   "workspace suite is final-gate only"
-assert_contains 'Resume the same reviewer thread with a `review-package` for the fix delta' \
-  "same reviewer receives delta packages until approval"
+assert_contains 'Then run exactly one scoped re-review of the fix wave' \
+  "final fix wave is re-reviewed over its delta"
+assert_contains 'There is no second fix wave' \
+  "final review does not loop indefinitely"
+assert_contains '**Three rounds maximum per task.**' \
+  "task fix loop is bounded"
+assert_contains 'Adjudicate **only** at the cap' \
+  "adjudication cannot be used to exit the loop early"
+assert_contains 'out-of-scope observations go to the ledger as deferred minors and never extend the loop' \
+  "re-review scope cannot grow the loop"
 
 assert_not_contains '### Final whole-branch gate' "exact-head gate section removed"
 assert_not_contains 'REVIEW_HEAD=$(git rev-parse HEAD)' "exact-head state removed"

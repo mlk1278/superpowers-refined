@@ -14,6 +14,8 @@ description: Use when an approved implementation plan is ready to be implemented
 
 Read the plan and select one coherent delivery slice that can ship in one PR. Do not redesign approved requirements. If the plan leaves a product decision unresolved, stop and return it to your human partner.
 
+A slice is bounded by the number of independent judgements a reviewer must make, not by lines changed. Two slices you would run concurrently and that edit the same files are one PR however cleanly the outcomes divide — that split is a merge conflict wearing the language of good practice. Sequential slices may revisit the same file once the first has merged.
+
 ## 2. Resolve routes
 
 Read the optional `## Agent Routing` section. It may name routes for the implementer, task reviewer, and final reviewer; the session agent remains the orchestrator and is never plan-routed. Resolve each role with agent-routing. Precedence is plan route, then project route, then bundled default. Resolve the monitor from project routing or the bundled default. When the slice will run the UX gate, also resolve an `errand` route for the gate operator. Fail closed when either reviewer lacks an independent route; the sole exception is agent-routing's provider-outage emergency override, which triggers only on recorded dispatch-time provider failures, never on a routing error.
@@ -52,11 +54,12 @@ Either wait for the monitor's return, or run it in the background and begin the 
 - The next work is independent: it does not build on the in-flight PR's changes and touches no surface its active contract reserves. Dependent work waits for the merge — no stacked branches.
 - At most one PR is in background monitoring; do not open another PR until this one resolves (merged or durably blocked).
 - The monitor stays tracked. Process its return when it arrives — merged: run step 6 for that slice; blocked: surface it to your human partner. Never report the slice complete or end the session while the monitor runs.
+- A monitor that looks dead is not grounds to start a second one. Before re-dispatching any agent that owns external state — an open PR, a tracker transition, a release — check that state directly: is the PR still open, has its head moved, has anything merged since. Silence is not death, and two owners racing on one PR is the failure the never-orphan rule exists to prevent, approached from the other side. Agents owning only local work re-dispatch as-is.
 
 The next task starts in its own worktree branched from the current base branch, under the repository's worktree rules (including port isolation). When the monitored PR merges, rebase in-flight lane(s) onto the updated base branch at the next task boundary — always before that lane's broad final review.
 
 ## 6. Reconcile and clean up
 
-Reconcile the issue tracker only when the plan is linked to one. After merge, confirm the remote state, then remove the worktree, branch, and ignored scratch.
+Reconcile the issue tracker only when the plan is linked to one. After merge, confirm the remote PR state the monitor returned — never commit ancestry, which shows every commit of a squash-merged branch as unmerged — then remove the worktree, branch, and ignored scratch.
 
 Normal continuation stays in the current session. After an interruption, recover from the approved plan, git history, branch and worktree state, SDD scratch, and current PR state — do not create separate resume bookkeeping.

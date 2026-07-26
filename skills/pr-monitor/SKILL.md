@@ -9,7 +9,7 @@ Own exactly one PR and its worktree until it is merged or genuinely blocked. Thi
 
 ## Project policy
 
-Read `.toolbelt/pr-policy.md` at the repository root when it exists. It names the review providers to await, how to request them, complexity lanes, and timeout policy. Without it, the required conditions are exact-head green CI, zero unresolved review threads, and no requested-changes review. Never hard-code a provider this file does not name.
+Read `.toolbelt/pr-policy.md` at the repository root when it exists. It names the review providers to await, how to request them, complexity lanes, and timeout policy. Without it, the required conditions are exact-head green CI, zero unresolved review threads, and no requested-changes review. Never hard-code a provider this file does not name. The statements in this skill are SECONDARY to repository specifics.
 
 ## Preflight
 
@@ -20,7 +20,9 @@ Capture the PR number, branch, current full head SHA, merge state, and the appro
 1. Refresh the PR head, merge state, and unresolved threads. A conflicting PR schedules no CI; resolve the conflict before diagnosing missing checks.
 2. Refresh exact-head CI (`gh pr checks` or the policy file's command). Distinguish failed from pending from unavailable, and fail closed on unavailable — it is not a green result.
 3. Await, and at most once per head request each policy-named provider. Only a current-head review object or an authenticated completion naming the current commit counts as completion; acknowledgements and reactions never do.
-4. Once every awaited provider has completed on the current head, verify findings against the code. Dispatch fixer(s) routed via agent-routing — one agent for a small or entangled set, several in parallel when findings are independent and touch separate surfaces — confirm each fixer's fresh passing covering-test evidence and inspect the fixes (never rerun a local workspace suite — exact-head CI owns suite-level regression), then push all fixes as one batch. Concretely rebut invalid findings on the PR. The push starts a new evidence cycle; the awaited providers' next round on the new head is the re-review.
+4. Once every awaited provider has completed on the current head, verify findings against the code. Dispatch fixer(s) routed via agent-routing — one agent for a small or entangled set, several in parallel when findings are independent and touch separate surfaces — confirm each fixer's fresh passing covering-test evidence and inspect the fixes (never rerun a local workspace suite — exact-head CI owns suite-level regression), then push all fixes as one batch. The push starts a new evidence cycle; the awaited providers' next round on the new head is the re-review.
+
+   **You fix and merge; you do not overrule a reviewer.** A finding you believe is invalid goes to the slice orchestrator, or to a high-effort reviewer for a second opinion — with the code evidence, not a verdict. Complying with a wrong finding deletes live behaviour; rebutting a right one ships a defect. Neither is a low-effort judgement, and this role runs cheap. Post the rebuttal once someone with the authority to make that call has made it.
 5. If no action is ready, wait one bounded interval (default 180 seconds; policy may override) and refresh. Do not nest another watcher.
 
 ## Fallback

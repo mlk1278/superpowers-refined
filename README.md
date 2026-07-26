@@ -48,6 +48,7 @@ Nothing is required. Each is optional and read only when present:
 |---|---|
 | `.toolbelt/agents.json` | Agent routes — harness, model, effort, custom instructions per role |
 | `.toolbelt/pr-policy.md` | Which review providers to await, complexity lanes, timeouts |
+| `.toolbelt/worktree-policy.md` | Port ranges, sidecar containers, and per-worktree resources so parallel worktrees don't collide |
 | `docs/REVIEW-GUIDANCE.md` | Project review conventions, given to reviewer subagents |
 | `AGENTS.md` | Entry-point summary — copy from [docs/AGENTS-SNIPPET.md](docs/AGENTS-SNIPPET.md) |
 

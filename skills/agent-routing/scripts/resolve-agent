@@ -157,17 +157,29 @@ def select_route(
                 "project:harness",
             )
         )
-    candidates.extend(
-        [
+    candidates.append(
+        (
+            configured_route(project, "project.roles", "roles", args.role),
+            "project:role",
+        )
+    )
+    if args.role == "reviewer" and args.reviewer_specialty:
+        candidates.append(
             (
-                configured_route(project, "project.roles", "roles", args.role),
-                "project:role",
-            ),
-            (
-                configured_route(bundled, "bundled.roles", "roles", args.role),
-                "bundled:role",
-            ),
-        ]
+                configured_route(
+                    bundled,
+                    "bundled.reviewer_specialties",
+                    "reviewer_specialties",
+                    args.reviewer_specialty,
+                ),
+                "bundled:reviewer-specialty",
+            )
+        )
+    candidates.append(
+        (
+            configured_route(bundled, "bundled.roles", "roles", args.role),
+            "bundled:role",
+        )
     )
     for route, source in candidates:
         if route is not None:

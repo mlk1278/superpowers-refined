@@ -92,4 +92,15 @@ assert_contains "$workflow" "No separate resume state machine" "recovery avoids 
 assert_contains "$workflow" "one monitored PR at a time" "workflow documents the monitoring cap"
 assert_not_contains "$workflow" "workstack-resume" "workflow does not revive resume skill"
 
+assert_contains "$skill" "run concurrently and that edit the same files are one PR" \
+  "concurrent file overlap beats clean outcome division"
+assert_contains "$skill" "Sequential slices may revisit the same file once the first has merged" \
+  "the overlap rule does not collapse sequential slices"
+assert_contains "$skill" "is not grounds to start a second one" \
+  "a dead-looking monitor does not justify a second owner"
+assert_contains "$skill" "check that state directly" \
+  "external state is checked before re-dispatch"
+assert_contains "$skill" "never commit ancestry" \
+  "squash merges are not confirmed from ancestry"
+
 echo "PASS"

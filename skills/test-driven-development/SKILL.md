@@ -194,6 +194,12 @@ Can't check all boxes? You skipped TDD. Start over.
 
 Bug found? Write a failing test reproducing it, then follow the cycle. The test proves the fix and prevents the regression. Never fix a bug without a test.
 
-## Anti-Patterns
+## Writing the Tests Themselves
 
-When adding mocks or test utilities, read [testing-anti-patterns.md](testing-anti-patterns.md) — testing mock behavior instead of real behavior, adding test-only methods to production classes, and mocking without understanding dependencies.
+When writing or changing any test, adding mocks, or adding test-only helpers, read [writing-good-tests.md](writing-good-tests.md):
+
+- Name the production change that would make the test fail — before writing it
+- Derive expected values by hand, never with the code under test
+- Assert on real behavior, never on mock behavior, and never on source text
+- Keep test-only code in test utilities, out of production classes
+- Run the mutation check before you call a test file done
