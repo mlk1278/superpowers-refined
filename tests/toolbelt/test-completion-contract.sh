@@ -24,8 +24,9 @@ assert_contains "$skill" "present exactly these 4 options" "default 4-option men
 assert_contains "$skill" "Type 'discard' to confirm." "destructive confirmation gate still present"
 assert_contains "$skill" "If tests fail:" "test verification step still present"
 assert_contains "$skill" "Without qualifying evidence, run the suite" "evidence reuse falls back to running the suite"
-assert_contains "$skill" "require a clean worktree" "docs-only cases require a clean worktree"
-assert_contains "$skill" "**Docs-only cases**" "docs-only Step 1 cases exist"
+assert_contains "$skill" "Both shortcuts require a clean worktree" "both Step 1 shortcuts require a clean worktree"
+assert_contains "$skill" "is a claim, not evidence" "an unevidenced report never satisfies Step 1"
+assert_contains "$skill" "**Docs-only case:**" "docs-only Step 1 case exists"
 assert_contains "$skill" "never a file the application builds, renders," "docs-only allowlist has a semantic guard"
 assert_contains "$skill" "Satisfy Step 1's verification requirement before offering options" "Step 1 must be satisfied before the menu"
 

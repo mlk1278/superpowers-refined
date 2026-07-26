@@ -25,16 +25,18 @@ Guide completion of development work by presenting clear options and handling ch
 full-suite run at the exact current head SHA — the command that was run,
 its passing output (with the final pass/exit state visible), and the head
 SHA it ran against — read that output yourself and treat this step as
-satisfied. This is a
-deliberate, narrowly scoped exception to
-toolbelt:verification-before-completion's run-it-yourself rule.
+satisfied. This is a deliberate, narrowly scoped exception to
+toolbelt:verification-before-completion's run-it-yourself rule. A report
+missing the command, the output, or the SHA is a claim, not evidence.
 Without qualifying evidence, run the suite.
 
-**Docs-only cases** (both require a clean worktree; the allowlist is:
-Markdown files under `docs/**` or at the repository root, and
-`.toolbelt/**` scratch — never a file the application builds, renders,
-or serves, or that CI executes, regardless of path). If the files changed
-in the branch match that allowlist, no need to run tests.
+**Docs-only case:** if every file the branch changes is Markdown under
+`docs/**` or at the repository root, or `.toolbelt/**` scratch, no suite
+is required — never a file the application builds, renders, or serves, or
+that CI executes, regardless of path.
+
+Both shortcuts require a clean worktree. Uncommitted changes mean the
+evidence describes a tree you are not about to merge.
 
 **If tests fail:**
 ```
