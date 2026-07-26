@@ -2,6 +2,36 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.1.0 (2026-07-26)
+
+A comparison against upstream Superpowers v6.2.0, plus findings from an overnight run of eight PRs across five parallel worktree lanes. The theme is catching problems before implementation rather than improvising around them mid-task.
+
+### Planning
+
+- **`writing-plans` explores before it drafts.** It went from scope check straight to file structure, mapping files and drawing task boundaries without reading the code those tasks would touch. It now fans out explorers per surface first, hunts a named taxonomy of gotchas — assertions that can never pass, checks that can't fail, tooling traps, ordering prerequisites, shared contracts, environment drift — and requires each one leave the pass either resolved in the plan or named with an instruction to escalate. A gotcha that is neither is a plan defect, alongside the other placeholder failures. Findings land per-task and plan-wide, and the plan reviewer may fan out its own explorers rather than reading the plan as a document.
+- **Plans get a review gate.** Required, mirroring the one `writing-specs` already had, resolved through a new `plan` reviewer specialty. Note that independence is enforced on model identity, not family: configure the `plan` specialty to a different family than `planner` if you want cross-family review.
+
+### Subagent-driven development
+
+- **The fix loop is bounded.** Three rounds per task: rounds 1-2 resume the original implementer, round 3 dispatches a fresh one. At the cap a breaker trips — adjudicate each open finding, park it with a ruling in the ledger, or stop on load-bearing ones. Previously "repeat until approved," with no exit. Adjudicating before the cap is forbidden; it is pre-judging with a different name.
+- **Re-reviews are scoped.** A new template verdicts each finding ADDRESSED or NOT ADDRESSED, confines new-breakage hunting to the fix diff, and routes out-of-scope observations to the ledger where they cannot extend the loop.
+- **Workspaces are scoped per plan.** A flat `.toolbelt/sdd/` meant two plans overwrote each other's `task-N` briefs and misread each other's ledgers. Directories are now the plan basename plus a digest of its repo-relative path, so same-named plans in different directories stay separate.
+- **Negative assertions carry evidence they can fail.** For any test asserting an absence, a guard, or a negative, the implementer reports its TDD RED or a recorded mutate-and-revert; the reviewer treats a missing demonstration as a finding. Tests that pass while proving nothing were the dominant defect class across the observed run.
+
+### Delivery and integration
+
+- **A PR ends in a named owner.** `finishing-a-development-branch` creates the PR and hands it to `pr-monitor`, or returns it to a caller that already owns monitoring. "PR is open" is not a terminal state.
+- **Monitors escalate instead of overruling reviewers.** A monitor that suspects a finding is invalid takes it to the orchestrator or a high-effort reviewer with code evidence. Complying with a wrong finding and rebutting a right one are both real failures, and neither is a low-effort judgement.
+- **Squash merges are never judged from commit ancestry**, which shows every branch commit as unmerged.
+- **Concurrent slices that edit the same files are one PR**, however cleanly the outcomes divide. Sequential slices may revisit a file once the first has merged.
+- **A dead-looking agent that owns external state gets that state checked** before a second owner is created.
+
+### Testing and configuration
+
+- **`testing-anti-patterns.md` became `writing-good-tests.md`** — shorter, and adds name-the-break, mirror assertions, change detectors, behavior-not-text, the rule that an absence assertion must exclude its own evidence, and a mutation check.
+- **New optional `.toolbelt/worktree-policy.md`** for port ranges, sidecar containers, per-worktree data, and teardown, read by `using-git-worktrees` before it creates anything. Parallel lanes that each grab the default database, API, and web ports collide in ways that read as code bugs.
+- **Bundled reviewer specialties now resolve.** They were only ever consulted in project config, so the bundled `code`, `spec`, and `ux` routes had no effect on `--reviewer-specialty` lookups. Precedence is project specialty, project role, bundled specialty, bundled role.
+
 ## v7.0.0 (2026-07-25)
 
 The first Toolbelt release. Everything since the fork point, in one version — the
