@@ -1,97 +1,81 @@
 {
   "version": 1,
-  "instructions": "Code changes go to the implementer. Always. Planning goes to the planner. Always. Cheap roles exist for side work, never as a shortcut for real work.",
+  "instructions": "If your harness can dispatch the agent type natively, use the native tool call rather than AGX. Bounded reads, summaries, and single-file checks are not delegation tasks - do them in context. Policy lives in docs/SUBAGENT-ROUTING.md; this file is the machine-readable half.",
   "roles": {
-    "explorer": {
-      "harness": "codex",
-      "model": "gpt-5.6-sol",
-      "effort": "medium",
-      "instructions": "Read-only. Gathers codebase context, architecture, prior art, and external references. Never edits files."
-    },
-    "planner": {
-      "harness": "codex",
-      "model": "gpt-5.6-sol",
-      "effort": "high",
-      "instructions": "Owns all planning work, however small it looks."
-    },
     "implementer": {
-      "harness": "codex",
-      "model": "gpt-5.6-sol",
-      "effort": "high",
-      "instructions": "Owns all code operations. Every repository edit goes here."
+      "harness": "claude",
+      "model": "opus-5",
+      "effort": "medium",
+      "instructions": "The daily driver. Implementation and bug fixing; every repository edit.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "high"
+        }
+      ]
+    },
+    "explorer": {
+      "harness": "claude",
+      "model": "opus-5",
+      "effort": "medium",
+      "instructions": "Exploration, discovery, and research sweeps.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "medium"
+        }
+      ]
     },
     "errand": {
-      "harness": "codex",
-      "model": "gpt-5.6-sol",
+      "harness": "claude",
+      "model": "opus-5",
       "effort": "low",
-      "instructions": "Side errands only - tracker tickets, notifications, status checks, scripted browser capture. Never edits repository files. Code goes to the implementer, planning to the planner."
+      "instructions": "Small bounded edits and chores.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        }
+      ]
+    },
+    "planner": {
+      "harness": "claude",
+      "model": "opus-5",
+      "effort": "high",
+      "instructions": "Planning and specs, usually user-invoked. Plans and specs get reviewed by the other model family (Codex/Claude), not the same model.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "high"
+        }
+      ]
     },
     "monitor": {
-      "harness": "codex",
-      "model": "gpt-5.6-sol",
-      "effort": "medium",
-      "instructions": "Owns a pull request through CI, review providers, fix loops, and merge. Verifies findings against the code, so this is judgment work, not polling."
+      "harness": "claude",
+      "model": "opus-5",
+      "effort": "low",
+      "instructions": "A wrapper/dispatch slot: owns a PR through CI, review providers, fix loops, and merge. Dispatches and relays, never does the work itself.",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        }
+      ]
     },
     "reviewer": {
-      "harness": "claude",
-      "model": "opus-4-8",
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
       "effort": "high",
-      "instructions": "Must be independent of the author's model. Never dispatch a reviewer whose model matches the model that wrote the code.",
+      "instructions": "Never the author's model family. This is a preference order, not a caller mapping: the resolver drops any entry whose model equals --author-model and takes the first survivor. Sol leads because the implementer is opus-5, so most work is Claude-authored; sol-authored work falls through to opus-5 high.",
       "fallbacks": [
         {
-          "harness": "codex",
-          "model": "gpt-5.5",
-          "effort": "high"
-        }
-      ]
-    }
-  },
-  "reviewer_specialties": {
-    "code": {
-      "harness": "claude",
-      "model": "opus-4-8",
-      "effort": "high",
-      "fallbacks": [
-        {
-          "harness": "codex",
-          "model": "gpt-5.5",
-          "effort": "high"
-        }
-      ]
-    },
-    "spec": {
-      "harness": "claude",
-      "model": "opus-4-8",
-      "effort": "high",
-      "fallbacks": [
-        {
-          "harness": "codex",
-          "model": "gpt-5.5",
-          "effort": "high"
-        }
-      ]
-    },
-    "plan": {
-      "harness": "claude",
-      "model": "opus-4-8",
-      "effort": "high",
-      "instructions": "Reviews implementation plans before execution: spec coverage, task decomposition, interface consistency across tasks, placeholders, global constraints. Must be a different model family than the one that wrote the plan.",
-      "fallbacks": [
-        {
-          "harness": "codex",
-          "model": "gpt-5.5",
-          "effort": "high"
-        }
-      ]
-    },
-    "ux": {
-      "harness": "claude",
-      "model": "opus-4-8",
-      "effort": "high",
-      "fallbacks": [
-        {
-          "harness": "codex",
-          "model": "gpt-5.5",
+          "harness": "claude",
+          "model": "opus-5",
           "effort": "high"
         }
       ]

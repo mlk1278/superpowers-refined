@@ -32,7 +32,6 @@ Offer the visual companion just-in-time, outside this sequence — see below.
 
 The design is bounded by the quality of your questions. A question is worth asking when its answer would change what you build — if both answers lead to the same design, skip it.
 
-- **One question per message.** Prefer multiple choice; concrete options are easier to answer than open prompts, and a wrong option still surfaces the right answer faster than a blank one.
 - **Ask about the problem, not the solution.** When the request names a solution, find out what problem it solves — there is often a shorter path to it.
 - **Chase the assumption you are most likely to get wrong.** Who uses this, what happens when it fails, what "done" looks like, what is explicitly out of scope.
 - **State inferences instead of asking about them.** "I'm assuming X — correct me" moves faster than a question and still catches the error.
@@ -45,7 +44,6 @@ Explore rather than asking what you could find out yourself — check the curren
 - Scale each section to its complexity: a few sentences when straightforward, up to 200-300 words when nuanced
 - Cover architecture, components, data flow, error handling, testing
 - Ask after each section whether it looks right so far; go back and clarify when something doesn't land
-- YAGNI ruthlessly — cut anything the design doesn't need
 - Break the system into units with one clear purpose and well-defined interfaces. For each: what does it do, how is it used, what does it depend on? If a consumer has to read the internals, or you can't change the internals without breaking consumers, the boundary is wrong.
 - In existing codebases, explore the structure first and follow existing patterns. Include targeted improvements where existing problems affect this work — the way a good developer improves code they're working in. No unrelated refactoring.
 

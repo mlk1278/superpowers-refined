@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits. A "stupid, low-effort" agent should be able to implement this plan on autopilot.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -172,7 +172,6 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
-- A named gotcha carrying neither a decision nor an instruction to escalate
 
 ## Remember
 - Exact file paths always
@@ -194,9 +193,7 @@ Fix what you find inline. If you find a spec requirement with no task, add the t
 
 ## Plan Review Gate
 
-**Required.** After self-review, save the plan and have it reviewed by a model independent of the one that wrote it. A plan is the most expensive artifact to get wrong — every task inherits its mistakes, and the implementer executing Task 7 has no way to see that Task 3 made it impossible.
-
-The resolver enforces independence on model *identity*, not family, so a same-family pairing can satisfy it. Cross-family review (Claude reviews GPT, GPT reviews Claude) is worth having: configure the project's `plan` specialty to a different family than its `planner` route.
+**Required.** After self-review, save the plan and have it reviewed by a model from a different family than the one that wrote it (Claude reviews GPT, GPT reviews Claude). A plan is the most expensive artifact to get wrong — every task inherits its mistakes, and the implementer executing Task 7 has no way to see that Task 3 made it impossible.
 
 Resolve the reviewer through toolbelt:agent-routing, which reads the project's `.toolbelt/agents.json`:
 
