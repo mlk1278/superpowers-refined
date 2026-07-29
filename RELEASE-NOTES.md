@@ -2,6 +2,14 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.3.0 (2026-07-28)
+
+Leaner planning guidance and updated default agent routes.
+
+- **Brainstorming drops two redundant mandates.** The one-question-per-message and repeated YAGNI rules are gone, leaving the surrounding guidance to scale discovery and design to the work.
+- **Plan review is explicitly cross-family.** A plan written by Claude must be reviewed by GPT, and vice versa, rather than relying on model-identity independence alone.
+- **Default routes reflect the daily workflow.** Claude Opus 5 now leads implementation, exploration, planning, errands, and monitoring, while Codex GPT-5.6 Sol leads independent review; native dispatch and in-context bounded reads are preferred where available.
+
 ## v7.2.0 (2026-07-26)
 
 Six guardrails closing gaps the same parallel-lane run exposed after v7.1.0 shipped.

@@ -24,11 +24,11 @@ If the spec covers multiple independent subsystems, it should have been broken i
 
 ## Exploration Before Drafting
 
-A plan is only as good as its author's grasp of the code it touches. Before mapping file structure or drafting a single task, fan out explorers — one per surface the plan will touch, all dispatched in the same message so they run concurrently (toolbelt:dispatching-parallel-agents). Route them through toolbelt:agent-routing's `explorer` role; they are read-only.
+A plan is only as good as its author's grasp of the code it touches. Before mapping file structure or drafting a task, read the nearest instructions for the target files, then run 2–3 targeted inline `rg` searches for the named symbols, neighboring tests, and existing pattern.
 
-Breadth scales with the plan: a single-surface change gets one explorer, a change crossing API, schema, and UI gets one each. Slice by surface, not by task — tasks don't exist yet, and their boundaries are one of the things this pass decides.
+Dispatch through toolbelt:agent-routing's `explorer` role only when the remaining question is a completeness inventory, an invisible trap, or a plan-shaping existence question. Start with one explorer when justified. Additional explorers require unfamiliar, independent subsystems whose answers do not depend on each other.
 
-Each explorer returns, for its surface: exact paths and line ranges; the pattern already in use, with one reference implementation worth copying; the contracts the plan must match; what must exist or run first; and gotchas.
+Each explorer brief requests checkable paths and pointers: exact paths and line ranges; one reference implementation worth copying; contracts the plan must match; prerequisites; and gotchas. Ask for evidence, not a convention summary.
 
 End every explorer brief with the same question: **"What would a competent implementer, working only from a written plan and unable to see this code, get wrong here?"** That question is what turns an inventory into a warning.
 
@@ -110,6 +110,18 @@ task implicitly includes this section.]
 ---
 ```
 
+## PR Boundaries
+
+Before writing tasks, partition the plan into independently verifiable pull requests. Each row names one outcome, the exact task numbers it contains, its dependencies, and verification that can pass without later boundaries.
+
+| PR | Outcome | Tasks | Depends on | Independent verification |
+|---|---|---|---|---|
+| 1 | [one reviewable outcome] | [exact task numbers] | [boundary numbers or none] | [command or observable result] |
+
+Every task number appears in exactly one boundary: no gaps and no overlap. A one-PR plan must state why no smaller independently verifiable outcome exists.
+
+For shared substrate, put the core plus one representative consumer in the first boundary. Later consumers may share a PR only when they repeat the same reviewer judgment. Novel lifecycle, export, or rollout work stays separate.
+
 ## Task Structure
 
 ````markdown
@@ -189,20 +201,22 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
+**4. PR boundaries:** Reject boundaries that are missing, horizontal technical layers instead of outcomes, overlapping, or unjustified. Verify every task appears exactly once, dependencies form a workable order, each boundary can be independently verified, and any one-PR justification explains why no smaller outcome can stand alone. Missing, horizontal, overlapping, or unjustified boundaries are plan defects.
+
 Fix what you find inline. If you find a spec requirement with no task, add the task.
 
 ## Plan Review Gate
 
-**Required.** After self-review, save the plan and have it reviewed by a model from a different family than the one that wrote it (Claude reviews GPT, GPT reviews Claude). A plan is the most expensive artifact to get wrong — every task inherits its mistakes, and the implementer executing Task 7 has no way to see that Task 3 made it impossible.
+**Required.** After self-review, save the plan and have it reviewed through a different harness from the one that wrote it. A plan is the most expensive artifact to get wrong — every task inherits its mistakes, and the implementer executing Task 7 has no way to see that Task 3 made it impossible.
 
 Resolve the reviewer through toolbelt:agent-routing, which reads the project's `.toolbelt/agents.json`:
 
 ```bash
 scripts/resolve-agent --project-root <root> --role reviewer \
-  --reviewer-specialty plan --author-model <model that wrote the plan>
+  --reviewer-specialty plan --author-harness <harness that wrote the plan>
 ```
 
-The `plan` specialty is where a project names its dedicated plan-review route; `--author-model` is what enforces family independence. If resolution fails, stop and tell your human partner — do not review the plan with the model that wrote it, and do not pick a reviewer yourself.
+The `plan` specialty is where a project names its dedicated plan-review route; `--author-harness` removes same-harness routes case-insensitively and fails closed if none remain. If resolution fails, stop and tell your human partner — do not review the plan through the harness that wrote it, and do not pick a reviewer yourself.
 
 Dispatch the resolved reviewer with the plan path and the spec path. It may fan out its own explorers — judging a plan against the real code beats reading it as a document. Ask it to judge:
 
@@ -212,14 +226,15 @@ Dispatch the resolved reviewer with the plan path and the spec path. It may fan 
 - **Placeholders** — any step that defers a decision instead of making it
 - **Unflagged gotchas** — traps in the touched code the plan does not warn about
 - **Global Constraints** — present, with exact values copied from the spec
+- **PR boundaries** — reject missing, horizontal, overlapping, or unjustified boundaries; every task appears exactly once, dependencies are workable, and each PR has one outcome with independent verification
 
 Handle what comes back the way writing-specs does: small technical gaps — fix the plan and proceed. A rework large enough to change the approach — bring it to your human partner. Unsure — ask.
 
 ## Execution Handoff
 
-After the plan review is clean, tell your human partner it's ready and hand off:
+After the plan review is clean, tell your human partner it's ready and hand off one declared PR boundary at a time:
 
-> "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`, reviewed by <reviewer model>. I'll execute it with subagent-driven development — a fresh subagent per task, reviewed between tasks."
+> "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`, reviewed through <reviewer harness>. I'll hand PR Boundary 1 to delivery; later boundaries follow only after their declared dependencies."
 
 **REQUIRED SUB-SKILL:** Use toolbelt:subagent-driven-development. Fresh
 subagent per task, task review (spec + quality) after each, broad

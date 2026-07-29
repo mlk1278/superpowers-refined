@@ -128,11 +128,11 @@ cat >"$tmp/dependent/.toolbelt/agents.json" <<'JSON'
   "version": 1,
   "roles": {
     "reviewer": {
-      "harness": "first-harness",
-      "model": "same-model",
+      "harness": "author-harness",
+      "model": "first-model",
       "effort": "high",
       "fallbacks": [
-        {"harness": "second-harness", "model": "same-model", "effort": "medium"}
+        {"harness": "AUTHOR-HARNESS", "model": "second-model", "effort": "medium"}
       ]
     }
   }
@@ -158,21 +158,21 @@ JSON
 
 printf '{invalid json\n' >"$tmp/invalid/.toolbelt/agents.json"
 
-while IFS='|' read -r role model effort; do
+while IFS='|' read -r role effort fallback_effort; do
   assert_route "bundled $role" \
-    "{\"role\":\"$role\",\"harness\":\"codex\",\"model\":\"$model\",\"effort\":\"$effort\",\"fallbacks\":[],\"source\":\"bundled:role\",\"fallback_reason\":null}" \
+    "{\"role\":\"$role\",\"harness\":\"claude\",\"model\":\"opus-5\",\"effort\":\"$effort\",\"fallbacks\":[{\"harness\":\"codex\",\"model\":\"gpt-5.6-sol\",\"effort\":\"$fallback_effort\"}],\"source\":\"bundled:role\",\"fallback_reason\":null}" \
     --project-root "$tmp/empty" --role "$role"
 done <<'CASES'
-explorer|gpt-5.6-sol|medium
-planner|gpt-5.6-sol|high
-implementer|gpt-5.6-sol|high
-errand|gpt-5.6-sol|low
-monitor|gpt-5.6-sol|medium
+explorer|medium|medium
+planner|high|high
+implementer|medium|high
+errand|low|low
+monitor|low|low
 CASES
 
 assert_route "bundled reviewer" \
-  '{"role":"reviewer","harness":"claude","model":"opus-4-8","effort":"high","fallbacks":[{"harness":"codex","model":"gpt-5.5","effort":"high"}],"source":"bundled:role","fallback_reason":null}' \
-  --project-root "$tmp/empty" --role reviewer --author-model different-model
+  '{"role":"reviewer","harness":"codex","model":"gpt-5.6-sol","effort":"high","fallbacks":[],"source":"bundled:role","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --author-harness claude
 
 assert_route "project role" \
   '{"role":"implementer","harness":"project-harness","model":"project-role","effort":"low","fallbacks":[{"harness":"fallback-a","model":"fallback-one","effort":"medium"},{"harness":"fallback-b","model":"fallback-two","effort":"high"}],"source":"project:role","fallback_reason":null}' \
@@ -192,19 +192,19 @@ assert_route "workflow beats harness" \
 
 assert_route "reviewer specialty" \
   '{"role":"reviewer","harness":"specialty-harness","model":"specialty-route","effort":"high","fallbacks":[{"harness":"specialty-fallback","model":"specialty-fallback-route","effort":"high"}],"source":"project:reviewer-specialty","fallback_reason":null}' \
-  --project-root "$tmp/project" --role reviewer --reviewer-specialty security --author-model author-model
+  --project-root "$tmp/project" --role reviewer --reviewer-specialty security --author-harness author-harness
 
 assert_route "project specialty beats bundled specialty" \
   '{"role":"reviewer","harness":"project-plan-harness","model":"project-plan-route","effort":"high","fallbacks":[],"source":"project:reviewer-specialty","fallback_reason":null}' \
-  --project-root "$tmp/project" --role reviewer --reviewer-specialty plan --author-model author-model
+  --project-root "$tmp/project" --role reviewer --reviewer-specialty plan --author-harness author-harness
 
-assert_route "bundled specialty resolves when project has none" \
-  '{"role":"reviewer","harness":"claude","model":"opus-4-8","effort":"high","instructions":"Reviews implementation plans before execution: spec coverage, task decomposition, interface consistency across tasks, placeholders, global constraints. Must be a different model family than the one that wrote the plan.","fallbacks":[{"harness":"codex","model":"gpt-5.5","effort":"high"}],"source":"bundled:reviewer-specialty","fallback_reason":null}' \
-  --project-root "$tmp/empty" --role reviewer --reviewer-specialty plan --author-model author-model
+assert_route "missing bundled specialty falls through to role" \
+  '{"role":"reviewer","harness":"codex","model":"gpt-5.6-sol","effort":"high","fallbacks":[],"source":"bundled:role","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty plan --author-harness claude
 
 assert_route "unknown specialty falls through to role" \
-  '{"role":"reviewer","harness":"claude","model":"opus-4-8","effort":"high","instructions":"Must be independent of the author'"'"'s model. Never dispatch a reviewer whose model matches the model that wrote the code.","fallbacks":[{"harness":"codex","model":"gpt-5.5","effort":"high"}],"source":"bundled:role","fallback_reason":null}' \
-  --project-root "$tmp/empty" --role reviewer --reviewer-specialty nonesuch --author-model author-model
+  '{"role":"reviewer","harness":"codex","model":"gpt-5.6-sol","effort":"high","fallbacks":[],"source":"bundled:role","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty nonesuch --author-harness claude
 
 assert_route "explicit override" \
   '{"role":"implementer","harness":"run-harness","model":"run-model","effort":"medium","fallbacks":[{"harness":"run-fallback","model":"run-fallback-model","effort":"low"}],"source":"explicit","fallback_reason":null}' \
@@ -212,18 +212,22 @@ assert_route "explicit override" \
   --override-model run-model --override-effort medium \
   --override-fallback run-fallback,run-fallback-model,low
 
-assert_route "reviewer selects independent fallback" \
-  '{"role":"reviewer","harness":"reviewer-harness","model":"independent-model","effort":"high","fallbacks":[{"harness":"final-harness","model":"final-model","effort":"medium"}],"source":"project:role:fallback[0]","fallback_reason":"reviewer model matches author model identity"}' \
-  --project-root "$tmp/reviewer" --role reviewer --author-model author-model
+assert_route "reviewer selects first different-harness fallback case-insensitively" \
+  '{"role":"reviewer","harness":"reviewer-harness","model":"independent-model","effort":"high","fallbacks":[{"harness":"final-harness","model":"final-model","effort":"medium"}],"source":"project:role:fallback[0]","fallback_reason":"reviewer harness matches author harness"}' \
+  --project-root "$tmp/reviewer" --role reviewer --author-harness AUTHOR-HARNESS
 
-assert_route "reviewer filters author fallback" \
+assert_route "different-harness primary is accepted even when model names match" \
+  '{"role":"reviewer","harness":"author-harness","model":"author-model","effort":"high","fallbacks":[{"harness":"reviewer-harness","model":"independent-model","effort":"high"},{"harness":"final-harness","model":"final-model","effort":"medium"}],"source":"project:role","fallback_reason":null}' \
+  --project-root "$tmp/reviewer" --role reviewer --author-harness different-harness
+
+assert_route "reviewer filters same-harness fallback case-insensitively" \
   '{"role":"reviewer","harness":"reviewer-harness","model":"independent-model","effort":"high","fallbacks":[{"harness":"final-harness","model":"final-model","effort":"medium"}],"source":"project:role","fallback_reason":null}' \
-  --project-root "$tmp/filtered" --role reviewer --author-model author-model
+  --project-root "$tmp/filtered" --role reviewer --author-harness AUTHOR-HARNESS
 
-assert_failure "reviewer requires author identity" "reviewer role requires --author-model" \
+assert_failure "reviewer requires author identity" "reviewer role requires --author-harness" \
   --project-root "$tmp/reviewer" --role reviewer
 assert_failure "reviewer requires independent route" "no independent reviewer route is available" \
-  --project-root "$tmp/dependent" --role reviewer --author-model same-model
+  --project-root "$tmp/dependent" --role reviewer --author-harness Author-Harness
 assert_failure "unknown role" "no route found for role 'unknown'" \
   --project-root "$tmp/empty" --role unknown
 # The path in this diagnostic is rendered by pathlib, so it comes back
@@ -278,21 +282,21 @@ for role, route in brief["roles"].items():
         if not route.get(field):
             fail(f"{role} is missing {field}")
 
-if set(brief["reviewer_specialties"]) != {"code", "spec", "plan", "ux"}:
-    fail(f"specialties were {sorted(brief['reviewer_specialties'])}")
+if "reviewer_specialties" in brief:
+    fail(f"unexpected specialties were {sorted(brief['reviewer_specialties'])}")
 
 if not brief.get("instructions"):
     fail("brief is missing project-wide instructions")
 
 # The reason the brief can replace a per-dispatch call: it answers the
-# independence question for every model the table can dispatch, so an author
+# independence question for every harness the table can dispatch, so an author
 # never reviews its own work.
-conditional = brief["reviewer_by_author_model"]
-if "opus-4-8" not in conditional:
-    fail("brief does not cover the default reviewer's own model as an author")
-if conditional["opus-4-8"]["model"] == "opus-4-8":
-    fail("brief routes opus-4-8's author back to itself for review")
-if conditional["gpt-5.6-sol"]["model"] != "opus-4-8":
+conditional = brief["reviewer_by_author_harness"]
+if set(conditional) != {"claude", "codex"}:
+    fail(f"brief author harnesses were {sorted(conditional)}")
+if conditional["codex"]["harness"].lower() == "codex":
+    fail("brief routes the codex author's work back to codex for review")
+if conditional["claude"]["harness"] != "codex":
     fail("brief should keep the primary reviewer for an independent author")
 PY
   echo "ok - $name"

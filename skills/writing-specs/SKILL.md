@@ -21,7 +21,7 @@ You MUST create a task for each of these items and complete them in order:
 2. **Write the spec** — save to `docs/toolbelt/specs/YYYY-MM-DD-<topic>-design.md` and commit
 3. **Self-review the spec** — placeholders, contradictions, ambiguity, scope
 4. **User reviews the written spec**
-5. **Alternate-family model review** — GPT reviews Claude, Claude reviews GPT
+5. **Alternate-harness review** — resolve a reviewer outside the author's harness
 6. **Transition to planning** — invoke writing-plans
 
 **The terminal state is invoking writing-plans.**
@@ -54,6 +54,13 @@ Use the elements-of-style:writing-clearly-and-concisely skill if available. Save
 
 Wait for their response. If they request changes, make them and self-review again. Only proceed once the user approves.
 
-**Alternate-family review.** Upon the user's approval, have a model from a different family (Claude/GPT) review the written specification for gaps, ambiguity, or poorly thought out design. Small technical gaps — fix the spec and proceed. A rework large enough to change the idea — bring it to the user. Unsure — ask.
+**Alternate-harness review.** Upon the user's approval, resolve the reviewer through toolbelt:agent-routing:
+
+```bash
+scripts/resolve-agent --project-root <root> --role reviewer \
+  --reviewer-specialty spec --author-harness <harness that wrote the spec>
+```
+
+`--author-harness` removes same-harness routes case-insensitively and fails closed if no different-harness route remains. Dispatch the resolved reviewer to check the written specification for gaps, ambiguity, or poorly thought out design. Small technical gaps — fix the spec and proceed. A rework large enough to change the idea — bring it to the user. Unsure — ask.
 
 **Then invoke the writing-plans skill.** Do NOT invoke any other skill. writing-plans is the next step.

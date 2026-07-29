@@ -37,25 +37,25 @@ The boundary that matters: **code goes to the implementer and planning goes to t
 When you need one route and not the whole table — most often a reviewer, whose route depends on who wrote the code:
 
 ```bash
-scripts/resolve-agent --project-root <root> --role <role> --author-model <model>
+scripts/resolve-agent --project-root <root> --role <role> --author-harness <harness>
 ```
 
-Add `--harness`, `--workflow`, `--reviewer-specialty`, or explicit `--override-*` arguments only when you have that context. `--author-model` is required for a reviewer.
+Add `--harness`, `--workflow`, `--reviewer-specialty`, or explicit `--override-*` arguments only when you have that context. `--author-harness` is required for a reviewer. Harness comparison is case-insensitive; same-harness fallbacks are removed, and resolution fails closed when no different-harness route remains.
 
 Record the normalized JSON in the work log before dispatch. Dispatch the returned primary route and retain `fallbacks` in their returned order. Never reconstruct or guess a route when resolution fails; fail closed on reviewer-independence errors in particular.
 
-The brief carries `reviewer_by_author_model`, which pre-resolves the same answer for every model the table can dispatch — enough for the common case without a second call.
+The brief carries `reviewer_by_author_harness`, which pre-resolves the same answer for every configured harness that can author work — enough for the common case without a second call.
 
 ## Provider-outage emergency override
 
-Reviewer independence has exactly one documented exception. The trigger is **dispatch-time provider failure, never a resolver error**: resolution succeeded (an independent route is configured), but dispatching the resolved reviewer and each of its configured independent fallbacks failed with provider availability errors on repeated attempts. A `RoutingError` (no independent route configured) is a configuration problem — fix the configuration; it never activates this override. When the trigger is met, the orchestrator may manually dispatch a **fresh instance** of the most capable reachable model as the reviewer, even when that matches the author's model. Constraints:
+Reviewer independence has exactly one documented exception. The trigger is **dispatch-time provider failure, never a resolver error**: resolution succeeded (a different-harness route is configured), but dispatching the resolved reviewer and each of its configured different-harness fallbacks failed with provider availability errors on repeated attempts. A `RoutingError` (no different-harness route configured) is a configuration problem — fix the configuration; it never activates this override. When the trigger is met, the orchestrator may manually dispatch a **fresh instance** of the most capable reachable route as the reviewer, even when that uses the author's harness. Constraints:
 
 - Record the audit trail before invoking it: each failed route, the error, and the attempt times.
 - Never the author's own thread or instance — always a fresh dispatch with independently constructed context.
-- The review report and any resulting PR body must carry an explicit `EMERGENCY SAME-MODEL REVIEW` flag naming the outage.
-- Do not downgrade to a lower-capability model to manufacture independence; a capable same-model review beats an incapable independent one.
-- The override lasts only as long as the outage: resume normal resolution — including for delta re-gates of work reviewed under the override — the moment an independent model is reachable.
-- Project routing policy may name the concrete emergency model and models excluded from review; it governs.
+- The review report and any resulting PR body must carry an explicit `EMERGENCY SAME-HARNESS REVIEW` flag naming the outage.
+- Do not downgrade to a lower-capability route to manufacture independence; a capable same-harness review beats an incapable different-harness one.
+- The override lasts only as long as the outage: resume normal resolution — including for delta re-gates of work reviewed under the override — the moment a different-harness route is reachable.
+- Project routing policy may name the concrete emergency route and routes excluded from review; it governs.
 
 Plan-supplied routes are explicit run overrides. For public workflow decisions, precedence is plan, project, bundled. Within project configuration, reviewer specialty, workflow, harness, and project role retain their existing resolver precedence. A plan may route implementer, task-reviewer, and final-reviewer work, but never the session orchestrator.
 
