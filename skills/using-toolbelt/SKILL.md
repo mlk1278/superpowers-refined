@@ -55,7 +55,7 @@ If you are running in Codex, read `references/codex-tools.md` for special instru
 
 ## Agent Routing
 
-Before dispatching your first subagent, load the session routing brief — see the agent-routing skill. It tells you which agent handles each logical role in this project. Route by role from there; never pick a concrete agent yourself. If the brief cannot be loaded, stop and tell your human partner rather than guessing a route.
+Before dispatching your first subagent, invoke the agent-routing skill and load the session routing brief by following its skill-relative resolver instructions. It tells you which agent handles each logical role in this project. Route by role from there; never pick a concrete agent yourself. If the brief cannot be loaded, stop and tell your human partner rather than guessing a route.
 
 ## User Instructions
 

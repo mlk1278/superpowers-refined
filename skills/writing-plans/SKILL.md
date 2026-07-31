@@ -209,12 +209,9 @@ Fix what you find inline. If you find a spec requirement with no task, add the t
 
 **Required.** After self-review, save the plan and have it reviewed through a different harness from the one that wrote it. A plan is the most expensive artifact to get wrong — every task inherits its mistakes, and the implementer executing Task 7 has no way to see that Task 3 made it impossible.
 
-Resolve the reviewer through toolbelt:agent-routing, which reads the project's `.toolbelt/agents.json`:
-
-```bash
-scripts/resolve-agent --project-root <root> --role reviewer \
-  --reviewer-specialty plan --author-harness <harness that wrote the plan>
-```
+Invoke toolbelt:agent-routing and resolve the reviewer with role `reviewer`,
+specialty `plan`, and the harness that wrote the plan as `author-harness`. Follow
+that skill's resolver-path contract; the resolver is not relative to the project.
 
 The `plan` specialty is where a project names its dedicated plan-review route; `--author-harness` removes same-harness routes case-insensitively and fails closed if none remain. If resolution fails, stop and tell your human partner — do not review the plan through the harness that wrote it, and do not pick a reviewer yourself.
 

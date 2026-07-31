@@ -54,12 +54,10 @@ Use the elements-of-style:writing-clearly-and-concisely skill if available. Save
 
 Wait for their response. If they request changes, make them and self-review again. Only proceed once the user approves.
 
-**Alternate-harness review.** Upon the user's approval, resolve the reviewer through toolbelt:agent-routing:
-
-```bash
-scripts/resolve-agent --project-root <root> --role reviewer \
-  --reviewer-specialty spec --author-harness <harness that wrote the spec>
-```
+**Alternate-harness review.** Upon the user's approval, invoke
+toolbelt:agent-routing and resolve the reviewer with role `reviewer`, specialty
+`spec`, and the harness that wrote the spec as `author-harness`. Follow that
+skill's resolver-path contract; the resolver is not relative to the project.
 
 `--author-harness` removes same-harness routes case-insensitively and fails closed if no different-harness route remains. Dispatch the resolved reviewer to check the written specification for gaps, ambiguity, or poorly thought out design. Small technical gaps — fix the spec and proceed. A rework large enough to change the idea — bring it to the user. Unsure — ask.
 

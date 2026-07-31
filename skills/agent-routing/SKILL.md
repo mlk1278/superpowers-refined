@@ -7,12 +7,21 @@ description: Use at session start to load the project's agent routing, and befor
 
 Callers request logical roles; they never select concrete agents themselves.
 
+## Resolver path
+
+The resolver belongs to this skill, not to the consuming project. Set
+`ROUTING_SKILL_DIR` to the absolute directory containing this loaded `SKILL.md`,
+using the path reported by the harness when it loaded the skill. Invoke the
+resolver only as `"$ROUTING_SKILL_DIR/scripts/resolve-agent"`. Never run bare
+`scripts/resolve-agent`; a consuming project does not contain that file.
+
 ## The session brief
 
 Once per session, before dispatching anything:
 
 ```bash
-scripts/resolve-agent --project-root <root> --brief --harness <your harness>
+"$ROUTING_SKILL_DIR/scripts/resolve-agent" \
+  --project-root <root> --brief --harness <your harness>
 ```
 
 It returns every role at once — harness, model, effort, and per-role instructions — plus reviewer specialties and the project's custom instructions. Keep it for the session and route from it.
@@ -37,7 +46,8 @@ The boundary that matters: **code goes to the implementer and planning goes to t
 When you need one route and not the whole table — most often a reviewer, whose route depends on who wrote the code:
 
 ```bash
-scripts/resolve-agent --project-root <root> --role <role> --author-harness <harness>
+"$ROUTING_SKILL_DIR/scripts/resolve-agent" \
+  --project-root <root> --role <role> --author-harness <harness>
 ```
 
 Add `--harness`, `--workflow`, `--reviewer-specialty`, or explicit `--override-*` arguments only when you have that context. `--author-harness` is required for a reviewer. Harness comparison is case-insensitive; same-harness fallbacks are removed, and resolution fails closed when no different-harness route remains.

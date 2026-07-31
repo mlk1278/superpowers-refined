@@ -2,6 +2,19 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.3.1 (2026-07-30)
+
+Fixes agent routing when Toolbelt is installed as a plugin rather than checked
+out inside the consuming project.
+
+- **The routing resolver is anchored to its installed skill directory.**
+  `agent-routing` now invokes `resolve-agent` from the absolute directory that
+  contains its loaded `SKILL.md`, instead of treating `scripts/resolve-agent`
+  as relative to the consuming project's working directory. `using-toolbelt`
+  explicitly loads the routing skill before dispatch, while `writing-plans`
+  and `writing-specs` defer to that single path contract instead of publishing
+  duplicate project-relative commands.
+
 ## v7.3.0 (2026-07-28)
 
 Leaner planning guidance and updated default agent routes.
