@@ -23,6 +23,7 @@ Subagent (role: reviewer):
     | Spec Alignment | Plan covers spec requirements, no major scope creep |
     | Task Decomposition | Tasks have clear boundaries, steps are actionable |
     | Buildability | Could an engineer follow this plan without getting stuck? |
+    | Altitude | Implementation code where a contract belongs — the plan should carry stubs, signatures, endpoint shapes, and one-line test cases, with full code only in the Data Model section |
 
     ## Calibration
 

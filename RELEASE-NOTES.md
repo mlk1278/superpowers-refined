@@ -2,6 +2,15 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.4.0 (2026-08-01)
+
+Recalibrates planning and dispatch prompts for near-parity implementers. The old split — a strong planner writing code for a weak implementer — produced plans up to 9,861 lines (72% code fences) of never-executed code that implementers copied with the authority of an approved document. The new split: the plan decides everything; the implementer writes the code.
+
+- **Plans specify contracts, not implementations.** `writing-plans` gains a Plan Altitude section: complete code only for the data model (schema, migrations, shared types — once, in a `## Data Model` section at the top); signature stubs with error behavior for functions; exact method/path/shape/status for endpoints; one line per test (name — setup — assertion); `path:line` precedent for anything with one. The altitude test replaces "show the code": a step is specified when two capable implementers would produce behaviorally interchangeable code. Self-review, the cross-harness plan gate, and the plan reviewer prompt all police altitude. Verified by micro-test: 4/4 new-wording reps produced contract-shaped tasks; 2/2 old-wording controls reproduced the full-code failure.
+- **The implementer prompt sheds low-trust guardrails.** The mandated mutate-and-revert ritual for negative tests becomes a principle with the evidence method left to the implementer; three separate ask/escalate blocks collapse into one with concrete triggers; file organization within the task's surface is the implementer's call, reported rather than halted on. The gate-is-a-separate-command rule leaves the standing prompt (it remains in `subagent-driven-development` and as a `writing-plans` gotcha class for the plans that need it).
+- **Discovered out-of-scope bugs get an explicit policy.** Fix inline when trivial and tightly coupled to the change; otherwise report for the controller to plan. Never expand the diff chasing one.
+- **Reviewers read what judgment needs.** The task reviewer's diff-only mandate (with its carve-outs) becomes one principle: start from the diff, read further only where a judgment needs it, name what you checked. The whole-branch reviewer drops its twenty-question checklist battery and DO/DON'T list — dimensions plus calibration carry the review. The anti-thrash guards stay: reviewers still don't re-run suites to confirm reports, and implementers still never arrange their own review.
+
 ## v7.3.1 (2026-07-30)
 
 Fixes agent routing when Toolbelt is installed as a plugin rather than checked

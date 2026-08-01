@@ -7,9 +7,9 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits. A "stupid, low-effort" agent should be able to implement this plan on autopilot.
+Write comprehensive implementation plans for a highly capable engineer who has **zero context for our codebase**. They write excellent code and tests; what they lack is everything they can't see from inside one task: our conventions, what already exists, which decisions were made and why, and where the traps are. Document every decision they would otherwise have to make: which files to touch for each task, the contracts to build against, each test's purpose, docs they might need to check, how to verify. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+**The plan decides everything; the implementer writes the code.** A plan that writes the code instead is a PR-sized diff authored blind — code that has never been run, carrying the authority of an approved document, which implementers copy rather than question. Length is the tell: plans run hundreds of lines, not thousands.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
@@ -107,6 +107,12 @@ include this section.]
 that handles each. Task-specific traps belong on their task instead. Every
 task implicitly includes this section.]
 
+## Data Model
+
+[When the work adds or changes schema, migrations, shared types, or
+contracts: the complete code, here, once. Tasks reference it instead of
+repeating it. Omit the section when there is none.]
+
 ---
 ```
 
@@ -121,6 +127,24 @@ Before writing tasks, partition the plan into independently verifiable pull requ
 Every task number appears in exactly one boundary: no gaps and no overlap. A one-PR plan must state why no smaller independently verifiable outcome exists.
 
 For shared substrate, put the core plus one representative consumer in the first boundary. Later consumers may share a PR only when they repeat the same reviewer judgment. Novel lifecycle, export, or rollout work stays separate.
+
+## Plan Altitude: Contracts, Not Implementations
+
+Specify each artifact at the altitude where the decision lives:
+
+| Artifact | The plan writes |
+|---|---|
+| Data model — schema, migrations, shared types | Complete code, once, in the `## Data Model` section at the top. Every task derives from it |
+| Constants, config values, fixtures | Complete — exact values |
+| Functions and services | Signature stubs: exact name, parameters, return type, error behavior. Add the load-bearing lines (a lock order, a tricky query, a non-obvious algorithm) only when those lines are themselves the decision |
+| Endpoints | Method, path, request/response shape, status codes, capability — exact |
+| Tests | One line per test: name — setup — assertion. Full test code only when the harness itself is a trap with no in-repo precedent |
+| UI components | Name, props contract, states, which existing primitives to compose |
+| Anything with in-repo precedent | The decision plus the reference to copy: `path:line` |
+
+**The altitude test:** a step is fully specified when two capable implementers, working independently from it, would produce behaviorally interchangeable code — differing in variable names and line order, not in behavior. "Add appropriate error handling" fails the test. "Rejects a duplicate key with 409 `DUPLICATE_KEY`" passes it, no code block needed.
+
+The bounds are strict; the pen is theirs. The plan owns every behavior, name, and contract; within those, how the code is written is the implementer's call — do not prescribe it.
 
 ## Task Structure
 
@@ -142,29 +166,30 @@ For shared substrate, put the core plus one representative consumer in the first
 - [Traps in this task's code, each with the decision that handles it, or
   the constraint and an instruction to escalate. Omit the field if none.]
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write the failing tests**
+
+In `tests/exact/path/to/test.py`, one line per test — name — setup — assertion:
+- `test_rejects_duplicate_key` — org already has a definition with key `size` — `create_definition` raises `DuplicateKeyError`
+- `test_defaults_type_to_text` — input omits `type` — created row has `type == "TEXT"`
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `pytest tests/path/test.py -v`
+Expected: FAIL with "create_definition not defined"
+
+- [ ] **Step 3: Implement to the contract**
 
 ```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
+def create_definition(org_id: str, input: CreateDefinitionInput) -> Definition:
+    """Raises DuplicateKeyError (-> 409 DUPLICATE_KEY) when org already has input.key."""
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+Decisions the stub can't carry, one line each: [take the definition locks
+before the entity row; copy the tenancy filter from `definitions/service.py:88`]
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
+- [ ] **Step 4: Run tests to verify they pass**
 
-- [ ] **Step 3: Write minimal implementation**
-
-```python
-def function(input):
-    return expected
-```
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `pytest tests/path/test.py::test_name -v`
+Run: `pytest tests/path/test.py -v`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
@@ -177,17 +202,16 @@ git commit -m "feat: add specific feature"
 
 ## No Placeholders
 
-Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:
+A placeholder is an **undecided decision**, not unwritten code. Every step must pass the altitude test. These are **plan failures** — never write them:
 - "TBD", "TODO", "implement later", "fill in details"
-- "Add appropriate error handling" / "add validation" / "handle edge cases"
-- "Write tests for the above" (without actual test code)
-- "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
-- Steps that describe what to do without showing how (code blocks required for code steps)
+- "Add appropriate error handling" / "add validation" / "handle edge cases" — name the exact behavior instead
+- "Write tests for the above" — enumerate each test: name — setup — assertion
+- "Similar to Task N" (restate this task's contract in full — the engineer may be reading tasks out of order)
 - References to types, functions, or methods not defined in any task
 
 ## Remember
 - Exact file paths always
-- Complete code in every step — if a step changes code, show the code
+- Every behavior decided — exact names, types, and outcomes in every step
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
 
@@ -202,6 +226,8 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 **4. PR boundaries:** Reject boundaries that are missing, horizontal technical layers instead of outcomes, overlapping, or unjustified. Verify every task appears exactly once, dependencies form a workable order, each boundary can be independently verified, and any one-PR justification explains why no smaller outcome can stand alone. Missing, horizontal, overlapping, or unjustified boundaries are plan defects.
+
+**5. Altitude:** Scan the code fences. Any fence outside the Data Model section longer than ~15 lines is implementation that belongs to the implementer — pull it back to a stub plus the decisions it can't carry. A plan that is mostly code fences has failed this check regardless of its quality.
 
 Fix what you find inline. If you find a spec requirement with no task, add the task.
 
@@ -221,6 +247,7 @@ Dispatch the resolved reviewer with the plan path and the spec path. It may fan 
 - **Task decomposition** — each task independently testable, right-sized, in a workable order
 - **Interface consistency** — types, signatures, and names agree across tasks
 - **Placeholders** — any step that defers a decision instead of making it
+- **Altitude** — implementation code where a contract belongs; full test files where a case list belongs; a Data Model section missing or repeated across tasks
 - **Unflagged gotchas** — traps in the touched code the plan does not warn about
 - **Global Constraints** — present, with exact values copied from the spec
 - **PR boundaries** — reject missing, horizontal, overlapping, or unjustified boundaries; every task appears exactly once, dependencies are workable, and each PR has one outcome with independent verification

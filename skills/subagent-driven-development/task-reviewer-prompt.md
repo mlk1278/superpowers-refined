@@ -52,20 +52,14 @@ Subagent (role: reviewer):
 
     **Base:** [BASE_SHA]  **Head:** [HEAD_SHA]  **Diff file:** [DIFF_FILE]
 
-    Read the diff file once — it holds the commit list, stat summary, and
-    full diff with surrounding context, and it is your view of the change.
-    The diff's context lines ARE the changed files: do not Read a changed
-    file separately unless a hunk you must judge is cut off mid-function —
-    and say so in your report. Do not re-run git commands. If the diff file
-    is missing, fetch it yourself with `git diff --stat [BASE_SHA]..[HEAD_SHA]`
-    and `git diff [BASE_SHA]..[HEAD_SHA]`.
-
-    Do not crawl the broader codebase. Inspect code outside the diff only to
-    evaluate a concrete risk you can name — one focused check per named risk,
-    naming both the risk and what you checked in your report. Cross-cutting
-    changes are legitimate named risks: if the diff changes lock ordering, a
-    function or API contract, or shared mutable state, checking the call
-    sites is the right method.
+    Start from the diff file — it holds the commit list, stat summary, and
+    full diff with surrounding context. Read beyond it only where a judgment
+    needs it — a hunk cut off mid-function, a concrete risk you can name,
+    call sites of a changed contract or lock order — and name what you
+    checked in your report. Don't crawl the codebase: every excursion
+    should trace back to a finding or a check. If the diff file is missing,
+    fetch it yourself with `git diff --stat [BASE_SHA]..[HEAD_SHA]` and
+    `git diff [BASE_SHA]..[HEAD_SHA]`.
 
     Your review is read-only on this checkout. Do not mutate the working
     tree, the index, HEAD, or branch state. Do not dispatch subagents — you
