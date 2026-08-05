@@ -41,25 +41,31 @@ Subagent (role: reviewer):
 
     Read the implementer's report: [REPORT_FILE]
 
-    Treat it as unverified claims about the code — possibly incomplete,
-    inaccurate, or optimistic. Verify every claim against the diff. Design
-    rationales are claims too: "left it per YAGNI," "kept it simple
-    deliberately," or any other justification is the implementer grading
-    their own work. Judge the code on its merits; a stated rationale never
-    downgrades a finding's severity.
+    Treat it as unverified claims about the code — verify every claim
+    against the diff. Design rationales are claims too: "left it per
+    YAGNI" or any other justification is the implementer grading their own
+    work; a stated rationale never downgrades a finding's severity.
 
     ## Diff Under Review
 
     **Base:** [BASE_SHA]  **Head:** [HEAD_SHA]  **Diff file:** [DIFF_FILE]
 
-    Start from the diff file — it holds the commit list, stat summary, and
-    full diff with surrounding context. Read beyond it only where a judgment
-    needs it — a hunk cut off mid-function, a concrete risk you can name,
-    call sites of a changed contract or lock order — and name what you
-    checked in your report. Don't crawl the codebase: every excursion
-    should trace back to a finding or a check. If the diff file is missing,
-    fetch it yourself with `git diff --stat [BASE_SHA]..[HEAD_SHA]` and
+    Your evidence is the four documents above: brief, report, review
+    guidance, and this diff file (commit list, stat summary, full diff with
+    surrounding context). Read each once — quote what you need as you go
+    instead of re-opening one. If the diff file is missing, fetch it with
+    `git diff --stat [BASE_SHA]..[HEAD_SHA]` and
     `git diff [BASE_SHA]..[HEAD_SHA]`.
+
+    Every read beyond those four documents must verify a specific finding
+    you already suspect, and your report names each one with the finding it
+    served. That covers: a hunk cut off mid-function, call sites of a
+    contract this diff changed, a concrete risk you can name. It never
+    covers, whatever the justification: git history or blame, other tasks'
+    briefs, reports, or diffs, the plan or spec, or code the diff didn't
+    touch beyond one targeted look per finding. A judgment that needs that
+    wider context is a ⚠️ item for the controller, not your excursion.
+    Thoroughness is measured by findings per read, not reads.
 
     Your review is read-only on this checkout. Do not mutate the working
     tree, the index, HEAD, or branch state. Do not dispatch subagents — you
@@ -69,11 +75,11 @@ Subagent (role: reviewer):
 
     The implementer already ran the tests and reported results with TDD
     evidence for exactly this code. **Do not re-run the suite to confirm
-    their report.** Run a test only when reading the code raises a specific
-    doubt no existing run answers — and then a focused test, never a
+    their report.** You get at most one focused test run, only when reading
+    the code raises a specific doubt no reported run answers — never a
     package-wide suite, race detector run, or repeated/high-count loop. If
-    heavy validation seems warranted, recommend it instead of running it. If
-    you cannot run commands here, name the test you would run.
+    heavier validation seems warranted, recommend it instead of running it.
+    If you cannot run commands here, name the test you would run.
 
     Warnings or other noise in the implementer's reported test output are
     findings — test output should be pristine.
@@ -125,9 +131,6 @@ Subagent (role: reviewer):
     defect, that IS a finding — report it as Important, labeled
     plan-mandated. The plan's authorship does not grade its own work; the
     human decides.
-
-    Acknowledge what was done well before listing issues — accurate praise
-    helps the implementer trust the rest of the feedback.
 
     ## Output Format
 

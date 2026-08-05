@@ -2,6 +2,22 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.4.1 (2026-08-05)
+
+Constrains the task reviewer's evidence gathering. Production AGX logs showed
+high-effort reviewers re-reading documents, opening other tasks' briefs and
+reports, running `git blame`/`git log` archaeology, tracing untouched code
+across the app, and re-running test suites — roughly 3× the implementation
+time spent on review.
+
+- **The task reviewer gets a closed evidence set.** Brief, report, review
+  guidance, and diff file — each read once. Reads beyond those four must
+  verify a specific suspected finding and be named in the report; git
+  history, other tasks' artifacts, the plan/spec, and untouched code beyond
+  one targeted look per finding are out of scope regardless of
+  justification. At most one focused test run. Thoroughness is measured by
+  findings per read, not reads.
+
 ## v7.4.0 (2026-08-01)
 
 Recalibrates planning and dispatch prompts for near-parity implementers. The old split — a strong planner writing code for a weak implementer — produced plans up to 9,861 lines (72% code fences) of never-executed code that implementers copied with the authority of an approved document. The new split: the plan decides everything; the implementer writes the code.
