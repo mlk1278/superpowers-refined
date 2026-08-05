@@ -41,16 +41,18 @@ A new optional plan-header section, `## Execution Tracks`, placed after
 | Track | Tasks | Depends on | Files touched (summary) | Why safe |
 |---|---|---|---|---|
 | serial-1 | 1–2 | — | shared types, API contract | mainline (contract freeze) |
-| A: backend | 3–6 | serial-1 | src/server/** | disjoint from B, C |
-| B: frontend | 7–9 | serial-1 | src/app/settings/** | disjoint from A, C |
-| C: e2e-specs | 10 | serial-1 | e2e/** | disjoint from A, B |
-| serial-2 | 11 | A, B, C | (integration) | merge point |
+| backend | 3–6 | serial-1 | src/server/** | disjoint from frontend, e2e-specs |
+| frontend | 7–9 | serial-1 | src/app/settings/** | disjoint from backend, e2e-specs |
+| e2e-specs | 10 | serial-1 | e2e/** | disjoint from backend, frontend |
+| serial-2 | 11 | backend, frontend, e2e-specs | (integration) | merge point |
 ```
 
 Structure rules:
 
-- Every task number appears in exactly one track (mainline segments are tracks
-  named `serial-N`). Tasks within a track run in numeric order.
+- Track ids are kebab-case slugs (they become branch names and worktree
+  directory names). Mainline segments are tracks named `serial-N`.
+- Every task number appears in exactly one track. Tasks within a track run in
+  numeric order.
 - `Depends on` names tracks, forming a DAG. Tracks with identical satisfied
   dependencies may run concurrently.
 - Mainline segments (`serial-N`) execute in the primary worktree; named tracks
