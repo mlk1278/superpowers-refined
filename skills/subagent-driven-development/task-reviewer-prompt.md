@@ -49,8 +49,8 @@ Subagent (role: reviewer):
     **Base:** [BASE_SHA]  **Head:** [HEAD_SHA]  **Diff file:** [DIFF_FILE]
 
     Your evidence is these documents: the brief, the report, the review
-    guidance, and the diff file (commit list, stat summary, full diff with
-    surrounding context) — read each once. One targeted read beyond them
+    guidance, the smell baseline, and the diff file (commit list, stat
+    summary, full diff with surrounding context) — read each once. One targeted read beyond them
     per suspected finding, named in your report with the finding it served.
     A judgment that needs wider context than that is a ⚠️ item for the
     controller, not your excursion. You are read-only on this checkout and
@@ -78,8 +78,10 @@ Subagent (role: reviewer):
 
     ## Part 2: Code Quality
 
-    - **Code:** clean separation of concerns? proper error handling? DRY
-      without premature abstraction? edge cases handled?
+    - **Code:** proper error handling? edge cases handled? Read the smell
+      baseline at [SMELLS_FILE] and name any smell this diff matches,
+      quoting the hunk — each is a labelled judgment call, and a
+      documented repo standard overrides the baseline.
     - **Tests:** do the new and changed tests verify real behavior rather
       than mocks? are the task's edge cases covered? Every guard, absence,
       or negative assertion must be **seen red** in the report — its TDD
@@ -153,6 +155,8 @@ Subagent (role: reviewer):
 - `[BASE_SHA]` / `[HEAD_SHA]` — commit before this task / current commit
 - `[DIFF_FILE]` — REQUIRED: the path from `scripts/review-package BASE HEAD`
   (the package never enters the controller's context)
+- `[SMELLS_FILE]` — REQUIRED: the resolved path to
+  `../requesting-code-review/smell-baseline.md`
 
 **Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
 (Critical/Important/Minor), Task quality verdict.

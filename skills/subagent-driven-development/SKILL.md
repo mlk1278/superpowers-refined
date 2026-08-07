@@ -102,7 +102,7 @@ Everything you paste into a dispatch prompt — and everything a subagent prints
 
 - **Task brief:** run `scripts/task-brief PLAN_FILE N` before dispatching an implementer; it writes the task's full text to a file and prints the path. The dispatch itself contains: (1) one line on where this task fits; (2) the brief path, introduced as "read this first — it is your requirements, with the exact values to use verbatim"; (3) interfaces and decisions from earlier tasks the brief cannot know, plus the plan's Global Constraints and Known Gotchas; (4) your resolution of any ambiguity you spotted; (5) the report-file path and report contract. Exact values — numbers, magic strings, signatures, test cases — appear **only** in the brief.
 - **Report file:** name it after the brief (`…/task-N-brief.md` → `…/task-N-report.md`). The implementer writes its full report there and returns only status, commits, a one-line test summary, and concerns.
-- **Reviewer inputs:** three paths — the brief, the report, the review package — plus the global constraints binding the task.
+- **Reviewer inputs:** four paths — the brief, the report, the review package, and the smell baseline (`../requesting-code-review/smell-baseline.md`) — plus the global constraints binding the task.
 - **Review package:** `scripts/review-package --plan PLAN_FILE BASE HEAD` for tasks, `scripts/review-package --plan PLAN_FILE MERGE_BASE HEAD` for the final review (MERGE_BASE = `git merge-base main HEAD`). Pass the printed path as the reviewer's `[DIFF_FILE]`; the output never enters your context.
 - Fix dispatches append their fix report (with test results) to the same report file and return a short summary; re-reviews read the updated file.
 

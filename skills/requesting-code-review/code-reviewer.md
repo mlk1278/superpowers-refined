@@ -59,8 +59,10 @@ Subagent (role: reviewer):
     deviations justified improvements or problematic departures), code
     quality, architecture and security, tests (verify real behavior rather
     than mocks, cover the edge cases, all passing), and production
-    readiness (migrations, backward compatibility). Depth comes from your
-    judgment of this diff, not from working a checklist.
+    readiness (migrations, backward compatibility). For code quality, read
+    the smell baseline at [SMELLS_FILE] and name any smell the branch
+    matches, quoting the hunk. Depth comes from your judgment of this
+    diff, not from working a checklist.
 
     ## Calibration
 
@@ -112,6 +114,8 @@ Subagent (role: reviewer):
   the orchestrator; use `None` when there is no useful nuance
 - `[BASE_SHA]` — starting commit
 - `[HEAD_SHA]` — ending commit
+- `[SMELLS_FILE]` — the resolved path to [smell-baseline.md](smell-baseline.md)
+  in this skill's directory
 - `[DIFF_FILE]` — the review package path from
   `../subagent-driven-development/scripts/review-package BASE HEAD`. Required
   when a dispatcher has that script available (subagent-driven-development

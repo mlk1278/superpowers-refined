@@ -37,6 +37,8 @@ for prompt in "$task_prompt" "$final_prompt"; do
     "review prompt accepts orchestrator-supplied nuance"
   assert_contains "$prompt" 'does not override requirements,' \
     "review nuance cannot pre-judge findings"
+  assert_contains "$prompt" '[SMELLS_FILE]' \
+    "review prompt carries the smell baseline"
 done
 
 assert_contains "$task_prompt" 'This read is an explicit exception to the limits on' \
@@ -51,5 +53,7 @@ assert_contains "$requesting" 'Do not read `docs/REVIEW-GUIDANCE.md` yourself' \
   "ad hoc review caller leaves guidance to reviewer"
 assert_not_contains "$implementer_prompt" 'docs/REVIEW-GUIDANCE.md' \
   "implementer prompt does not receive reviewer guidance"
+assert_not_contains "$implementer_prompt" 'smell-baseline' \
+  "implementer prompt does not receive the smell baseline"
 
 echo "PASS"
