@@ -37,25 +37,23 @@ assert_contains "$skill" "Bind all evidence to the current head" "exact-head evi
 assert_contains "$skill" "at most once per head request each policy-named provider" "single review request per head"
 assert_contains "$skill" "fail closed on unavailable" "CI unavailable fails closed"
 assert_contains "$skill" "Once every awaited provider has completed on the current head" "fix round waits for all awaited providers"
-assert_contains "$skill" "Dispatch fixer(s) routed via agent-routing" "fixers dispatched through routing"
-assert_contains "$skill" "several in parallel when findings are independent" "fixer count matches finding spread"
-assert_contains "$skill" "push all fixes as one batch" "one push per fix round"
+assert_contains "$skill" "judge it yourself" "monitor judges findings itself"
+assert_contains "$skill" "fix what is real inline" "monitor fixes inline, no dispatched fixers"
+assert_contains "$skill" "Push all fixes as one batch" "one push per fix round"
 assert_contains "$skill" "next round on the new head is the re-review" "providers re-review each push"
 assert_contains "$skill" "drops out of the awaited set for that head" "fallback is per provider"
-assert_contains "$skill" "Record the fallback reason." "fallback is recorded"
+assert_contains "$skill" "Record the fallback reason" "fallback is recorded"
 assert_contains "$skill" "confirm the remote PR is \`MERGED\`" "merge confirmation"
 assert_contains "$skill" "The caller owns post-merge reconciliation." "reconciliation stays with caller"
 assert_contains "$skill" "Do not nest another watcher." "no nested watchers"
 assert_no_model_names "$skill"
 
-assert_contains "$skill" "you do not overrule a reviewer" \
-  "monitor does not adjudicate reviewer findings"
-assert_contains "$skill" "or to a high-effort reviewer for a second opinion" \
-  "suspected-invalid findings escalate"
-assert_contains "$skill" "provider stale:" \
-  "provider staleness is a named condition, not a quiet fallback"
+assert_contains "$skill" "genuinely entangled" \
+  "only entangled findings escalate to the caller"
+assert_contains "$skill" "the policy file decides whether a recorded fallback blocks" \
+  "fallback adjudication belongs to the policy file"
 assert_contains "$skill" "in the PR body before merging" \
-  "staleness surfaces before the merge, not only in the return"
+  "fallback surfaces before the merge, not only in the return"
 
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
 grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }

@@ -5,7 +5,7 @@ description: Own one pull request from its current head through CI, configured r
 
 # PR Monitor
 
-Own exactly one PR and its worktree until it is merged or genuinely blocked. This skill is the sole source of PR review, CI, fix-loop, and merge mechanics; callers start it once and wait for its return.
+Own exactly one PR and its worktree until it is merged or genuinely blocked. This skill is the sole source of PR review, CI, fix-loop, and merge mechanics; callers start it once and wait for its return. You monitor, judge findings, fix, push, and merge yourself — one agent, no dispatched fixers.
 
 ## Project policy
 
@@ -13,24 +13,20 @@ Read `.toolbelt/pr-policy.md` at the repository root when it exists. It names th
 
 ## Preflight
 
-Capture the PR number, branch, current full head SHA, merge state, and the approved local-gate SHA. The local final gate must have approved this exact head before monitoring begins. Bind all evidence to the current head; any push starts a new evidence cycle. Exception: a push whose commits touch only Markdown files under `docs/**` or at the repository root, or `.toolbelt/**` scratch, carries local-gate and completed-review evidence forward — record it explicitly ("gate at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). A file the application builds, renders, or serves, or that CI executes, never qualifies regardless of path. CI is never carried forward: exact-head green CI is still required on the new head. For provider completion, a review object naming the recorded carried-forward predecessor head counts as current-head completion — do not request a new provider review for a docs-only push.
+Capture the PR number, branch, current full head SHA, merge state, and the local-gate SHA. The local final gate must have approved this exact head before monitoring begins. Bind all evidence to the current head; any push starts a new evidence cycle. Exception: a push touching only Markdown under `docs/**` or the repository root, or `.toolbelt/**` scratch, carries local-gate and completed-review evidence forward — record the range. CI is never carried forward, and a file the application builds, renders, or serves, or that CI executes, never qualifies.
 
 ## Monitor loop
 
-1. Refresh the PR head, merge state, and unresolved threads. A conflicting PR schedules no CI; resolve the conflict before diagnosing missing checks.
+1. Refresh the PR head, merge state, and unresolved threads. A conflicting PR schedules no CI; resolve the conflict first.
 2. Refresh exact-head CI (`gh pr checks` or the policy file's command). Distinguish failed from pending from unavailable, and fail closed on unavailable — it is not a green result.
 3. Await, and at most once per head request each policy-named provider. Only a current-head review object or an authenticated completion naming the current commit counts as completion; acknowledgements and reactions never do.
-4. Once every awaited provider has completed on the current head, verify findings against the code. Dispatch fixer(s) routed via agent-routing — one agent for a small or entangled set, several in parallel when findings are independent and touch separate surfaces — confirm each fixer's fresh passing covering-test evidence and inspect the fixes (never rerun a local workspace suite — exact-head CI owns suite-level regression), then push all fixes as one batch. The push starts a new evidence cycle; the awaited providers' next round on the new head is the re-review.
-
-   **You fix and merge; you do not overrule a reviewer.** A finding you believe is invalid goes to the slice orchestrator, or to a high-effort reviewer for a second opinion — with the code evidence, not a verdict. Complying with a wrong finding deletes live behaviour; rebutting a right one ships a defect. Neither is a low-effort judgement, and this role runs cheap. Post the rebuttal once someone with the authority to make that call has made it.
+4. Once every awaited provider has completed on the current head, verify each finding against the code and judge it yourself: fix what is real inline, rebut what is not on the thread with the code evidence. Each fix carries fresh passing covering-test evidence; never rerun a local workspace suite — exact-head CI owns suite-level regression. Push all fixes as one batch. The push starts a new evidence cycle, and the awaited providers' next round on the new head is the re-review — they are the independent check on your fixes, so no extra review loop. A genuinely entangled finding — colliding with the plan, another in-flight lane, or a decision above this PR — goes to the caller with the code evidence.
 5. If no action is ready, wait one bounded interval (default 180 seconds; policy may override) and refresh. Do not nest another watcher.
 
 ## Fallback
 
-A provider that reaches the policy timeout on one head (default 60 minutes), or explicitly fails, skips, or rate-limits, drops out of the awaited set for that head. Record the fallback reason. Every remaining condition still applies — the other awaited providers, exact-head green CI, and the recorded local gate approval. Do not switch to a provider the policy does not name.
-
-Keep a consecutive-miss count per provider: increment it when a requested head ends with that provider in fallback, reset it when that provider completes a requested head. Two consecutive misses make the provider stale. Staleness is a named condition rather than a quiet fallback — record `provider stale: <name>, <n> heads` in the PR body before merging and in your return, and let the policy file decide whether it blocks. A provider that never recovers withdraws its independent judgement from every head after the first while all the merge conditions still read clean.
+A provider that reaches the policy timeout on one head (default 60 minutes), or explicitly fails, skips, or rate-limits, drops out of the awaited set for that head. Record the fallback reason in the PR body before merging and in your return; the policy file decides whether a recorded fallback blocks. Every remaining condition still applies. Do not switch to a provider the policy does not name.
 
 ## Merge and return
 
-Immediately before merging, re-verify on the expected head (or a head that differs from it only by recorded docs-only carry-forward commits): policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit — to the caller. The caller owns post-merge reconciliation.
+Immediately before merging, re-verify on the expected head (or one differing only by recorded docs-only carry-forward): policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit. The caller owns post-merge reconciliation.
