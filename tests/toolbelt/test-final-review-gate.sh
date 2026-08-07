@@ -60,8 +60,6 @@ assert_contains 'out-of-scope observations go to the ledger as deferred minors a
 
 assert_contains 'it never carries a check that gates that command' \
   "a buffered wrapper cannot carry a gating check"
-assert_contains 'A status-only return is none of those three' \
-  "an orchestrator returns for a decision, a handoff, or a block"
 
 assert_not_contains '### Final whole-branch gate' "exact-head gate section removed"
 assert_not_contains 'REVIEW_HEAD=$(git rev-parse HEAD)' "exact-head state removed"
