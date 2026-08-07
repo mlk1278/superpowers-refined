@@ -7,13 +7,7 @@ description: Use when executing implementation plans with independent tasks in t
 
 Execute a plan by dispatching a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end.
 
-**Why subagents:** you delegate to agents with isolated context. They never inherit your session's history — you construct exactly what each one needs, which keeps them focused and preserves your context for coordination.
-
-**Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record.
-
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
-
-When you were dispatched as an orchestrator, the same rule governs your own return: return to ask for a decision you cannot make, to deliver a completed handoff, or to report a durable block. A status-only return is none of those three and costs a full round trip. If your harness cannot wait on a background child, say so explicitly rather than substituting status returns.
+**Continuous execution:** Do not pause to check in with your human partner between tasks unless given a BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. 
 
 ## The Process
 
@@ -106,7 +100,7 @@ Per-task reviews are task-scoped gates; the broad review happens once, at the en
 - **The global-constraints block is the reviewer's attention lens.** Copy binding requirements verbatim from the plan's Global Constraints or the spec: exact values, exact formats, stated relationships between components ("same layout as X", "matches Y"). The template already carries the process rules — this block is for what THIS project's spec demands.
 - **`[REVIEW_NUANCE]`** takes concise task-specific context and concrete risks. It may direct attention but must not override requirements, suppress findings, or pre-judge severity. Use `None` when there is none.
 - **`docs/REVIEW-GUIDANCE.md` is reviewer-only.** Do not read it while orchestrating or pass it to implementers, fixers, explorers, planners, errands, or monitors. Reviewer templates tell the reviewer to read it when it exists.
-- **A dispatch prompt describes one task, not the session's history.** Do not paste accumulated prior-task summaries ("state after Tasks 1-3") into later dispatches — a real session's dispatch hit 42k chars of which 99% was pasted history. A fresh subagent needs its task, the interfaces it touches, and the global constraints. Nothing else.
+- **A dispatch prompt describes one task, not the session's history.** Do not paste accumulated prior-task summaries ("state after Tasks 1-3") into later dispatches.
 - **Findings that conflict with the plan are the human's decision.** Present the finding and the plan text and ask which governs. Do not dismiss a finding because the plan mandates it, and do not dispatch a fix that contradicts the plan without asking.
 - **Fix dispatches carry the implementer contract:** the fixer re-runs the tests covering its change and reports results. Name the covering test files — a one-line fix does not need the whole suite. Before re-dispatching the reviewer, confirm the fix report contains the covering tests, the command, and the output.
 - **Minor findings go in the ledger,** and you point the final review at that list so it can triage what must be fixed before merge. A roll-up nobody reads is a silent discard.
