@@ -11,7 +11,7 @@ Skills are behavior-shaping code. You write them the way you write code under TD
 
 **Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
 
-**REQUIRED BACKGROUND:** `toolbelt:test-driven-development` defines the RED-GREEN-REFACTOR cycle this adapts. For Anthropic's official authoring guidance, see [anthropic-best-practices.md](anthropic-best-practices.md).
+**REQUIRED BACKGROUND:** `toolbelt:test-driven-development` defines the RED-GREEN-REFACTOR cycle this adapts. `toolbelt:writing-for-agents` holds the editorial rules every skill edit applies — context pointers, information hierarchy, leading words, the no-op test. For Anthropic's official authoring guidance, see [anthropic-best-practices.md](anthropic-best-practices.md).
 
 ## The Iron Law
 

@@ -105,6 +105,7 @@ Scratch lands in `.toolbelt/`; add it to `.gitignore`. See [docs/ADOPTING-IN-A-P
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
+- **writing-for-agents** - Editorial rules for any agent-consumed document
 - **using-toolbelt** - Introduction to the skills system
 
 ## Philosophy
@@ -123,6 +124,8 @@ Plugin-infrastructure tests live in `tests/` and run via the relevant `run-*.sh`
 ## Credit
 
 Toolbelt began as a fork of [Superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://blog.fsck.com) and [Prime Radiant](https://primeradiant.com). The methodology and much of the original skill content came from there. It has since diverged and is maintained independently.
+
+The `writing-for-agents` skill and the review smell baseline are adapted from [Matt Pocock's skills](https://github.com/mattpocock/skills) (MIT).
 
 ## License
 
