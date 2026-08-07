@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "instructions": "If your harness can dispatch the agent type natively, use the native tool call rather than AGX. Bounded reads, summaries, and single-file checks are not delegation tasks - do them in context. Policy lives in docs/SUBAGENT-ROUTING.md; this file is the machine-readable half.",
+  "instructions": "If your harness can dispatch the agent type natively, use the native tool call rather than AGX. Bounded reads, summaries, and single-file checks are not delegation tasks - do them in context.",
   "roles": {
     "implementer": {
       "harness": "claude",
@@ -57,13 +57,13 @@
     "monitor": {
       "harness": "claude",
       "model": "opus-5",
-      "effort": "low",
-      "instructions": "A wrapper/dispatch slot: owns a PR through CI, review providers, fix loops, and merge. Dispatches and relays, never does the work itself.",
+      "effort": "medium",
+      "instructions": "Owns one PR end to end: monitors CI and review providers, judges ordinary findings, fixes them inline, pushes, and merges. Escalates only genuinely entangled findings.",
       "fallbacks": [
         {
           "harness": "codex",
           "model": "gpt-5.6-sol",
-          "effort": "low"
+          "effort": "medium"
         }
       ]
     },

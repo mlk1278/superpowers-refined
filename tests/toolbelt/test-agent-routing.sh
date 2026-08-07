@@ -167,7 +167,7 @@ explorer|medium|medium
 planner|high|high
 implementer|medium|high
 errand|low|low
-monitor|low|low
+monitor|medium|medium
 CASES
 
 assert_route "bundled reviewer" \
