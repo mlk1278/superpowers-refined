@@ -27,8 +27,7 @@ Subagent (role: reviewer):
     If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it now.
     This file is reviewer-only. Apply its project-wide review guidance and
     report any conflict with the task requirements instead of guessing.
-    This read is an explicit exception to the limits on broader codebase
-    inspection below.
+    This read is an explicit exception to the limits on evidence below.
 
     ## Task-Specific Review Nuance
 
@@ -42,47 +41,29 @@ Subagent (role: reviewer):
     Read the implementer's report: [REPORT_FILE]
 
     Treat it as unverified claims about the code — verify every claim
-    against the diff. Design rationales are claims too: "left it per
-    YAGNI" or any other justification is the implementer grading their own
-    work; a stated rationale never downgrades a finding's severity.
+    against the diff. Design rationales are claims too: a stated
+    rationale never downgrades a finding's severity.
 
     ## Diff Under Review
 
     **Base:** [BASE_SHA]  **Head:** [HEAD_SHA]  **Diff file:** [DIFF_FILE]
 
-    Your evidence is the four documents above: brief, report, review
-    guidance, and this diff file (commit list, stat summary, full diff with
-    surrounding context). Read each once — quote what you need as you go
-    instead of re-opening one. If the diff file is missing, fetch it with
+    Your evidence is these documents: the brief, the report, the review
+    guidance, and the diff file (commit list, stat summary, full diff with
+    surrounding context) — read each once. One targeted read beyond them
+    per suspected finding, named in your report with the finding it served.
+    A judgment that needs wider context than that is a ⚠️ item for the
+    controller, not your excursion. You are read-only on this checkout and
+    you are the review: leave the working tree untouched and dispatch no
+    subagents. If the diff file is missing, fetch it with
     `git diff --stat [BASE_SHA]..[HEAD_SHA]` and
     `git diff [BASE_SHA]..[HEAD_SHA]`.
 
-    Every read beyond those four documents must verify a specific finding
-    you already suspect, and your report names each one with the finding it
-    served. That covers: a hunk cut off mid-function, call sites of a
-    contract this diff changed, a concrete risk you can name. It never
-    covers, whatever the justification: git history or blame, other tasks'
-    briefs, reports, or diffs, the plan or spec, or code the diff didn't
-    touch beyond one targeted look per finding. A judgment that needs that
-    wider context is a ⚠️ item for the controller, not your excursion.
-    Thoroughness is measured by findings per read, not reads.
-
-    Your review is read-only on this checkout. Do not mutate the working
-    tree, the index, HEAD, or branch state. Do not dispatch subagents — you
-    are the review; the controller owns any follow-up review or fix dispatch.
-
-    ## Tests
-
-    The implementer already ran the tests and reported results with TDD
-    evidence for exactly this code. **Do not re-run the suite to confirm
-    their report.** You get at most one focused test run, only when reading
-    the code raises a specific doubt no reported run answers — never a
-    package-wide suite, race detector run, or repeated/high-count loop. If
-    heavier validation seems warranted, recommend it instead of running it.
-    If you cannot run commands here, name the test you would run.
-
-    Warnings or other noise in the implementer's reported test output are
-    findings — test output should be pristine.
+    The implementer's reported runs are the test evidence — verify the
+    claims against the diff rather than re-running them. You get at most
+    one focused test run, only when reading the code raises a specific
+    doubt no reported run answers. Warnings or other noise in the reported
+    output are findings — test output should be pristine.
 
     ## Part 1: Spec Compliance
 
@@ -93,27 +74,23 @@ Subagent (role: reviewer):
     - **Misunderstood:** right feature built the wrong way, wrong problem solved
 
     If a requirement cannot be verified from this diff alone (it lives in
-    unchanged code or spans tasks), report it as a ⚠️ item instead of
-    broadening your search.
+    unchanged code or spans tasks), report it as a ⚠️ item.
 
     ## Part 2: Code Quality
 
     - **Code:** clean separation of concerns? proper error handling? DRY
       without premature abstraction? edge cases handled?
     - **Tests:** do the new and changed tests verify real behavior rather
-      than mocks? are the task's edge cases covered? For every test
-      asserting an absence, a guard, or a negative, the report must carry
-      evidence it can fail — its TDD RED, or a recorded mutate-and-revert.
-      A test you can read as unable to fail is Important whatever the
-      report claims. When the diff deletes tests, name any surface the
-      change keeps that loses assertions, and where that coverage moved.
-      Coverage for a kept surface that disappears with deleted behaviour is
-      a finding, and a passing suite never shows it.
-    - **Structure:** does each file have one clear responsibility and a
-      well-defined interface? are units testable independently? does the
-      implementation follow the plan's file structure? did this change create
-      files that are already large, or significantly grow existing ones?
-      (Don't flag pre-existing file sizes — judge what this change added.)
+      than mocks? are the task's edge cases covered? Every guard, absence,
+      or negative assertion must be **seen red** in the report — its TDD
+      RED, or a recorded mutate-and-revert. A guard with no seen-red
+      evidence is Important whatever the report claims. When the diff
+      deletes tests, name any surface the change keeps that loses
+      assertions, and where that coverage moved.
+    - **Structure:** does each file have one clear responsibility? are
+      units testable independently? does the implementation follow the
+      plan's file structure? judge what this change added, not
+      pre-existing file sizes.
 
     Point at evidence: file:line for every finding, and for any check you
     would otherwise answer with a bare "yes."
@@ -136,8 +113,7 @@ Subagent (role: reviewer):
 
     Your final message is the report itself: begin directly with the
     spec-compliance verdict. Every line is a verdict, a finding with
-    file:line, or a check you ran — no preamble, no process narration, no
-    closing summary.
+    file:line, or a check you ran.
 
     ### Spec Compliance
 
@@ -170,8 +146,7 @@ Subagent (role: reviewer):
 - `[BRIEF_FILE]` — REQUIRED: the task brief (`scripts/task-brief PLAN N` prints
   the path; the same file the implementer worked from)
 - `[GLOBAL_CONSTRAINTS]` — binding requirements copied verbatim from the plan's
-  Global Constraints or the spec: exact values, formats, and stated
-  relationships between components (not process rules — the template has those)
+  Global Constraints or the spec (not process rules — the template has those)
 - `[REVIEW_NUANCE]` — concise task-specific context or concrete risks; `None`
   when there is no useful nuance
 - `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its report to
@@ -181,6 +156,3 @@ Subagent (role: reviewer):
 
 **Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
 (Critical/Important/Minor), Task quality verdict.
-
-A fix dispatch can address spec gaps and quality findings together; re-review
-after fixes covers both verdicts.

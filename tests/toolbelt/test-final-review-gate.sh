@@ -51,9 +51,9 @@ assert_contains 'Then run exactly one scoped re-review of the fix wave' \
   "final fix wave is re-reviewed over its delta"
 assert_contains 'There is no second fix wave' \
   "final review does not loop indefinitely"
-assert_contains '**Three rounds maximum per task.**' \
+assert_contains '**One fix round per task.**' \
   "task fix loop is bounded"
-assert_contains 'Adjudicate **only** at the cap' \
+assert_contains 'Adjudicate **only** after the re-review' \
   "adjudication cannot be used to exit the loop early"
 assert_contains 'out-of-scope observations go to the ledger as deferred minors and never extend the loop' \
   "re-review scope cannot grow the loop"
