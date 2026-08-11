@@ -150,7 +150,7 @@ existing cleanup removes it after merge. The ledger's content lives on in the sp
 
 ### 2. Edit: `skills/brainstorming/SKILL.md` — the offer and the gate carve-out
 
-Three precise text changes, no others:
+Four precise text changes, no others:
 
 1. **The offer.** Modeled on the existing visual-companion offer pattern. When the feature
    has a significant user-facing surface, its API lives in this repository (the
@@ -180,6 +180,12 @@ Three precise text changes, no others:
 3. **"After the Design" fork.** The paragraph naming writing-specs as the sole next skill
    gains the accepted-offer branch: accepted offer → interactive-design; otherwise →
    writing-specs, unchanged. Each branch still names exactly one next skill.
+
+4. **Checklist and terminal-state consistency.** Checklist item 6 ("Hand off to
+   writing-specs") and the line "The terminal state is invoking writing-specs." become
+   conditional on the same predicate — writing-specs by default, interactive-design when
+   your human partner accepted the frontend-first offer — so no unconditional sentence
+   contradicts the fork.
 
 ### 3. Edit: `skills/writing-specs/SKILL.md` — entry gate
 
@@ -275,8 +281,11 @@ the spec's acceptance criteria with its own captures → finishing/pr-monitor un
 - The test also asserts the fixture-zero check appears with its exclusions
   (`':!docs/toolbelt'` and `':!.toolbelt'`) — the self-matching-grep gotcha must not be
   reintroduced by a later edit.
-- **Acceptance test** (manual, per CLAUDE.md): refresh both plugin caches
-  (uninstall-first for Claude Code), fresh session in each harness:
+- **Acceptance test** (manual, per CLAUDE.md's refresh procedure): a **pre-merge gate**,
+  not a post-release chore. Owner: your human partner runs the drills; the orchestrator
+  refreshes both plugin caches from this branch (uninstall-first for Claude Code) and
+  verifies with grep against the cache that the new skill is present before any drill is
+  trusted. Fresh session in each harness:
   - UI-heavy prompt ("Let's build a dashboard for X") → brainstorming fires, and once the
     intent-level design is approved the frontend-first offer appears as its own message.
   - Backend-only prompt ("Let's add a cron cleanup job") → no offer; normal handoff to
