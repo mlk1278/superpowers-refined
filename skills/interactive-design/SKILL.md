@@ -53,11 +53,19 @@ Edit directly in this session: no subagent dispatch, no per-iteration review. Co
 - API section lifted from the ledger.
 - One fixture-replacement requirement per `[FIXTURE]` / `[EXISTING — EXTENDED]` entry: implement the exact recorded shape, remove the marker, flip the entry to `[IMPLEMENTED]`.
 - Hardening requirements: frontend tests per project conventions, plus loading and slow-response handling — the empty and error appearances were already approved in the loop.
-- The fixture-zero check: `git grep TOOLBELT-FIXTURE -- ':!docs/toolbelt' ':!.toolbelt'` exits 1 (no matches) at the final whole-branch review. Projects that deliberately keep fixtures (tests, storybook) record the exception in the ledger and add those paths to the exclusion list.
+- The fixture-zero check, stated below.
 - ux-gate criteria are the ledger's Acceptance criteria.
 - Ledger synchronization: contract changes accepted in spec or plan review are written back to ledger and fixture in the same round.
 - Prototype-commit accounting: prototype commits predate the plan and are covered by the hardening tasks and the final whole-branch review, inside the single PR.
 - Single-PR mandate, with its standing justification: fixtures must never reach the base branch.
+
+The fixture-zero check:
+
+```
+git grep TOOLBELT-FIXTURE -- ':!docs/toolbelt' ':!.toolbelt'
+```
+
+exits 1 (no matches) at the final whole-branch review. Projects that deliberately keep fixtures (tests, storybook) record the exception in the ledger and add those paths to the exclusion list.
 
 ## 6. When a contract turns out infeasible
 
@@ -65,7 +73,11 @@ During SDD this is the existing BLOCKED escalation. The human-approved resolutio
 
 ## 7. The ledger
 
-Path: `.toolbelt/prototype/<feature-slug>/contracts.md`. Header carries the feature, the branch, the marker string, and any conventions inferred because `.toolbelt/prototyping.md` was absent. One entry per endpoint at plan altitude — REST: method, path, request/response shapes, status codes; other conventions: the project's API unit (GraphQL operation, RPC procedure) with shapes and error modes. The entry's identifier is what the marker line carries.
+- Path: `.toolbelt/prototype/<feature-slug>/contracts.md`. Header: feature, branch, marker string, and inferred conventions when `.toolbelt/prototyping.md` was absent.
+- One entry per endpoint at plan altitude (REST: method, path, request/response shapes, status codes; other conventions: the project's API unit — GraphQL operation, RPC procedure — with shapes and error modes). The entry's identifier is what the marker line carries.
+- Statuses: `[FIXTURE]` (new route, canned; fields: fixture `path:line`, shapes, error statuses, `Notes` line for UI-derived semantics), `[EXISTING — EXTENDED]` (delta + fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed).
+- After exit reconciliation the ledger adds an **Acceptance criteria** section: visual and interaction criteria from the approved prototype, including the exercised empty and error states.
+- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry.
 
 ```markdown
 ### GET /api/projects/:id/insights — [FIXTURE]
@@ -78,7 +90,5 @@ Notes: `score` is 0–100; the UI renders < 40 as "needs attention".
 Delta: request accepts `archivedAt: ISO8601 | null`; response echoes it.
 Fixture: app/api/projects/[id]/route.ts:48
 ```
-
-Statuses: `[FIXTURE]` (new route, canned), `[EXISTING — EXTENDED]` (delta plus fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed). Invariant: the marker grep and the ledger agree on what is still fake, and each marker's endpoint id resolves to exactly one entry.
 
 The ledger directory is ignored scratch, removed by delivery's post-merge cleanup. Its content lives on in the spec.
