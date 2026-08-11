@@ -32,6 +32,32 @@ assert_contains "$skill" "Acceptance criteria" "criteria written at exit"
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
 assert_contains "$metadata" 'display_name: "Interactive Design"' "Codex metadata"
 
+short_description=$(sed -n 's/^ *short_description: "\(.*\)"$/\1/p' "$metadata")
+short_description_len=$(printf %s "$short_description" | wc -c)
+if [ "$short_description_len" -lt 25 ] || [ "$short_description_len" -gt 64 ]; then
+  echo "not ok - short_description within 25-64 characters" >&2
+  echo "length: $short_description_len" >&2
+  exit 1
+fi
+echo "ok - short_description within 25-64 characters"
+
+frontmatter=$(sed -n '1{/^---$/!q}; 1d; /^---$/q; p' "$skill")
+frontmatter_keys=$(printf '%s\n' "$frontmatter" | sed -n 's/^\([a-zA-Z0-9_-]*\):.*/\1/p' | sort | tr '\n' ' ')
+if [ "$frontmatter_keys" != "description name " ]; then
+  echo "not ok - frontmatter has exactly the keys name and description" >&2
+  echo "keys: $frontmatter_keys" >&2
+  exit 1
+fi
+echo "ok - frontmatter has exactly the keys name and description"
+
+frontmatter_len=$(printf %s "$frontmatter" | wc -c)
+if [ "$frontmatter_len" -gt 1024 ]; then
+  echo "not ok - frontmatter block within 1024 characters" >&2
+  echo "length: $frontmatter_len" >&2
+  exit 1
+fi
+echo "ok - frontmatter block within 1024 characters"
+
 brainstorming="$repo_root/skills/brainstorming/SKILL.md"
 writing_specs="$repo_root/skills/writing-specs/SKILL.md"
 

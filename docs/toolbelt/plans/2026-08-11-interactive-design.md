@@ -126,7 +126,7 @@ The existing "invoke the writing-specs skill … Do NOT invoke any other skill. 
 ```yaml
 interface:
   display_name: "Interactive Design"
-  short_description: "Prototype the frontend against fixture-backed contracts before backend work"
+  short_description: "Prototype the frontend on fixture-backed contracts first"
   default_prompt: "Use $interactive-design to prototype this feature frontend-first."
 ```
 
