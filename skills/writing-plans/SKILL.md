@@ -128,6 +128,36 @@ Every task number appears in exactly one boundary: no gaps and no overlap. A one
 
 For shared substrate, put the core plus one representative consumer in the first boundary. Later consumers may share a PR only when they repeat the same reviewer judgment. Novel lifecycle, export, or rollout work stays separate.
 
+## Execution Tracks
+
+Optional. A plan may declare independent chains of tasks ("tracks") that execution runs concurrently, each in its own sub-worktree, merged back at a declared integration point. Omit the section and the plan runs fully serial. When present, it follows `## PR Boundaries` in the plan document:
+
+```markdown
+## Execution Tracks
+
+| Track | Tasks | Depends on | Files touched (summary) | Why safe |
+|---|---|---|---|---|
+| serial-1 | 1–2 | — | shared types, API contract | mainline (contract freeze) |
+| backend | 3–6 | serial-1 | src/server/** | disjoint from frontend, e2e-specs |
+| frontend | 7–9 | serial-1 | src/app/settings/** | disjoint from backend, e2e-specs |
+| e2e-specs | 10 | serial-1 | e2e/** | disjoint from backend, frontend |
+| serial-2 | 11 | backend, frontend, e2e-specs | (integration) | merge point |
+```
+
+Structure rules:
+
+- Track ids are kebab-case slugs — they become branch names and worktree directory names. Mainline segments are tracks named `serial-N` and run in the primary worktree; named tracks run in sub-worktrees.
+- Every task number appears in exactly one track. Tasks within a track run in numeric order.
+- `Depends on` names tracks, forming a DAG. Tracks with identical satisfied dependencies may run concurrently.
+
+Declaration rules — what makes a split safe enough to declare; anything that needs an essay to justify its independence stays serial:
+
+- **Disjoint file sets.** No file is created or modified by two concurrent tracks. Test files, fixtures, and generated-file sources count.
+- **No contract-shaped work in tracks.** Migrations, shared schema, shared types, and shared API contracts belong in a mainline task before the fork — the **contract-freeze** pattern. A track consumes the frozen contract; it never changes it.
+- **No cross-track interfaces.** No track's task may list another concurrent track's `Produces:` in its `Consumes:`. Anything consumed across tracks comes from a mainline task before the fork. Mechanically checkable from the `Interfaces:` blocks.
+- **Threshold.** A track must beat roughly 2–5 minutes of per-worktree setup: at least 2 tasks, or one large task. Work below the threshold stays in the mainline.
+- **Every fork closes with a mainline integration task.** It merges nothing itself (the orchestrator merges); it runs the integration scope — targeted cross-package checks and E2E covering the merged tracks' seams, within SDD's Verification Scope policy, never a workspace-wide run — and fixes what breaks under the standard fix loop. Its task text states that its brief will include each merged track's `Decisions & drift risks` entries.
+
 ## Plan Altitude: Contracts, Not Implementations
 
 Specify each artifact at the altitude where the decision lives:
@@ -229,6 +259,8 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **5. Altitude:** Scan the code fences. Any fence outside the Data Model section longer than ~15 lines is implementation that belongs to the implementer — pull it back to a stub plus the decisions it can't carry. A plan that is mostly code fences has failed this check regardless of its quality.
 
+**6. Execution tracks:** When the plan declares tracks, every declaration satisfies the rules — file sets disjoint, no contract work or cross-track interfaces inside tracks, thresholds met, an integration task at every merge point, every task in exactly one track.
+
 Fix what you find inline. If you find a spec requirement with no task, add the task.
 
 ## Plan Review Gate
@@ -251,6 +283,7 @@ Dispatch the resolved reviewer with the plan path and the spec path. It may fan 
 - **Unflagged gotchas** — traps in the touched code the plan does not warn about
 - **Global Constraints** — present, with exact values copied from the spec
 - **PR boundaries** — reject missing, horizontal, overlapping, or unjustified boundaries; every task appears exactly once, dependencies are workable, and each PR has one outcome with independent verification
+- **Execution tracks** — reject bogus or missing track declarations as plan defects: a plan whose tracks fail the declaration rules ships serial or gets restructured, never with optimistic tracks. A plan with no `## Execution Tracks` section is valid and serial; "missing" means a declared split lacking a required element (a merge point with no integration task, a task in no track)
 
 Handle what comes back the way writing-specs does: small technical gaps — fix the plan and proceed. A rework large enough to change the approach — bring it to your human partner. Unsure — ask.
 
