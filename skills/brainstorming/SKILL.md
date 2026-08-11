@@ -9,6 +9,10 @@ Turn ideas into designs through collaborative dialogue: understand the project, 
 
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+
+Exception: when your human partner has approved the intent-level design and accepted the
+frontend-first offer, invoke toolbelt:interactive-design — prototype implementation
+inside that skill is authorized.
 </HARD-GATE>
 
 There is no exception for "this is too simple to need a design" — a todo list, a single-function utility, a config change all go through this. Simple projects are where unexamined assumptions cause the most wasted work. The design can be a few sentences, but you MUST present it and get approval.
@@ -22,11 +26,11 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, until you can state the design
 4. **Propose approaches** — when several are genuinely viable, with trade-offs and your recommendation
 5. **Present the design** — in sections, approval after each
-6. **Hand off to writing-specs** — once the user has approved the whole design
+6. **Hand off** — to writing-specs once your human partner has approved the whole design, or to interactive-design when they accepted the frontend-first offer
 
 Offer the visual companion just-in-time, outside this sequence — see below.
 
-**The terminal state is invoking writing-specs.**
+**The terminal state is invoking writing-specs — or interactive-design when the frontend-first offer was accepted.**
 
 ## Asking Good Questions
 
@@ -49,7 +53,25 @@ Explore rather than asking what you could find out yourself — check the curren
 
 ## After the Design
 
+When your human partner accepted the frontend-first offer, the next skill is
+toolbelt:interactive-design — invoke it and no other. Otherwise:
+
 Once the user has approved every section, **invoke the writing-specs skill.** It writes the design to `docs/toolbelt/specs/`, gates it with the user and an alternate-family reviewer, and hands off to planning. Do NOT invoke any other skill. writing-specs is the next step.
+
+## Frontend-First Offer
+
+Offer this path when the feature has a significant user-facing surface, its frontend and the API it consumes live in this repository, and the intent-level design sections — purpose, users, data, contract sketch — are approved.
+
+**The offer MUST be its own message** — only the offer, nothing else — and you wait for the response.
+
+> "This feature has a real user-facing surface — we could go frontend-first: I build the
+> actual frontend against fixture-backed API routes in one sitdown session, we iterate
+> until the design is right, and the backend gets implemented afterward from the
+> contracts we settle. Want to? Otherwise I'll write the spec as usual."
+
+- **Accepted** — invoke `toolbelt:interactive-design`; the remaining UI-detail design work moves into that session.
+- **Declined** — continue exactly as before, and do not offer again unless your human partner raises it.
+- Backend-only features, and projects where the frontend and its API do not live together, never get the offer.
 
 ## Visual Companion
 

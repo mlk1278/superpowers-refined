@@ -32,4 +32,15 @@ assert_contains "$skill" "Acceptance criteria" "criteria written at exit"
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
 assert_contains "$metadata" 'display_name: "Interactive Design"' "Codex metadata"
 
+brainstorming="$repo_root/skills/brainstorming/SKILL.md"
+writing_specs="$repo_root/skills/writing-specs/SKILL.md"
+
+assert_contains "$brainstorming" "inside that skill is authorized" "HARD-GATE exception present"
+assert_contains "$brainstorming" "we could go frontend-first" "offer text present"
+assert_contains "$brainstorming" "The offer MUST be its own message" "own-message rule"
+assert_contains "$brainstorming" "invoke it and no other" "After-the-Design fork"
+assert_contains "$brainstorming" "or to interactive-design when they accepted" "checklist item 6 conditional"
+
+assert_contains "$writing_specs" "Arriving from interactive-design with a reconciled contract ledger" "entry gate acknowledges the path"
+
 echo "PASS"

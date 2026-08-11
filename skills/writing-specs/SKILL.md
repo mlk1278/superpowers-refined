@@ -10,7 +10,10 @@ Turn an approved design into a committed spec document, then gate that document 
 **Announce at start:** "I'm using the writing-specs skill to write the spec."
 
 <ENTRY-GATE>
-You normally arrive here from brainstorming, with a design the user has already approved section by section. Direct entry is allowed only when your human partner asks for a spec or supplies written requirements. Deciding for yourself that a request is clear enough to skip brainstorming is the one thing this skill does not authorize — that call belongs to the human.
+You normally arrive here from brainstorming, with a design the user has already approved section by section. Direct entry is allowed only when your human partner asks for a spec or supplies written requirements.
+Arriving from interactive-design with a reconciled contract ledger is likewise a normal
+entry, equivalent to a brainstorming-approved design.
+Deciding for yourself that a request is clear enough to skip brainstorming is the one thing this skill does not authorize — that call belongs to the human.
 </ENTRY-GATE>
 
 ## Checklist
