@@ -1,6 +1,8 @@
 # Execution Tracks Design
 
-**Status:** Approved in conversation on 2026-08-05.
+**Status:** Approved in conversation on 2026-08-05. Re-verified against the
+current skills on 2026-08-11 (post one-fix-round and plan-gate rewording);
+stale references updated.
 
 Plan-declared, track-level parallelism for subagent-driven development. Plans may
 declare independent chains of tasks ("tracks") that execute concurrently, each in
@@ -74,8 +76,10 @@ Declaration rules (what makes a split low-risk enough to declare):
   of per-worktree setup: at least 2 tasks, or one large task. Work below the
   threshold stays in the mainline.
 - **Every fork closes with a mainline integration task.** It merges nothing
-  itself (the orchestrator merges); it runs the integration scope — E2E,
-  cross-package tests — and fixes what breaks, under the standard fix loop.
+  itself (the orchestrator merges); it runs the integration scope — targeted
+  cross-package checks and E2E covering the merged tracks' seams, within SDD's
+  Verification Scope policy (never a workspace-wide run) — and fixes what
+  breaks, under the standard fix loop.
   Its task text states that its brief will include each merged track's
   `Decisions & drift risks` entries.
 
@@ -85,9 +89,9 @@ Gate additions:
   above — file sets disjoint, no contract work or cross-track interfaces inside
   tracks, thresholds met, an integration task at every merge point, every task
   in exactly one track.
-- **Plan review gate** (`plan-document-reviewer-prompt.md` criteria list in the
-  skill) gains the same check, phrased for the reviewer: reject bogus or missing
-  track declarations as plan defects. A plan whose tracks fail the rules ships
+- **Plan review gate** (the "Ask it to judge" criteria list in the skill's
+  Plan Review Gate section) gains the same check, phrased for the reviewer:
+  reject bogus or missing track declarations as plan defects. A plan whose tracks fail the rules ships
   serial or gets restructured; it does not ship with optimistic tracks.
 
 ## Component 2: `skills/subagent-driven-development/SKILL.md` — executing tracks
@@ -108,8 +112,9 @@ A new `## Parallel Tracks` section, active only when the plan contains
    ready, run the largest (by task count) first; the rest queue and launch as
    slots free.
 3. **Inside a track, the existing process is unchanged:** serial tasks, fresh
-   implementer per task, per-task review with review packages, the 3-round fix
-   loop, BASE/HEAD recorded per task on the track branch. Briefs, reports, and
+   implementer per task, per-task review with review packages, the fix loop
+   (one fix round plus adjudication), BASE/HEAD recorded per task on the track
+   branch. Briefs, reports, and
    review packages live in the plan's existing SDD workspace, named per task as
    today.
 4. When a track's last task is reviewed clean, the orchestrator merges the

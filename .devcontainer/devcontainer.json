@@ -1,0 +1,27 @@
+{
+  "name": "toolbelt Sandbox",
+  "build": {
+    "dockerfile": "template-files/Dockerfile",
+    "context": "..",
+    "args": {
+      "BASE_IMAGE": "boxcar-base:latest"
+    }
+  },
+  "workspaceFolder": "${localWorkspaceFolder}",
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=${localEnv:HOME}/.codex,type=bind",
+    "source=${localEnv:HOME}/.agents,target=${localEnv:HOME}/.agents,type=bind",
+    "source=${localEnv:HOME}/.claude,target=${localEnv:HOME}/.claude,type=bind"
+  ],
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--shm-size=2g",
+    "--init"
+  ],
+  "remoteUser": "${localEnv:USER}",
+  "containerEnv": {
+    "IS_SANDBOX": "1",
+    "FIREWALL_MODE": "strict",
+    "SANDBOX_AGENT": "codex"
+  }
+}

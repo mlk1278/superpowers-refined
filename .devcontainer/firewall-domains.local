@@ -1,0 +1,6 @@
+# Project-specific firewall allowlist — one domain per line.
+# This file is never overwritten by devcontainer-init --update.
+# Lines starting with # and blank lines are ignored.
+#
+# accounts.zoho.com
+# www.zohoapis.com

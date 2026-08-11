@@ -18,6 +18,7 @@ Subagents never inherit your session's context or history — you construct exac
 - **You need full system state** — understanding requires seeing the whole picture.
 - **Exploratory debugging** — you don't know what's broken yet.
 - **Shared state** — agents would edit the same files or contend for the same resources.
+- **Executing plan tasks in parallel** — that belongs to subagent-driven-development's Execution Tracks, declared in the plan. This skill stays ad-hoc independent work (e.g., multi-cause debugging) in one workspace.
 
 ## The Pattern
 

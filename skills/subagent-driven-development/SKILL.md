@@ -124,6 +124,28 @@ Keep the ledger in this shape, updating it in the same message as your other boo
 
 After compaction, trust the ledger and `git log` over your own recollection — the commits it names exist in git even when your context no longer remembers creating them. When the final whole-branch review is clean and its fixes are merged, delete this plan's workspace — git history is the record now.
 
+## Parallel Tracks
+
+Active only when the plan **declares** an `## Execution Tracks` section — a top-level section of the plan document; a mention of the heading inside a code fence or prose is not a declaration. Without a declared section this skill is unchanged and serial.
+
+**Wave execution.** Walk the track DAG:
+
+1. When a fork's mainline prerequisites are complete and reviewed, create one sub-worktree per ready track: `git worktree add <sdd-workspace>/tracks/<track-id> -b <feature-branch>--<track-id>`, branched from the current feature-branch head. Apply the project's worktree-policy setup rules to each. Record each track's base SHA in the ledger.
+2. Dispatch each ready track's first implementer — all in the same message so they run concurrently. At most 3 tracks run concurrently; a lower worktree-policy limit governs. When more are ready, run the largest (by task count) first; the rest queue and launch as slots free.
+3. Inside a track, the existing process is unchanged: serial tasks, fresh implementer per task, per-task review with review packages, the fix loop, BASE/HEAD recorded per task on the track branch. Briefs, reports, and review packages live in the plan's existing SDD workspace, named per task as today.
+4. When a track's last task is reviewed clean, merge the track branch into the feature branch with `--no-ff`, then remove the sub-worktree and branch. The merge is expected clean because file sets are disjoint. A textual conflict is a plan defect: stop, do not hand-resolve, surface to your human partner with the conflicting paths and the track declarations they contradict.
+5. When every track at a fork has merged, dispatch the fork's integration task in the primary worktree as a normal task.
+
+**Working directories.** Every dispatch for a track task — implementer, fixer, and reviewer alike — names the track worktree as its working directory: the implementer template's `Work from:` line carries it, and reviewer dispatches state it the same way. Briefs, reports, review packages, and the ledger stay in the plan's SDD workspace under the primary worktree, reachable from every track by absolute path. The orchestrator runs `scripts/review-package` with the recorded BASE/HEAD SHAs, which resolve from any worktree because the object store is shared.
+
+**Drift log.** Track implementer dispatches add a required report section, `## Decisions & drift risks`: assumptions about the frozen contract, gametime decisions, anything a sibling track might contradict. `None` is a valid entry. Carry one ledger line per non-empty entry and paste all merged tracks' entries into the integration task's brief.
+
+**Ledger.** One line per track alongside task lines: `Track B: in-progress (task 8/9, worktree <path>, base <sha7>)` → `Track B: merged (<sha7>, worktree removed)`. After compaction, the ledger plus `git worktree list` plus `git log` reconstruct wave state. The single-`Next:`-line rule holds during a wave: still exactly one `Next:` line, aggregating the wave's pending events (e.g. `Next: wave — backend task 5 review; frontend task 8 report`).
+
+**Failure semantics.** A BLOCKED track does not stop its siblings — they run to completion while you handle the block under existing rules; the fork's integration task waits for every track at that fork; fix-loop breaker rules are unchanged. A `git worktree add` failure (sandbox denial) falls back to serial execution in the primary worktree for the affected tracks — report the downgrade. A declaration-rule violation discovered at execution time is surfaced like any plan defect, not silently serialized.
+
+Model selection, routing, reviewer prompts, and file handoffs are unchanged — track implementers and reviewers resolve through the same routes as serial ones.
+
 ## Prompt Templates
 
 - [implementer-prompt.md](implementer-prompt.md) — implementer subagent
@@ -136,7 +158,11 @@ After compaction, trust the ledger and `git log` over your own recollection — 
 **Never:**
 
 - Start implementation on main/master without explicit user consent
-- Dispatch multiple implementation subagents in parallel (conflicts)
+- Dispatch multiple implementation subagents into the same worktree —
+  concurrent implementers are only ever one-per-track-worktree, declared by
+  the plan's Execution Tracks section
+- Parallelize tracks the plan did not declare — opportunistic parallelism at
+  execution time is forbidden, however independent two tasks look
 - Skip the task review, or accept an implementer's own confidence in place of one — all review dispatch belongs to the orchestrator, and a self-arranged review does not count
 - Fix findings yourself in the controller session instead of dispatching a fixer (context pollution, and controller fixes skip review)
 - Re-dispatch a task the ledger already marks complete — check the ledger and `git log` after compaction or resume

@@ -1,0 +1,5 @@
+# Gitignored - sandbox-scoped overrides
+local-overrides/
+
+# Gitignored - local Docker env-file
+devcontainer.env
