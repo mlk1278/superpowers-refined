@@ -24,8 +24,10 @@ code plus a reconciled contract ledger that becomes the spec's API section.
 - **Downstream untouched:** no changes to writing-plans, delivery, SDD,
   finishing-a-development-branch, pr-monitor, or ux-gate. Fixture-replacement and
   hardening requirements travel inside the spec document the pipeline already consumes.
-- **Version:** bump to `7.5.0` in both `.claude-plugin/plugin.json` and
-  `.claude-plugin/marketplace.json` (new-skill minor bump, per existing release practice).
+- **Version:** bump to `7.6.0` in `.claude-plugin/plugin.json`,
+  `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and `package.json`
+  (new-skill minor bump, per existing release practice; `7.5.0` is taken by the
+  execution-tracks release merged into this branch).
 - **Claude Design integration is out of scope** (deferred to a future iteration).
 
 ## Components
