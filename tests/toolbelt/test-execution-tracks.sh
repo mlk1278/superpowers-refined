@@ -5,6 +5,7 @@ set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 plans="$repo_root/skills/writing-plans/SKILL.md"
+sdd="$repo_root/skills/subagent-driven-development/SKILL.md"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -37,5 +38,21 @@ assert_contains "$plans" 'Every fork closes with a mainline integration task' \
   "every merge point gets an integration task"
 assert_contains "$plans" 'bogus or missing track declarations' \
   "plan review gate rejects bad track declarations"
+
+# subagent-driven-development: executing tracks.
+assert_contains "$sdd" '## Parallel Tracks' \
+  "sdd carries the parallel-tracks section"
+assert_contains "$sdd" 'At most 3 tracks run concurrently' \
+  "concurrency cap is 3"
+assert_contains "$sdd" '## Decisions & drift risks' \
+  "track reports carry a drift log"
+assert_contains "$sdd" 'A textual conflict is a plan defect' \
+  "track merge conflicts stop, never hand-resolved"
+assert_contains "$sdd" 'Dispatch multiple implementation subagents into the same worktree' \
+  "red flag scopes concurrency to one implementer per track worktree"
+assert_contains "$sdd" 'Parallelize tracks the plan did not declare' \
+  "undeclared parallelism is a red flag"
+assert_not_contains "$sdd" 'Dispatch multiple implementation subagents in parallel (conflicts)' \
+  "old unconditional parallel-dispatch flag is gone"
 
 echo "PASS"
