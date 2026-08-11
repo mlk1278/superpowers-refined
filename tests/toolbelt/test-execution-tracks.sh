@@ -6,6 +6,7 @@ set -euo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 plans="$repo_root/skills/writing-plans/SKILL.md"
 sdd="$repo_root/skills/subagent-driven-development/SKILL.md"
+worktrees="$repo_root/skills/using-git-worktrees/SKILL.md"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -54,5 +55,11 @@ assert_contains "$sdd" 'Parallelize tracks the plan did not declare' \
   "undeclared parallelism is a red flag"
 assert_not_contains "$sdd" 'Dispatch multiple implementation subagents in parallel (conflicts)' \
   "old unconditional parallel-dispatch flag is gone"
+
+# using-git-worktrees: parallel-workspace policy rules.
+assert_contains "$worktrees" 'parallel-workspace rules' \
+  "policy contract covers parallel workspaces"
+assert_contains "$worktrees" 'concurrency limit lower than 3' \
+  "policy may lower the track cap, never raise it"
 
 echo "PASS"

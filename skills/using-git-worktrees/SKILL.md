@@ -50,6 +50,15 @@ If `<repo-root>/.toolbelt/worktree-policy.md` exists, read it before creating an
 
 Two worktrees that each grab the default database, API, and web ports collide the moment both run, and the failure looks like a bug in the code rather than a clash in the environment. When the policy defines an allocation scheme, follow it exactly and report the set you claimed. When there is no policy file, proceed with the defaults below; do not invent a scheme of your own.
 
+A policy may additionally declare **parallel-workspace rules** for worktrees that run concurrently:
+
+- How to derive a per-workspace database name (or equivalent isolated resource) from the worktree/branch name.
+- Which resources are per-workspace and which are safely shared.
+- Setup commands to run per workspace (e.g., client codegen, migrations against the derived database).
+- An optional concurrency limit lower than 3 when the machine cannot support three concurrent setups; subagent-driven-development honors the lower number.
+
+subagent-driven-development applies these rules to every track worktree it creates and reports the claimed resource set per track, in this skill's existing report shape. With no policy file, defaults apply exactly as today. A track that visibly needs isolated stateful resources with no policy declaring how is a gap to report, not improvise around.
+
 ## Step 1: Create Isolated Workspace
 
 **You have two mechanisms. Try them in this order.**
