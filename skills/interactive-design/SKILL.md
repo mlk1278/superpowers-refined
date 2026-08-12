@@ -22,7 +22,7 @@ workspace); if they don't, stop and tell your human partner this path does not a
 
 1. Ensure an isolated workspace. If you are already in an isolated worktree, use it; otherwise invoke `toolbelt:using-git-worktrees`. The prototype branch is the branch the backend plan later executes on.
 2. Read `.toolbelt/prototyping.md` when the project provides it — it states where fixture-backed routes live, how to run the frontend dev server, and seed-data conventions. When it is absent, infer all three and record each inference in the ledger header.
-3. Scaffold the ledger (§5) and start the dev server.
+3. Scaffold the ledger (§7) and start the dev server.
 
 ## 2. The fixture gate
 

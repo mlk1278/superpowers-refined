@@ -4,7 +4,7 @@
 
 **Goal:** Add the `interactive-design` skill — an optional, human-opted frontend-first prototyping phase between brainstorming and writing-specs — plus its brainstorming/writing-specs integration edits, tests, and release bump.
 
-**Architecture:** One new skill directory with Codex interface metadata; three precise text changes to `skills/brainstorming/SKILL.md`; one sentence added to `skills/writing-specs/SKILL.md`; one new content-assertion test following the existing `tests/toolbelt` pattern. No downstream skill (writing-plans, delivery, SDD, finishing, pr-monitor, ux-gate) changes.
+**Architecture:** One new skill directory with Codex interface metadata; four precise text changes to `skills/brainstorming/SKILL.md`; one sentence added to `skills/writing-specs/SKILL.md`; one new content-assertion test following the existing `tests/toolbelt` pattern. No downstream skill (writing-plans, delivery, SDD, finishing, pr-monitor, ux-gate) changes.
 
 **Tech Stack:** Markdown skills, YAML interface metadata, bash content tests.
 
@@ -31,7 +31,7 @@
 - **Self-matching absence check:** the fixture-zero grep must carry the `':!docs/toolbelt' ':!.toolbelt'` exclusions — committed specs/plans in consuming projects legitimately name the marker. Never write the bare grep.
 - **Tests run via `bash`, not the executable bit:** invoke as `bash tests/toolbelt/test-interactive-design.sh`; the mode bit is irrelevant (siblings vary — `test-execution-tracks.sh` is 0644).
 - **Do not touch phrases other tests assert:** `tests/toolbelt/test-workflow-summary.sh`, `test-quick-task.sh`, and `test-delivery.sh` assert text in other files; the brainstorming/writing-specs edits here add text without rewording existing sentences, so no existing assertion changes. If an edit collides with an existing test assertion anyway, stop and escalate — do not silently reword either side.
-- **Plugin cache is stale by design:** editing this checkout changes nothing in live sessions. Implementer tasks verify with `tests/toolbelt` scripts only; the manual acceptance drill (cache refresh + fresh session) is the human's post-merge step, not a task step.
+- **Plugin cache is stale by design:** editing this checkout changes nothing in live sessions. Implementer tasks verify with `tests/toolbelt` scripts only; the manual acceptance drill (cache refresh + fresh session) is a pre-merge gate run after the final review — owned by your human partner, not an implementer task.
 - **`docs/AGENTS-SNIPPET.md` is frozen:** it declares exactly two public entry points and says to redesign the capability rather than extend it. interactive-design is reached through brainstorming and does NOT get added there.
 
 ## Data Model
