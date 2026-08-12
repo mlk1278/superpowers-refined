@@ -37,6 +37,9 @@ frontend-side stub layers. A route that doesn't exist yet gets created as a real
 handler returning fixture data, tagged with a greppable marker line naming its endpoint
 (`TOOLBELT-FIXTURE <endpoint id>`), and recorded in the contract ledger in the same
 edit — a fixture without a ledger entry is a gate violation.
+In iteration mode (§8) only, a datum may instead render placeholder data while a
+`[PENDING]` ledger entry naming it is recorded in the same edit — a placeholder without
+a `[PENDING]` entry is a gate violation.
 </HARD-GATE>
 
 The gate governs backend-owned data only. UI copy, labels, icons, layout constants, and client-derived display values are exempt. The marker's `<endpoint id>` is the ledger entry's identifier — for example `GET /api/projects/:id/insights`.
@@ -50,7 +53,7 @@ Edit directly in this session: no subagent dispatch, no per-iteration review. Co
 1. Reconcile. Every marker has a ledger entry matching its endpoint id, and every `[FIXTURE]` / `[EXISTING — EXTENDED]` entry has a marker (`[EXISTING]` and `[IMPLEMENTED]` entries carry none). Recorded shapes match what the fixtures actually return. Delete dead routes.
 2. Write the **Acceptance criteria** section into the ledger — visual and interaction criteria from the approved prototype, including the exercised empty and error states. ux-gate consumes these criteria later and captures its own screenshots; keep no prototype screenshots.
 3. Present the final contract inventory to your human partner.
-4. On approval, invoke `toolbelt:writing-specs`. Do NOT invoke any other skill.
+4. On approval, invoke the mode's terminal skill — new-feature mode: `toolbelt:writing-specs`; iteration mode: the single route confirmed in §8. Do NOT invoke any other skill.
 
 ## 5. What the spec must carry
 
@@ -79,9 +82,9 @@ During SDD this is the existing BLOCKED escalation. The human-approved resolutio
 
 - Path: `.toolbelt/prototype/<feature-slug>/contracts.md`. Header: feature, branch, marker string, and inferred conventions when `.toolbelt/prototyping.md` was absent.
 - One entry per endpoint at plan altitude (REST: method, path, request/response shapes, status codes; other conventions: the project's API unit — GraphQL operation, RPC procedure — with shapes and error modes). The entry's identifier is what the marker line carries.
-- Statuses: `[FIXTURE]` (new route, canned; fields: fixture `path:line`, shapes, error statuses, `Notes` line for UI-derived semantics), `[EXISTING — EXTENDED]` (delta + fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed), `[PENDING]` (iteration mode only, §8: a datum rendered with placeholder data while its backing is deferred; fields: the surface/component showing it, what data is needed, the expected shape; no fixture, no marker yet).
+- Statuses: `[FIXTURE]` (new route, canned; fields: fixture `path:line`, shapes, error statuses, `Notes` line for UI-derived semantics), `[EXISTING — EXTENDED]` (delta + fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed), `[PENDING]` (iteration mode only, §8: a datum rendered with placeholder data while its backing is deferred; lives in a separate **Pending** ledger subsection with a stable id — `P1`, `P2`, … — one per datum, since the endpoint is not yet known; fields: the surface/component showing it, what data is needed, the expected shape; no fixture, no marker yet).
 - After exit reconciliation the ledger adds an **Acceptance criteria** section: visual and interaction criteria from the approved prototype, including the exercised empty and error states.
-- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry. A `[PENDING]` entry exists only during an iteration-mode session and never survives §8's materialization.
+- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry. The Pending subsection exists only during an iteration-mode session and never survives §8's materialization.
 
 ```markdown
 ### GET /api/projects/:id/insights — [FIXTURE]
@@ -95,29 +98,29 @@ Delta: request accepts `archivedAt: ISO8601 | null`; response echoes it.
 Fixture: app/api/projects/[id]/route.ts:48
 ```
 
-The ledger directory is ignored scratch, removed by delivery's post-merge cleanup. Its content lives on in the spec.
+The ledger directory is ignored scratch, removed by delivery's post-merge cleanup. Its content lives on in the spec on the writing-specs route, or in the quick-task request and PR description on the quick-task route.
 
 ## 8. Iteration mode (existing features)
 
 For direct entry on an existing surface (the ENTRY-GATE's third way in).
 
-**Announce:** "I'm using interactive-design to iterate on this UI with ledger-tracked data changes."
+**Announce:** "I'm using interactive-design to iterate on this UI with ledger-tracked data changes." In this mode, this announcement replaces the top-level one.
 
-**The gate delta.** In this mode the same-edit rule binds the ledger, not the fixture: a datum may render placeholder data only while a `[PENDING]` entry naming it — surface, data needed, expected shape — is recorded in the same edit. This is the single sanctioned deferral of §2's fixture rule, and it exists only in this mode; everything else about the gate — backend-owned data only, the exemption list, the marker format for actual fixtures — applies unchanged. A placeholder without a `[PENDING]` entry is a gate violation. Creating a real fixture immediately instead of a `[PENDING]` entry is always allowed.
+**The gate delta.** The `[PENDING]` deferral is authorized by §2's HARD-GATE itself: a datum may render placeholder data only while a `[PENDING]` entry naming it — surface, data needed, expected shape — is recorded in the ledger's Pending subsection, with a stable id, in the same edit. Everything else about the gate — backend-owned data only, the exemption list, the marker format for actual fixtures — applies unchanged. Creating a real fixture immediately instead of a `[PENDING]` entry is always allowed.
 
-**Materialization.** Runs when the design is declared nailed, before §4's reconciliation. For each `[PENDING]` entry, inspect the real API surface and resolve it:
+**Materialization.** Runs when the design is declared nailed, before §4's reconciliation. For each pending id, inspect the real API surface and map it to an endpoint entry — several pending ids may coalesce into one endpoint entry — resolving each endpoint to:
 
 - `[EXISTING]` — an endpoint already serves the data: wire the frontend to it, delete the placeholder.
 - `[EXISTING — EXTENDED]` — an endpoint needs a delta: create the fixture for the delta with its marker, record the delta.
 - `[FIXTURE]` — no endpoint fits: create the fixture route with its marker.
 
-Zero `[PENDING]` entries remain before §4's reconciliation may run. An entry that cannot be resolved — the data has no plausible source — goes to your human partner as a design question, never a silent deletion. From reconciliation on, the exit is §4's: same marker/ledger checks, same acceptance criteria, same contract-inventory presentation.
+Then delete the emptied Pending subsection. Materialization may change what renders: re-exercise each affected surface — including the empty and error variants of anything newly fixture-backed — and return visible changes to the loop for your human partner's approval. The Pending subsection is empty before §4's reconciliation may run. A pending id that cannot be resolved — the data has no plausible source — goes to your human partner as a design question, never a silent deletion. From reconciliation on, the exit is §4's: same marker/ledger checks, same acceptance criteria, same contract-inventory presentation.
 
-**Exit routing.** Replaces §4 step 4 in this mode only. With the inventory presented, recommend a route and let your human partner confirm; invoke the confirmed skill and no other:
+**Exit routing.** This section decides the "route confirmed in §8" that §4 step 4 invokes for this mode. With the inventory presented, recommend a route and let your human partner confirm:
 
-- **Small and decision-complete** — the delta fits quick-task's own entry bar (one coherent outcome, one PR, no product shaping): invoke `toolbelt:quick-task`. The request carries the ledger content as its requirements: implement each `[FIXTURE]` / `[EXISTING — EXTENDED]` shape exactly, remove markers, flip entries to `[IMPLEMENTED]`, meet the acceptance criteria, and satisfy §5's fixture-zero check before the PR merges.
+- **Small and decision-complete** — the delta fits quick-task's own entry bar (one coherent outcome, one PR, no product shaping): invoke `toolbelt:quick-task`. The request carries every applicable §5 delivery obligation as its requirements: implement each `[FIXTURE]` / `[EXISTING — EXTENDED]` shape exactly, remove markers, flip entries to `[IMPLEMENTED]`, meet the acceptance criteria, add frontend tests per project conventions, handle loading and slow responses, and satisfy §5's fixture-zero check before the PR merges.
 - **Substantial** — anything above that bar: invoke `toolbelt:writing-specs`, exactly as new-feature mode does; §5 applies as written.
 
-If quick-task later discovers the change needs product shaping after all, its own escalation applies; the fallback route is writing-specs.
+If quick-task later discovers the change needs product shaping after all, its own escalation applies — it routes to brainstorming and writing-plans, per its own text.
 
 **Single PR, unchanged:** fixtures never reach the base branch, so the session's UI changes and their backend delta ship together in one PR whichever route is taken.

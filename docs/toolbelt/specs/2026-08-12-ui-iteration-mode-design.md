@@ -45,15 +45,30 @@ Appended inside the existing `<ENTRY-GATE>` block, after its current text:
 > design context and the request itself is the entry. The repository requirement above
 > still applies.
 
+### 2b. HARD-GATE — scoped deferral sentence, appended inside the block
+
+The deferral must live inside the forceful block itself, not in later prose — otherwise
+the gate's absolute prohibition and the exception compete. Appended after the block's
+current last sentence:
+
+> In iteration mode (§8) only, a datum may instead render placeholder data while a
+> `[PENDING]` ledger entry naming it is recorded in the same edit — a placeholder without
+> a `[PENDING]` entry is a gate violation.
+
 ### 3. Ledger — `[PENDING]` status (§7 addition)
 
 One status added to §7's status list:
 
 - `[PENDING]` — iteration mode only: a datum rendered with placeholder data while its
-  backing is deferred. Fields: the surface/component showing it, what data is needed, and
-  the expected shape. No fixture, no marker yet. Invariant additions: a `[PENDING]` entry
+  backing is deferred. Entries live in a separate **Pending** ledger subsection with
+  stable ids (`P1`, `P2`, …), one per datum — not per endpoint, since the endpoint is not
+  yet known. Fields: the surface/component showing it, what data is needed, and the
+  expected shape. No fixture, no marker yet. Invariant additions: a `[PENDING]` entry
   exists only during an iteration-mode session, and the session cannot exit §8's
-  materialization step until zero remain.
+  materialization step until the Pending subsection is empty.
+- §7's closing durability sentence is scoped by route: content lives on in the spec on
+  the writing-specs route, or in the quick-task request and PR description on the
+  quick-task route.
 
 ### 4. New section `## 8. Iteration mode (existing features)`
 
@@ -62,16 +77,19 @@ Appended after §7 so no existing section number or cross-reference moves. Conte
 **Announce variant:** "I'm using interactive-design to iterate on this UI with
 ledger-tracked data changes."
 
-**The gate delta.** In iteration mode the same-edit rule binds the ledger, not the
-fixture: a datum may render placeholder data only while a `[PENDING]` entry naming it —
-surface, data needed, expected shape — is recorded in the same edit. This is the single
-sanctioned deferral of §2's fixture rule, and it exists only in this mode; everything
-else about the HARD-GATE (backend-owned data only, the exemption list, marker format for
-actual fixtures) applies unchanged. A placeholder without a `[PENDING]` entry is a gate
-violation.
+**Announce scoping:** §8's announcement replaces the top-level announcement in iteration
+mode.
+
+**The gate delta.** The `[PENDING]` deferral is authorized by the HARD-GATE's own new
+sentence (component 2b); §8 restates it with the mechanics: entry recorded in the
+Pending subsection with a stable id, same edit as the placeholder. Everything else about
+the gate (backend-owned data only, the exemption list, marker format for actual
+fixtures) applies unchanged. Creating a real fixture immediately instead of a
+`[PENDING]` entry is always allowed.
 
 **Materialization — runs when the design is declared nailed, before §4's reconciliation.**
-For each `[PENDING]` entry, inspect the real API surface and resolve it:
+For each pending id, inspect the real API surface and map it to an endpoint entry —
+several pending ids may coalesce into one endpoint entry — resolving each endpoint to:
 
 - `[EXISTING]` — an endpoint already serves the data: wire the frontend to it, delete the
   placeholder.
@@ -79,25 +97,31 @@ For each `[PENDING]` entry, inspect the real API surface and resolve it:
   with its marker, record the delta.
 - `[FIXTURE]` — no endpoint fits: create the fixture route with its marker.
 
-Zero `[PENDING]` entries remain before §4's reconciliation may run. From reconciliation
-on, the exit is §4's — same marker/ledger checks, same acceptance criteria, same
-contract-inventory presentation.
+Then delete the emptied Pending subsection. Materialization may change what renders:
+re-exercise each affected surface — including the empty and error variants of anything
+newly fixture-backed — and return visible changes to the loop for your human partner's
+approval before reconciliation. The Pending subsection is empty before §4's
+reconciliation may run. From reconciliation on, the exit is §4's — same marker/ledger
+checks, same acceptance criteria, same contract-inventory presentation.
 
-**Exit routing — replaces §4 step 4 in this mode only.** With the inventory presented,
-recommend a route and let your human partner confirm; invoke the confirmed skill and no
-other:
+**Exit routing — §4 step 4 is mode-scoped at its source.** §4 step 4 becomes: "On
+approval, invoke the mode's terminal skill — new-feature mode: `toolbelt:writing-specs`;
+iteration mode: the single route confirmed in §8. Do NOT invoke any other skill." §8
+then decides that route: with the inventory presented, recommend one and let your human
+partner confirm; invoke the confirmed skill and no other:
 
 - **Small and decision-complete** — the delta fits quick-task's own entry bar (one
   coherent outcome, one PR, no product shaping): invoke `toolbelt:quick-task`. The
-  quick-task request carries the ledger content as its requirements: implement each
-  `[FIXTURE]` / `[EXISTING — EXTENDED]` shape exactly, remove markers, flip entries to
-  `[IMPLEMENTED]`, meet the acceptance criteria, and satisfy §5's fixture-zero check
-  before the PR merges.
+  quick-task request carries every applicable §5 delivery obligation as its
+  requirements: implement each `[FIXTURE]` / `[EXISTING — EXTENDED]` shape exactly,
+  remove markers, flip entries to `[IMPLEMENTED]`, meet the acceptance criteria, add
+  frontend tests per project conventions, handle loading and slow responses, and satisfy
+  §5's fixture-zero check before the PR merges.
 - **Substantial** — anything above that bar: invoke `toolbelt:writing-specs`, exactly as
   new-feature mode does; §5 applies as written.
 
 If quick-task later discovers the change needs product shaping after all, its own
-escalation applies; the fallback route is writing-specs.
+escalation applies — it routes to brainstorming and writing-plans, per its own text.
 
 **Single-PR rule.** Unchanged in this mode: fixtures never reach the base branch, so the
 session's UI changes and their backend delta ship together in one PR whichever route is
@@ -112,10 +136,13 @@ description:
   description
 - `SKILL.md` — `the request itself is the entry` — ENTRY-GATE third way in
 - `SKILL.md` — `[PENDING]` — pending status documented
-- `SKILL.md` — `A placeholder without a` — placeholder gate teeth (the sentence "A
-  placeholder without a `[PENDING]` entry is a gate violation")
+- `SKILL.md` — `a placeholder without` — placeholder gate teeth
 - `SKILL.md` — `before §4's reconciliation may run` — materialization is a gate
 - `SKILL.md` — `toolbelt:quick-task` — small-delta route named
+- `SKILL.md` — `the single route confirmed in §8` — §4 step 4 mode-scoped at source
+- Structural assertion: extract the `<HARD-GATE>…</HARD-GATE>` block and assert it
+  contains `[PENDING]` — the deferral must live inside the forceful block, not only in
+  §8 prose.
 - Each needle must sit within a single line of the skill file as written (the existing
   `grep -F` line-based constraint).
 

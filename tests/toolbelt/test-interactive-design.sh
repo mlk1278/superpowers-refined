@@ -61,9 +61,17 @@ echo "ok - frontmatter block within 1024 characters"
 assert_contains "$skill" "iterate directly on an existing feature's UI" "second trigger in description"
 assert_contains "$skill" "the request itself is the entry" "ENTRY-GATE third way in"
 assert_contains "$skill" "[PENDING]" "pending status documented"
-assert_contains "$skill" "A placeholder without a" "placeholder gate teeth"
+assert_contains "$skill" "a placeholder without" "placeholder gate teeth"
 assert_contains "$skill" "before §4's reconciliation may run" "materialization is a gate"
 assert_contains "$skill" "toolbelt:quick-task" "small-delta route named"
+assert_contains "$skill" "the single route confirmed in §8" "exit step mode-scoped at source"
+
+hard_gate=$(sed -n '/<HARD-GATE>/,/<\/HARD-GATE>/p' "$skill")
+if ! printf '%s' "$hard_gate" | grep -Fq "[PENDING]"; then
+  echo "not ok - PENDING deferral lives inside the HARD-GATE block" >&2
+  exit 1
+fi
+echo "ok - PENDING deferral lives inside the HARD-GATE block"
 
 brainstorming="$repo_root/skills/brainstorming/SKILL.md"
 writing_specs="$repo_root/skills/writing-specs/SKILL.md"
