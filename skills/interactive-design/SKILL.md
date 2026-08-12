@@ -1,6 +1,6 @@
 ---
 name: interactive-design
-description: "Use when your human partner accepts the frontend-first offer or asks to prototype the frontend before backend work — after brainstorming approves the intent-level design, before any spec exists."
+description: "Use when your human partner accepts the frontend-first offer or asks to prototype the frontend before backend work — after brainstorming approves the intent-level design — or asks to iterate directly on an existing feature's UI, changing what information it shows. Direct UI iteration needs no prior design or spec."
 ---
 
 # Interactive Design
@@ -16,6 +16,10 @@ intent-level design from brainstorming — what the feature does, who uses it, t
 needs, and a first sketch of the contracts — with UI detail deferred to this session.
 The feature's frontend and the API it consumes must live in this repository (or its
 workspace); if they don't, stop and tell your human partner this path does not apply.
+Third way in, for existing features: your human partner asks to iterate directly on an
+existing surface's UI. No intent-level design is required — the existing feature is the
+design context and the request itself is the entry. The repository requirement above
+still applies.
 </ENTRY-GATE>
 
 ## 1. Setup
@@ -75,9 +79,9 @@ During SDD this is the existing BLOCKED escalation. The human-approved resolutio
 
 - Path: `.toolbelt/prototype/<feature-slug>/contracts.md`. Header: feature, branch, marker string, and inferred conventions when `.toolbelt/prototyping.md` was absent.
 - One entry per endpoint at plan altitude (REST: method, path, request/response shapes, status codes; other conventions: the project's API unit — GraphQL operation, RPC procedure — with shapes and error modes). The entry's identifier is what the marker line carries.
-- Statuses: `[FIXTURE]` (new route, canned; fields: fixture `path:line`, shapes, error statuses, `Notes` line for UI-derived semantics), `[EXISTING — EXTENDED]` (delta + fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed).
+- Statuses: `[FIXTURE]` (new route, canned; fields: fixture `path:line`, shapes, error statuses, `Notes` line for UI-derived semantics), `[EXISTING — EXTENDED]` (delta + fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed), `[PENDING]` (iteration mode only, §8: a datum rendered with placeholder data while its backing is deferred; fields: the surface/component showing it, what data is needed, the expected shape; no fixture, no marker yet).
 - After exit reconciliation the ledger adds an **Acceptance criteria** section: visual and interaction criteria from the approved prototype, including the exercised empty and error states.
-- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry.
+- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry. A `[PENDING]` entry exists only during an iteration-mode session and never survives §8's materialization.
 
 ```markdown
 ### GET /api/projects/:id/insights — [FIXTURE]
@@ -92,3 +96,28 @@ Fixture: app/api/projects/[id]/route.ts:48
 ```
 
 The ledger directory is ignored scratch, removed by delivery's post-merge cleanup. Its content lives on in the spec.
+
+## 8. Iteration mode (existing features)
+
+For direct entry on an existing surface (the ENTRY-GATE's third way in).
+
+**Announce:** "I'm using interactive-design to iterate on this UI with ledger-tracked data changes."
+
+**The gate delta.** In this mode the same-edit rule binds the ledger, not the fixture: a datum may render placeholder data only while a `[PENDING]` entry naming it — surface, data needed, expected shape — is recorded in the same edit. This is the single sanctioned deferral of §2's fixture rule, and it exists only in this mode; everything else about the gate — backend-owned data only, the exemption list, the marker format for actual fixtures — applies unchanged. A placeholder without a `[PENDING]` entry is a gate violation. Creating a real fixture immediately instead of a `[PENDING]` entry is always allowed.
+
+**Materialization.** Runs when the design is declared nailed, before §4's reconciliation. For each `[PENDING]` entry, inspect the real API surface and resolve it:
+
+- `[EXISTING]` — an endpoint already serves the data: wire the frontend to it, delete the placeholder.
+- `[EXISTING — EXTENDED]` — an endpoint needs a delta: create the fixture for the delta with its marker, record the delta.
+- `[FIXTURE]` — no endpoint fits: create the fixture route with its marker.
+
+Zero `[PENDING]` entries remain before §4's reconciliation may run. An entry that cannot be resolved — the data has no plausible source — goes to your human partner as a design question, never a silent deletion. From reconciliation on, the exit is §4's: same marker/ledger checks, same acceptance criteria, same contract-inventory presentation.
+
+**Exit routing.** Replaces §4 step 4 in this mode only. With the inventory presented, recommend a route and let your human partner confirm; invoke the confirmed skill and no other:
+
+- **Small and decision-complete** — the delta fits quick-task's own entry bar (one coherent outcome, one PR, no product shaping): invoke `toolbelt:quick-task`. The request carries the ledger content as its requirements: implement each `[FIXTURE]` / `[EXISTING — EXTENDED]` shape exactly, remove markers, flip entries to `[IMPLEMENTED]`, meet the acceptance criteria, and satisfy §5's fixture-zero check before the PR merges.
+- **Substantial** — anything above that bar: invoke `toolbelt:writing-specs`, exactly as new-feature mode does; §5 applies as written.
+
+If quick-task later discovers the change needs product shaping after all, its own escalation applies; the fallback route is writing-specs.
+
+**Single PR, unchanged:** fixtures never reach the base branch, so the session's UI changes and their backend delta ship together in one PR whichever route is taken.

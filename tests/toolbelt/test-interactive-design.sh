@@ -58,6 +58,13 @@ if [ "$frontmatter_len" -gt 1024 ]; then
 fi
 echo "ok - frontmatter block within 1024 characters"
 
+assert_contains "$skill" "iterate directly on an existing feature's UI" "second trigger in description"
+assert_contains "$skill" "the request itself is the entry" "ENTRY-GATE third way in"
+assert_contains "$skill" "[PENDING]" "pending status documented"
+assert_contains "$skill" "A placeholder without a" "placeholder gate teeth"
+assert_contains "$skill" "before §4's reconciliation may run" "materialization is a gate"
+assert_contains "$skill" "toolbelt:quick-task" "small-delta route named"
+
 brainstorming="$repo_root/skills/brainstorming/SKILL.md"
 writing_specs="$repo_root/skills/writing-specs/SKILL.md"
 
