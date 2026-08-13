@@ -26,11 +26,11 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, until you can state the design
 4. **Propose approaches** — when several are genuinely viable, with trade-offs and your recommendation
 5. **Present the design** — in sections, approval after each
-6. **Hand off** — to writing-specs once your human partner has approved the whole design, or to interactive-design when they accepted the frontend-first offer
+6. **Hand off** — to writing-specs once your human partner has approved the whole design, or to interactive-design when they accepted the frontend-first offer (or to design-fidelity-prep when they chose the offer's Claude Design variant)
 
 Offer the visual companion just-in-time, outside this sequence — see below.
 
-**The terminal state is invoking writing-specs — or interactive-design when the frontend-first offer was accepted.**
+**The terminal state is invoking writing-specs — or interactive-design (or design-fidelity-prep, for the offer's Claude Design variant) when the frontend-first offer was accepted.**
 
 ## Asking Good Questions
 
@@ -54,7 +54,8 @@ Explore rather than asking what you could find out yourself — check the curren
 ## After the Design
 
 When your human partner accepted the frontend-first offer, the next skill is
-toolbelt:interactive-design — invoke it and no other. Otherwise:
+toolbelt:interactive-design — or design-fidelity-prep when they chose the
+offer's Claude Design variant — invoke it and no other. Otherwise:
 
 Once the user has approved every section, **invoke the writing-specs skill.** It writes the design to `docs/toolbelt/specs/`, gates it with the user and an alternate-family reviewer, and hands off to planning. Do NOT invoke any other skill. writing-specs is the next step.
 
@@ -72,6 +73,20 @@ Offer this path when the feature has a significant user-facing surface, its fron
 - **Accepted** — invoke `toolbelt:interactive-design`; the remaining UI-detail design work moves into that session.
 - **Declined** — continue exactly as before, and do not offer again unless your human partner raises it.
 - Backend-only features, and projects where the frontend and its API do not live together, never get the offer.
+
+### Claude Design variant
+
+When the `design-fidelity-prep` skill is available, the offer names both frontend-first paths instead:
+
+> "This feature has a real user-facing surface — we could go frontend-first, two ways:
+> I build the actual frontend in-repo against fixture-backed API routes and we iterate
+> in one sitdown session, or I prep a Claude Design session and you design on the
+> canvas first, with implementation from the handoff bundle afterward. Either way the
+> backend gets implemented from the contracts we settle. Want one of these? Otherwise
+> I'll write the spec as usual."
+
+- **In-repo** — invoke `toolbelt:interactive-design` as above.
+- **Claude Design** — invoke `design-fidelity-prep`; it readies the repo (per-screen backend contract, session rules) for the Claude Design session, and implementation later re-enters through that plugin's design-fidelity-implement skill.
 
 ## Visual Companion
 

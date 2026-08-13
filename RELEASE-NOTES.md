@@ -2,6 +2,20 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.8.0 (2026-08-12)
+
+Adds a second frontend-first path to brainstorming's offer, integrating the
+claude-design-handoff plugin.
+
+- **Frontend-first offer gains a Claude Design variant.** When the
+  `design-fidelity-prep` skill is available (claude-design-handoff plugin),
+  the offer names both paths: build the real frontend in-repo
+  (interactive-design, unchanged) or design on the Claude Design canvas first,
+  with the repo prepped by design-fidelity-prep and implementation re-entering
+  through design-fidelity-implement. Checklist item 6, the terminal-state
+  line, and After the Design carry the new conditional exit. Without that
+  skill installed, brainstorming is unchanged.
+
 ## v7.4.1 (2026-08-05)
 
 Constrains the task reviewer's evidence gathering. Production AGX logs showed
