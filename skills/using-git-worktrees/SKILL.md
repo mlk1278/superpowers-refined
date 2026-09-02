@@ -52,15 +52,17 @@ subagent-driven-development applies these rules to every track worktree and repo
 
 ## Step 1: Create Isolated Workspace
 
-A caller may name a **source ref** — the SHA or branch the new worktree starts from. With one named, use the native tool only if it accepts a source ref; otherwise use Step 1b. With none named, start from `HEAD`.
+A caller may name a **source ref** — the SHA or branch the new worktree starts from. Otherwise start from `HEAD`.
 
 ### 1a. Native Worktree Tools (preferred)
 
-Use any worktree tool you already have — `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, a `--worktree` flag — then skip to Step 2. Native tools own placement, branch creation, and cleanup; `git worktree add` alongside one creates phantom state your harness can't see or manage.
+Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
+
+Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
+
+Only proceed to Step 1b if you have no native worktree tool available, or the caller named a source ref the native tool cannot take.
 
 ### 1b. Git Worktree Fallback
-
-Use only with no native tool, or when the native tool cannot take the caller's source ref.
 
 Pick the directory in this order: a preference declared in your instructions; an existing project-local `.worktrees/` (preferred) or `worktrees/`, `.worktrees` winning if both exist; otherwise `.worktrees/` at the project root.
 
@@ -70,7 +72,7 @@ Verify a project-local directory is ignored before creating the worktree:
 git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
 ```
 
-**If NOT ignored:** add to .gitignore, commit, then proceed. An unignored directory commits the worktree contents into the repository.
+**If NOT ignored:** add to .gitignore, commit, then proceed.
 
 ```bash
 # Determine path based on chosen location
@@ -80,7 +82,7 @@ git worktree add "$path" -b "$BRANCH_NAME" "${SOURCE_REF:-HEAD}"
 cd "$path"
 ```
 
-**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
+**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell your human partner the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
 
 ## Step 2: Project Setup
 
