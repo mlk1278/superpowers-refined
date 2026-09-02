@@ -22,7 +22,7 @@ You MUST create a task for each of these items and complete them in order:
 1. **Explore project context** — files, docs, recent commits
 2. **Assess scope** — if the request spans multiple independent subsystems, decompose it into sub-projects before refining details: what are the independent pieces, how do they relate, what order should they be built? Backlog the rest and plan the first part.
 3. **Ask clarifying questions** — one at a time, until you can state the design
-4. **Propose approaches** — when several are genuinely viable, with trade-offs and your recommendation
+4. **Propose approaches** — when several are viable, with trade-offs and your recommendation
 5. **Present the design** — in sections, approval after each
 6. **Hand off** — to writing-specs once your human partner has approved the whole design, or to interactive-design when they accepted the frontend-first offer (or to design-fidelity-prep when they chose the offer's Claude Design variant)
 

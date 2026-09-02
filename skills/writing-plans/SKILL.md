@@ -13,7 +13,7 @@ Write the plan for a capable engineer with **zero context for our codebase**. De
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** An isolated worktree should already exist, created via the `toolbelt:using-git-worktrees` skill.
+**Context:** If working in an isolated worktree, it should have been created via the `toolbelt:using-git-worktrees` skill at execution time.
 
 **Save plans to:** `docs/toolbelt/plans/YYYY-MM-DD-<feature-name>.md`
 - Use your human partner's location when they name one.
@@ -52,7 +52,7 @@ Map the files the work creates or modifies and what each is responsible for.
 
 ## Task Right-Sizing
 
-A task is the smallest unit worth its own test cycle and a fresh reviewer's gate. Fold setup, configuration, scaffolding, and documentation into the task whose deliverable needs them. Split only where a reviewer could reject one task and approve its neighbor. Every task ends with an independently testable deliverable.
+A task is the smallest unit worth its own test cycle and a fresh reviewer's gate. Fold setup, configuration, scaffolding, and documentation into the task whose deliverable needs them. Split only where a reviewer could reject one task and approve its neighbor. Every task ends with an independently testable deliverable. Each step is one action (2-5 minutes).
 
 - A task's **Files:** block is closed. It lists every file the task creates or modifies. "Plus every caller", "compiler-led", and "wherever else it is referenced" are placeholders and fail No Placeholders.
 - A task lists at most 8 files, as a hard limit. As a guide its change reads in one sitting, around 400 lines; the plan reviewer flags tasks that look larger.
@@ -104,7 +104,7 @@ Partition the plan into independently verifiable pull requests before writing ta
 |---|---|---|---|---|
 | 1 | [one reviewable outcome] | [exact task numbers] | [boundary numbers or none] | [command or observable result] |
 
-Every task number appears in exactly one boundary. Verification passes without later boundaries. A one-PR plan states why no smaller independently verifiable outcome exists.
+Every task number appears in exactly one boundary. Verification passes without later boundaries. A one-PR plan states why no smaller independently verifiable outcome exists. A boundary's `Depends on` names at most one predecessor whose PR may still be open when the boundary starts; every other dependency must be merged first.
 
 For shared substrate, put the core plus one representative consumer in the first boundary. Later consumers may share a PR only when they repeat the same reviewer judgment. Novel lifecycle, export, or rollout work stays separate.
 
@@ -155,8 +155,6 @@ Specify each artifact at the altitude where the decision lives:
 | Anything with in-repo precedent | The decision plus the reference to copy: `path:line` |
 
 **The altitude test:** a step is fully specified when two capable implementers working independently from it produce behaviorally interchangeable code.
-
-How the code is written is the implementer's call.
 
 ## Task Structure
 
@@ -230,9 +228,7 @@ A placeholder is an **undecided decision**, not unwritten code. These are **plan
 
 Check the plan against the spec yourself, not with a subagent. Fix findings inline; add a task for any spec requirement with none.
 
-**1-5.** Run the Plan Review Gate's judgments below against your own plan: spec coverage, placeholders, type consistency across tasks, PR boundaries, and altitude.
-
-**6. Execution tracks:** check the declaration rules and accept a plan whose tracks pass them. A plan with no concurrent tracks and no one-sentence justification is a defect. A plan with no `## Execution Tracks` section, one PR boundary, and three or fewer tasks is valid.
+Run every Plan Review Gate judgment below against your own plan. A plan with no `## Execution Tracks` section, one PR boundary, and three or fewer tasks is valid.
 
 ## Plan Review Gate
 
@@ -264,6 +260,6 @@ After the plan review is clean, hand your human partner the whole plan. Delivery
 
 > "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`, reviewed through <reviewer harness>. Handing the plan to delivery."
 
-**REQUIRED SUB-SKILL:** Use toolbelt:subagent-driven-development. Fresh
-subagent per task, task review (spec + quality) after each, broad
-whole-branch review at the end.
+Delivery runs toolbelt:subagent-driven-development per boundary: fresh
+subagent per task, task review after each, broad whole-branch review at
+the end.

@@ -42,9 +42,9 @@ Trigger: spec ❌, any Critical or Important finding, or a ⚠️ item you confi
 
 **One fix round per task.** Resume the original implementer with the open findings verbatim. If your harness cannot message a live subagent, dispatch a fresh implementer with the brief path, the report-file path, and the findings.
 
-**Re-review** when the task's `Interfaces: Produces:` block is non-empty (a later task builds on this one) or when any open finding was Critical. Dispatch the scoped re-review ([re-review-prompt.md](re-review-prompt.md)) over the fix delta: `scripts/review-package --plan PLAN_FILE FIX_BASE HEAD`, FIX_BASE being the head the previous review saw. It verdicts each finding ADDRESSED or NOT ADDRESSED and flags new breakage **in the fix diff only**; Critical or Important breakage there joins the open findings, and out-of-scope observations go to the ledger as deferred minors and never extend the loop. Append `Task <N>: fix round (<X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)`.
+**Re-review** when the task's `Interfaces: Produces:` value is anything other than exactly `none`, or when any open finding was Critical. Dispatch the scoped re-review ([re-review-prompt.md](re-review-prompt.md)) over the fix delta: `scripts/review-package --plan PLAN_FILE FIX_BASE HEAD`, FIX_BASE being the head the previous review saw. It verdicts each finding ADDRESSED or NOT ADDRESSED and flags new breakage **in the fix diff only**; Critical or Important breakage there joins the open findings, and out-of-scope observations go to the ledger as deferred minors and never extend the loop. Append `Task <N>: fix round (<X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)`.
 
-**Orchestrator close** otherwise — the plan template writes `Produces: none` when nothing downstream depends on the task. Read the fix report's findings table: every row must name the finding, the commit, the covering test command, and its passing output. Mark the task complete when every row is complete. If a row is missing, or its result is a claim without the command's output, resume the implementer once for that row; if it is still incomplete, escalate to your human partner as a BLOCKED task. Append `Task <N>: fix round closed by orchestrator (<X> findings, commits <a7>..<b7>)`.
+**Orchestrator close** otherwise — the plan template writes `Produces: none` when nothing downstream depends on the task. Read the fix report's findings table against the open findings: it must hold exactly one complete row per open finding, each naming the finding, the commit, the covering test command, and its passing output. Mark the task complete when every row is complete. If a row is missing, or its result is a claim without the command's output, resume the implementer once for that row; if it is still incomplete, escalate to your human partner as a BLOCKED task. Append `Task <N>: fix round closed by orchestrator (<X> findings, commits <a7>..<b7>)`.
 
 Adjudicate **only** after the re-review or the orchestrator close, and rule on each finding still open yourself:
 
@@ -106,7 +106,7 @@ Update the ledger with your other bookkeeping:
 - **Minor findings:** the running roll-up the final review triages, plus findings parked with rulings.
 - **Exactly one `Next:` line** naming the next expected event (e.g. `Next: task 4 review verdict`).
 
-After compaction, trust the ledger and `git log` over recollection. When the final review is clean and its fixes are merged, delete this plan's workspace.
+When the final review is clean and its fixes are merged, delete this plan's workspace.
 
 ## Parallel Tracks
 

@@ -58,13 +58,18 @@ A caller may name a **source ref** — the SHA or branch the new worktree starts
 
 Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
 
-Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
+Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
 
 Only proceed to Step 1b if you have no native worktree tool available, or the caller named a source ref the native tool cannot take.
 
 ### 1b. Git Worktree Fallback
 
 Pick the directory in this order: a preference declared in your instructions; an existing project-local `.worktrees/` (preferred) or `worktrees/`, `.worktrees` winning if both exist; otherwise `.worktrees/` at the project root.
+
+```bash
+ls -d .worktrees 2>/dev/null
+ls -d worktrees 2>/dev/null
+```
 
 Verify a project-local directory is ignored before creating the worktree:
 

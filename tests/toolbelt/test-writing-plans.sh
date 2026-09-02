@@ -87,6 +87,8 @@ assert_contains 'repeat the same reviewer judgment' \
   "later consumers share a PR only when review is repetitive"
 assert_contains 'Novel lifecycle, export, or rollout work stays separate' \
   "novel consumer work gets its own boundary"
+assert_contains 'at most one predecessor whose PR may still be open when the boundary starts' \
+  "a boundary depends on at most one still-open predecessor"
 
 # Gotcha classes added after the Phase 7 run.
 assert_contains 'Coverage that leaves with the code' \
@@ -109,6 +111,8 @@ assert_contains 'states in one sentence why no tasks can run concurrently' \
 assert_contains "A task's **Files:** block is closed" \
   "a task lists every file it touches"
 assert_contains 'at most 8 files' "a task is capped at eight files"
+assert_contains 'Each step is one action (2-5 minutes).' \
+  "a step is one action"
 assert_contains 'Mechanical sweep:' \
   "the file cap has one exception, marked and verified"
 assert_contains 'Expected, per test:' "the RED step names one failure per test"

@@ -28,14 +28,16 @@ assert_not_contains() {
   echo "ok - $description"
 }
 
-assert_contains "$sdd" 'when the task'"'"'s `Interfaces: Produces:` block is non-empty' \
-  "re-review is required when a later task builds on this one"
+assert_contains "$sdd" 'when the task'"'"'s `Interfaces: Produces:` value is anything other than exactly `none`' \
+  "re-review is required unless the produces value is exactly none"
 assert_contains "$sdd" 'or when any open finding was Critical' \
   "a Critical finding forces the re-review route"
 assert_contains "$sdd" '**Orchestrator close**' \
   "the other exit from the fix round is named"
 assert_contains "$sdd" 'Task <N>: fix round closed by orchestrator' \
   "orchestrator close has its own ledger line"
+assert_contains "$sdd" 'exactly one complete row per open finding' \
+  "the close compares the table against every open finding"
 assert_contains "$sdd" 'escalate to your human partner as a BLOCKED task' \
   "an incomplete findings table escalates"
 assert_contains "$sdd" 'Task N: in-progress (agent <id>, route <harness>/<model>/<effort>)' \
