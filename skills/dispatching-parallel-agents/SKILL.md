@@ -5,13 +5,13 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 # Dispatching Parallel Agents
 
-Subagents never inherit your session's context or history — you construct exactly what they need. That isolation is the whole point: it keeps them focused, and it preserves your own context for coordination.
+Subagents do not inherit your session's context or history. Construct exactly what each one needs.
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
 ## When to Use
 
-**Use when:** 3+ test files failing with different root causes, or multiple subsystems broken independently — each problem understandable without context from the others, no shared state between investigations.
+**Use when:** 3+ test files fail with different root causes, or several subsystems break independently, each understandable without the others and sharing no state.
 
 **Don't use when:**
 - **Failures are related** — fixing one might fix others. Investigate together first.
@@ -24,15 +24,15 @@ Subagents never inherit your session's context or history — you construct exac
 
 ### 1. Identify independent domains
 
-Group failures by what's broken — tool approval flow, batch completion, abort handling. Each domain is independent: fixing tool approval doesn't affect abort tests.
+Group failures by what is broken — tool approval flow, batch completion, abort handling.
 
 ### 2. Give each agent a focused task
 
-Specific scope (one test file or subsystem), clear goal, constraints on what NOT to touch, and an explicit expected output.
+State one test file or subsystem, the goal, what NOT to touch, and the expected output.
 
 ### 3. Dispatch in parallel
 
-Issue all dispatches in the **same response** — that is what makes them run concurrently. One per response is sequential.
+Issue all dispatches in the **same response**. One per response runs them sequentially.
 
 ```text
 Subagent (role: implementer): "Fix agent-tool-abort.test.ts failures"
@@ -43,11 +43,9 @@ Subagent (role: implementer): "Fix tool-approval-race-conditions.test.ts failure
 
 ### 4. Review and integrate
 
-Read each summary. Check whether agents edited the same code. Run the affected integration scope — the suites the waves touched, escalating by risk, not the whole workspace. Then spot check: agents can make systematic errors that each summary reports as success.
+Read each summary. Check whether agents edited the same code. Run the suites the waves touched, escalating by risk, not the whole workspace. Spot check: an agent can make a systematic error and report success.
 
 ## Agent Prompt Structure
-
-Focused (one problem domain), self-contained (all context needed), and specific about what to return.
 
 ```markdown
 Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
