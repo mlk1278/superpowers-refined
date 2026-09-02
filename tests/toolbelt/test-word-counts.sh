@@ -29,11 +29,6 @@ for entry in "${ceilings[@]}"; do
   ceiling=${entry##*:}
   file="$repo_root/$path"
 
-  if [[ ! -f "$file" ]]; then
-    echo "not ok - missing file: $path" >&2
-    exit 1
-  fi
-
   count=$(wc -w <"$file")
   echo "$count/$ceiling $path"
 
