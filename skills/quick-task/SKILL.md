@@ -16,7 +16,7 @@ Confirm the work has one coherent outcome, an established owner surface, no unre
 
 ## 2. Mini-plan
 
-Write an ignored one-task implementation plan at `.toolbelt/quick/<slug>-plan.md` in writing-plans format. Include the request, exact files, TDD steps, and verification commands. The mini-plan is scratch and is never committed.
+Write a git-ignored one-task implementation plan at `.toolbelt/quick/<slug>-plan.md` in writing-plans format. Include the request, exact files, TDD steps, and verification commands.
 
 ## 3. Deliver
 
