@@ -17,9 +17,9 @@ Subagent (role: reviewer):
 
     ## Project Review Guidance
 
-    If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it
-    now. It is reviewer-only. Report any conflict with the task
-    requirements instead of guessing.
+    If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it.
+    It is reviewer-only. Report any conflict with the task requirements
+    instead of guessing.
 
     ## The Findings Under Verification
 
@@ -48,8 +48,9 @@ Subagent (role: reviewer):
 
     ## Output Format
 
-    Your final message is the report itself. Every line is a verdict, a
-    finding with file:line, or a check you ran.
+    Your final message is the report itself, beginning with the first
+    finding's verdict. Every line is a verdict, a finding with file:line,
+    or a check you ran.
 
     ### Finding Verdicts
 

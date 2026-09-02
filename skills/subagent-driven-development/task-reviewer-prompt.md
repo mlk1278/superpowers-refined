@@ -23,7 +23,7 @@ Subagent (role: reviewer):
 
     ## Project Review Guidance
 
-    If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it now.
+    If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it.
     This file is reviewer-only. Apply its project-wide review guidance and
     report any conflict with the task requirements instead of guessing.
     This read is an explicit exception to the limits on evidence below.
@@ -92,7 +92,7 @@ Subagent (role: reviewer):
 
     ## Calibration
 
-    Categorize by actual severity. **Important** means this task cannot be
+    Categorize by severity. **Important** means this task cannot be
     trusted until it is fixed: incorrect or fragile behavior, a missed
     requirement, or maintainability damage you would block a merge over —
     verbatim duplication of a logic block, swallowed errors, tests that
@@ -103,8 +103,9 @@ Subagent (role: reviewer):
 
     ## Output Format
 
-    Your final message is the report itself. Every line is a verdict, a
-    finding with file:line, or a check you ran.
+    Your final message is the report itself, beginning with the
+    spec-compliance verdict. Every line is a verdict, a finding with
+    file:line, or a check you ran.
 
     ### Spec Compliance
 
