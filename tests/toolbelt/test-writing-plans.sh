@@ -100,8 +100,22 @@ assert_contains '**Unflagged gotchas**' "plan reviewer judges unflagged gotchas"
 assert_contains '**PR boundaries**' "plan reviewer judges PR boundaries"
 assert_contains 'missing, horizontal, overlapping, or unjustified' \
   "self-review rejects invalid PR partitions"
-assert_contains 'one declared PR boundary at a time' \
-  "delivery handoff follows declared boundaries"
+assert_contains 'Handing the plan to delivery' \
+  "the whole plan is handed to delivery"
+
+# Tracks are the default; task size is capped; RED names each test.
+assert_contains 'states in one sentence why no tasks can run concurrently' \
+  "an all-serial plan justifies itself in one sentence"
+assert_contains "A task's **Files:** block is closed" \
+  "a task lists every file it touches"
+assert_contains 'at most 8 files' "a task is capped at eight files"
+assert_contains 'Mechanical sweep:' \
+  "the file cap has one exception, marked and verified"
+assert_contains 'Expected, per test:' "the RED step names one failure per test"
+assert_contains 'when the guard is absent' \
+  "a guard's red is the failure seen without the guard"
+assert_contains 'Produces: none' \
+  "a task with no downstream dependents says so"
 
 # WOR-753 §6: self-review must not argue against the gate that follows it.
 assert_not_contains 'No need to re-review' \
