@@ -36,7 +36,7 @@ Repository rules this plan adds:
 | `skills/subagent-driven-development/SKILL.md` | 2140 |
 | `skills/subagent-driven-development/task-reviewer-prompt.md` | 850 |
 | `skills/subagent-driven-development/re-review-prompt.md` | 420 |
-| `skills/dispatching-parallel-agents/SKILL.md` | 350 |
+| `skills/dispatching-parallel-agents/SKILL.md` | 510 |
 | `skills/using-git-worktrees/SKILL.md` | 1260 |
 | `skills/subagent-driven-development/implementer-prompt.md` | 400 |
 | `skills/delivery/SKILL.md` | 940 |
@@ -44,7 +44,7 @@ Repository rules this plan adds:
 | `skills/quick-task/SKILL.md` | 200 |
 | `docs/WORKFLOW.md` | 290 |
 
-Amended during execution (orchestrator ruling, Tasks 2 and 4 BLOCKED): the 60% figure was computed without excluding fenced templates and tables, which the prose rules forbid changing. writing-plans (639 fixed words) is capped at 2300 (the task reviewer's independent rules-only estimate of ~2270, rounded up) and subagent-driven-development at 2140 (measured rules-only floor after two compression passes; the remaining 237 words are whole rules). pr-monitor is capped at 860: it gains the 214-word Chain rules section, so no-growth was wrong for it (measured faithful rewrite 852). Same ruling for task-reviewer-prompt (850), re-review-prompt (420), brainstorming (1050), writing-specs (670), using-git-worktrees (1260; 642 fixed words in fences and tables): measured rules-only floors, rounded up to 10, after every restatement, rationale, metaphor, and intensifier was cut with no rule dropped. Task 11 copies this table into the test.
+Amended during execution (orchestrator ruling, Tasks 2 and 4 BLOCKED): the 60% figure was computed without excluding fenced templates and tables, which the prose rules forbid changing. writing-plans (639 fixed words) is capped at 2300 (the task reviewer's independent rules-only estimate of ~2270, rounded up) and subagent-driven-development at 2140 (measured rules-only floor after two compression passes; the remaining 237 words are whole rules). pr-monitor is capped at 860: it gains the 214-word Chain rules section, so no-growth was wrong for it (measured faithful rewrite 852). Same ruling for task-reviewer-prompt (850), re-review-prompt (420), brainstorming (1050), writing-specs (670), using-git-worktrees (1260; 642 fixed words in fences and tables), dispatching-parallel-agents (510; 251 fixed words): measured rules-only floors, rounded up to 10, after every restatement, rationale, metaphor, and intensifier was cut with no rule dropped. Task 11 copies this table into the test.
 
 ## Known Gotchas
 
