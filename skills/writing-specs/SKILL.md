@@ -5,8 +5,6 @@ description: "Use after brainstorming reaches an approved design, or when your h
 
 # Writing Specs
 
-Turn an approved design into a committed spec document, then gate it before planning starts.
-
 **Announce at start:** "I'm using the writing-specs skill to write the spec."
 
 <ENTRY-GATE>

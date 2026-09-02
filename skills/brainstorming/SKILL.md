@@ -5,8 +5,6 @@ description: "You MUST use this before any creative work - creating features, bu
 
 # Brainstorming Ideas Into Designs
 
-Turn ideas into designs: explore the project, ask questions until you can state the design, present it, and get approval.
-
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
 
@@ -41,13 +39,13 @@ Ask a question only when its answer would change what you build.
 - **State inferences instead of asking about them.** "I'm assuming X — correct me."
 - **Stop when questions stop changing the design.** Then present.
 
-Check the project state yourself, and dispatch background subagents to read the codebase, prior art, and external references while the conversation continues. Reserve questions for what only your human partner knows.
+Check the project state yourself. Dispatch background subagents to read the codebase, prior art, and external references while the conversation continues. Reserve questions for what only your human partner knows.
 
 ## Presenting the Design
 
 - Scale each section to its complexity: a few sentences up to 200-300 words
 - Cover architecture, components, data flow, error handling, testing
-- Ask after each section whether it looks right; clarify when it doesn't land
+- Ask after each section whether it looks right. Clarify when it doesn't land.
 - Break the system into units with one clear purpose and well-defined interfaces. For each: what does it do, how is it used, what does it depend on? If a consumer has to read the internals, or you can't change the internals without breaking consumers, the boundary is wrong.
 - In existing codebases, follow existing patterns. Include targeted improvements where existing problems affect this work. No unrelated refactoring.
 
