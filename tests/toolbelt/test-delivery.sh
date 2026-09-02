@@ -59,6 +59,8 @@ assert_contains "$skill" '## Agent Routing' "optional plan routing section"
 assert_contains "$skill" "plan route, then project route, then bundled default" "route precedence"
 assert_contains "$skill" "session agent remains the orchestrator" "plan cannot route orchestrator"
 assert_contains "$skill" "toolbelt:using-git-worktrees" "isolated worktree handoff"
+assert_before "$skill" "Fetch the predecessor's remote head" "toolbelt:using-git-worktrees" \
+  "the source ref is chosen before the worktree is created"
 assert_contains "$skill" "toolbelt:subagent-driven-development" "SDD handoff"
 assert_contains "$skill" "ux-gate" "conditional UX gate"
 assert_contains "$skill" "broad final review is the slice gate" "SDD final review is the slice gate"
