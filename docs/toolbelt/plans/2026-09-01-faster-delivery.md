@@ -32,8 +32,8 @@ Repository rules this plan adds:
 |---|---|
 | `skills/brainstorming/SKILL.md` | 740 |
 | `skills/writing-specs/SKILL.md` | 420 |
-| `skills/writing-plans/SKILL.md` | 1880 |
-| `skills/subagent-driven-development/SKILL.md` | 1760 |
+| `skills/writing-plans/SKILL.md` | 2300 |
+| `skills/subagent-driven-development/SKILL.md` | 1900 |
 | `skills/subagent-driven-development/task-reviewer-prompt.md` | 590 |
 | `skills/subagent-driven-development/re-review-prompt.md` | 340 |
 | `skills/dispatching-parallel-agents/SKILL.md` | 350 |
@@ -43,6 +43,8 @@ Repository rules this plan adds:
 | `skills/pr-monitor/SKILL.md` | 640 |
 | `skills/quick-task/SKILL.md` | 200 |
 | `docs/WORKFLOW.md` | 290 |
+
+Amended during execution (orchestrator ruling, Tasks 2 and 4 BLOCKED): the 60% figure was computed without excluding fenced templates and tables, which the prose rules forbid changing. writing-plans (639 fixed words) is capped at 2300 (the task reviewer's independent rules-only estimate of ~2270, rounded up) and subagent-driven-development at 1900. Task 11 copies this table into the test.
 
 ## Known Gotchas
 
