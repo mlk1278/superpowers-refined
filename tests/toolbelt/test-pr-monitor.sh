@@ -7,7 +7,7 @@ metadata="$repo_root/skills/pr-monitor/agents/openai.yaml"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
-  if ! grep -Fq "$text" "$file"; then
+  if ! grep -Fq -- "$text" "$file"; then
     echo "not ok - $description" >&2
     echo "missing: $text" >&2
     exit 1
@@ -27,7 +27,7 @@ assert_no_model_names() {
 [ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
 
 assert_contains "$skill" "name: pr-monitor" "frontmatter name"
-assert_contains "$skill" "Own exactly one PR" "single-PR ownership"
+assert_contains "$skill" "Own one chain" "chain ownership"
 assert_contains "$skill" "sole source of PR review, CI, fix-loop, and merge mechanics" "sole-source clause"
 assert_contains "$skill" ".toolbelt/pr-policy.md" "project policy file location"
 assert_contains "$skill" "exact-head green CI, zero unresolved review threads, and no requested-changes review" "default conditions without a policy file"
@@ -54,6 +54,17 @@ assert_contains "$skill" "the policy file decides whether a recorded fallback bl
   "fallback adjudication belongs to the policy file"
 assert_contains "$skill" "in the PR body before merging" \
   "fallback surfaces before the merge, not only in the return"
+
+assert_contains "$skill" "## Chain rules" "chain rules section"
+assert_contains "$skill" "**Lowest first.**" "lowest unmerged PR gets attention"
+assert_contains "$skill" "**Fix in the owner.**" "findings land in the owning layer"
+assert_contains "$skill" "**One topology writer.**" "only the monitor moves published branches"
+assert_contains "$skill" "**Merge bottom-up.**" "merge order is bottom-up"
+assert_contains "$skill" "--force-with-lease" "rebased layers are pushed with a lease"
+assert_contains "$skill" "git patch-id --stable" "local review repeats only on a changed patch id"
+assert_contains "$skill" "gh pr edit --base" "retarget fallback after a bottom merge"
+assert_contains "$skill" "git rebase --abort" "conflicting rebase is aborted"
+assert_contains "$skill" "default 20 minutes" "provider timeout default"
 
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
 grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
