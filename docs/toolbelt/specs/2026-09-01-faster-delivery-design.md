@@ -267,9 +267,14 @@ Added section, `## Chain rules`:
   merges. Review threads on higher layers are read and batched, never fixed
   while the bottom is not merge-ready.
 - **Fix in the owner.** A finding lands in the lowest PR whose diff contains
-  the code. After pushing it, rebase every layer above with
-  `git rebase --onto <owner-head> <old-owner-head> <layer-branch>` and push
-  each with `--force-with-lease`. Every rebased head starts a new evidence
+  the code. After pushing it, rebase the layers above one at a time, from
+  the layer directly above the owner upward. For each layer record its old
+  head first, then run
+  `git rebase --onto <parent-new-head> <parent-old-head> <layer-branch>`
+  where the parent is the layer directly below, and push with
+  `--force-with-lease`. Rebasing every layer onto the owner's new head
+  independently replays lower layers' commits into higher ones and breaks
+  ancestry in chains of three or more. Every rebased head starts a new evidence
   cycle: exact-head CI, provider review, mergeability, and threads all
   re-run. Local review repeats only when a layer's
   `git patch-id --stable` changed.
@@ -280,9 +285,11 @@ Added section, `## Chain rules`:
   it with `gh pr view --json baseRefName`, and set it with
   `gh pr edit --base` if it did not happen. Rebase the next layer with
   `git rebase --onto <base-branch> <merged-layer-old-head> <layer-branch>`
-  so the squashed commits are not replayed, push with `--force-with-lease`,
-  re-run the merge preflight, then continue. Stop at the first layer that is
-  not merge-ready and keep monitoring it.
+  so the squashed commits are not replayed. Propagate upward through every
+  higher layer, using each immediate parent's recorded old and new heads.
+  Push each with `--force-with-lease`. Every moved layer starts a new
+  evidence cycle. Re-run the merge preflight and continue. Stop at the first
+  layer that is not merge-ready and keep monitoring it.
 
 ### Timeout
 
@@ -384,9 +391,12 @@ New assertions:
 - New `test-worktree-source-ref.sh`: the fallback command carries
   `SOURCE_REF`.
 - New `test-chain-rebase.sh`: in a temporary git repository, build main →
-  pr-1 → pr-2, squash-merge pr-1 into main, run the Component 4 rebase
-  recipe on pr-2, and assert pr-2 contains only its own commit on top of
-  main. This is the one mechanic where a wrong recipe destroys work.
+  pr-1 → pr-2 → pr-3, squash-merge pr-1 into main (the squash carries one
+  extra edit so a plain rebase conflicts), run the Component 4 recipe
+  upward one layer at a time, and assert pr-2 holds exactly one commit
+  above main, pr-3 holds exactly one commit above pr-2, and pr-2 is an
+  ancestor of pr-3. This is the one mechanic where a wrong recipe destroys
+  work.
 - Word count: a table in `tests/toolbelt/test-word-counts.sh` with one
   integer ceiling per rewritten file. Files that only lose prose get 60% of
   the pre-rewrite count, rounded up to the nearest 10. Files that gain rule

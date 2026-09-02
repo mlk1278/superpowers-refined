@@ -48,24 +48,39 @@ for name, (description, model, effort) in expected.items():
     print(f"ok - {name}")
 PY
 
-if rg -n -i 'opus[ -]?4[.-]?8|opus-4-8|sonnet' \
+# A match means an obsolete model name survived. No match is the passing case.
+# Any other grep status is a broken scan, and must not read as a pass.
+scan_for_obsolete_models() {
+  local failure=$1
+  shift
+  local status=0
+  grep -rniE 'opus[ -]?4[.-]?8|opus-4-8|sonnet' "$@" >/dev/null || status=$?
+  case "$status" in
+    0)
+      echo "not ok - $failure" >&2
+      exit 1
+      ;;
+    1) ;;
+    *)
+      echo "not ok - scan for '$failure' failed, grep exited $status" >&2
+      exit 1
+      ;;
+  esac
+}
+
+scan_for_obsolete_models "obsolete operational models remain" \
+  --exclude=anthropic-best-practices.md \
   "$repo_root/agents" \
   "$repo_root/skills" \
   "$repo_root/.claude-plugin" \
-  "$repo_root/.codex-plugin" \
-  --glob '!writing-skills/anthropic-best-practices.md' >/dev/null; then
-  echo "not ok - obsolete operational models remain" >&2
-  exit 1
-fi
+  "$repo_root/.codex-plugin"
 echo "ok - obsolete operational models are absent"
 
 # The vendored authoring reference is guidance too, but historical release and
 # issue text plus regex guard tests are intentionally outside this operational scan.
-if rg -n -i 'opus[ -]?4[.-]?8|opus-4-8|sonnet' \
-  "$repo_root/skills/writing-skills/anthropic-best-practices.md" >/dev/null; then
-  echo "not ok - obsolete model guidance remains in the authoring reference" >&2
-  exit 1
-fi
+# It carries no --exclude: grep skips a named file that matches one.
+scan_for_obsolete_models "obsolete model guidance remains in the authoring reference" \
+  "$repo_root/skills/writing-skills/anthropic-best-practices.md"
 echo "ok - obsolete model guidance is absent"
 
 echo "PASS"

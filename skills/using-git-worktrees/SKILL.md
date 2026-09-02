@@ -5,17 +5,11 @@ description: Use when starting feature work that needs isolation from current wo
 
 # Using Git Worktrees
 
-## Overview
-
-Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
-
-**Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
+Detect existing isolation first. Then use native worktree tools. Then fall back to git.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
 ## Step 0: Detect Existing Isolation
-
-**Before creating anything, check if you are already in an isolated workspace.**
 
 ```bash
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
@@ -23,100 +17,81 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 BRANCH=$(git branch --show-current)
 ```
 
-**Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside git submodules. Before concluding "already in a worktree," verify you are not in a submodule:
+`GIT_DIR != GIT_COMMON` is also true inside a submodule, so check:
 
 ```bash
 # If this returns a path, you're in a submodule, not a worktree — treat as normal repo
 git rev-parse --show-superproject-working-tree 2>/dev/null
 ```
 
-**If `GIT_DIR != GIT_COMMON` (and not a submodule):** You are already in a linked worktree. Skip to Step 2 (Project Setup). Do NOT create another worktree.
+**`GIT_DIR != GIT_COMMON` and not a submodule:** already in a linked worktree. Skip to Step 2. Report:
 
-Report with branch state:
 - On a branch: "Already in isolated workspace at `<path>` on branch `<name>`."
 - Detached HEAD: "Already in isolated workspace at `<path>` (detached HEAD, externally managed). Branch creation needed at finish time."
 
-**If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
+When the caller asks for a new sibling worktree, this skill creates it rather than skipping creation.
 
-Has the user already indicated their worktree preference in your instructions? If not, ask for consent before creating a worktree:
+**`GIT_DIR == GIT_COMMON` or in a submodule:** normal repo checkout. Honor a worktree preference declared in your instructions. Otherwise ask:
 
 > "Would you like me to set up an isolated worktree? It protects your current branch from changes."
 
-Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 2.
+If your human partner declines, work in place and skip to Step 2.
 
 ## Project Worktree Policy
 
-If `<repo-root>/.toolbelt/worktree-policy.md` exists, read it before creating anything and follow it for the rest of this skill. It carries what only this project knows about running several worktrees at once — port ranges and how to pick a non-conflicting set, sidecar containers and their naming, per-worktree data directories, environment files to derive rather than copy, and anything to tear down at finish.
+Read `<repo-root>/.toolbelt/worktree-policy.md` when it exists and follow it for the rest of this skill: port ranges and how to pick a non-conflicting set, sidecar containers and their naming, per-worktree data directories, environment files to derive rather than copy, and what to tear down at finish. Report the set you claimed. With no policy file, use the defaults below; do not invent a scheme.
 
-Two worktrees that each grab the default database, API, and web ports collide the moment both run, and the failure looks like a bug in the code rather than a clash in the environment. When the policy defines an allocation scheme, follow it exactly and report the set you claimed. When there is no policy file, proceed with the defaults below; do not invent a scheme of your own.
-
-A policy may additionally declare **parallel-workspace rules** for worktrees that run concurrently:
+A policy may also declare **parallel-workspace rules** for worktrees that run concurrently:
 
 - How to derive a per-workspace database name (or equivalent isolated resource) from the worktree/branch name.
 - Which resources are per-workspace and which are safely shared.
 - Setup commands to run per workspace (e.g., client codegen, migrations against the derived database).
 - An optional concurrency limit lower than 3 when the machine cannot support three concurrent setups; subagent-driven-development honors the lower number.
 
-subagent-driven-development applies these rules to every track worktree it creates and reports the claimed resource set per track, in this skill's existing report shape. With no policy file, defaults apply exactly as today. A track that visibly needs isolated stateful resources with no policy declaring how is a gap to report, not improvise around.
+subagent-driven-development applies these rules to every track worktree and reports the claimed resources per track. A track needing isolated stateful resources with no policy declaring how is a gap to report, not improvise around.
 
 ## Step 1: Create Isolated Workspace
 
-**You have two mechanisms. Try them in this order.**
+A caller may name a **source ref** — the SHA or branch the new worktree starts from. Otherwise start from `HEAD`.
 
 ### 1a. Native Worktree Tools (preferred)
 
-The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
+Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
 
-Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
+Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
 
-Only proceed to Step 1b if you have no native worktree tool available.
+Only proceed to Step 1b if you have no native worktree tool available, or the caller named a source ref the native tool cannot take.
 
 ### 1b. Git Worktree Fallback
 
-**Only use this if Step 1a does not apply** — you have no native worktree tool available. Create a worktree manually using git.
+Pick the directory in this order: a preference declared in your instructions; an existing project-local `.worktrees/` (preferred) or `worktrees/`, `.worktrees` winning if both exist; otherwise `.worktrees/` at the project root.
 
-#### Directory Selection
+```bash
+ls -d .worktrees 2>/dev/null
+ls -d worktrees 2>/dev/null
+```
 
-Follow this priority order. Explicit user preference always beats observed filesystem state.
-
-1. **Check your instructions for a declared worktree directory preference.** If the user has already specified one, use it without asking.
-
-2. **Check for an existing project-local worktree directory:**
-   ```bash
-   ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-   ls -d worktrees 2>/dev/null      # Alternative
-   ```
-   If found, use it. If both exist, `.worktrees` wins.
-
-3. **If there is no other guidance available**, default to `.worktrees/` at the project root.
-
-#### Safety Verification (project-local directories only)
-
-**MUST verify directory is ignored before creating worktree:**
+Verify a project-local directory is ignored before creating the worktree:
 
 ```bash
 git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
 ```
 
-**If NOT ignored:** Add to .gitignore, commit the change, then proceed.
-
-**Why critical:** Prevents accidentally committing worktree contents to repository.
-
-#### Create the Worktree
+**If NOT ignored:** add to .gitignore, commit, then proceed.
 
 ```bash
 # Determine path based on chosen location
 path="$LOCATION/$BRANCH_NAME"
 
-git worktree add "$path" -b "$BRANCH_NAME"
+git worktree add "$path" -b "$BRANCH_NAME" "${SOURCE_REF:-HEAD}"
 cd "$path"
 ```
 
-**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
+**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell your human partner the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
 
 ## Step 2: Project Setup
 
-Apply the worktree policy's setup rules first when one exists — allocated ports, sidecar containers, per-worktree data directories — then auto-detect and run appropriate setup:
+Apply the policy's setup rules first — allocated ports, sidecar containers, per-worktree data directories — then detect and run setup:
 
 ```bash
 # Node.js
