@@ -37,8 +37,9 @@ assert_contains "$plans" 'contract-freeze' \
   "shared contracts freeze on the mainline before the fork"
 assert_contains "$plans" 'Every fork closes with a mainline integration task' \
   "every merge point gets an integration task"
-assert_contains "$plans" 'bogus or missing track declarations' \
-  "plan review gate rejects bad track declarations"
+assert_contains "$plans" \
+  'a plan with no concurrent tracks and no one-sentence justification is a defect' \
+  "plan review gate rejects an unjustified all-serial plan"
 
 # subagent-driven-development: executing tracks.
 assert_contains "$sdd" '## Parallel Tracks' \
