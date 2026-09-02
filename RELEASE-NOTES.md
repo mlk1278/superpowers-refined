@@ -2,6 +2,35 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.9.0 (2026-09-01)
+
+Rewrites the planning and delivery skills in plain language and changes the
+rules they carry: plans ship work in parallel tracks, review closes without a
+second pass when nothing downstream depends on it, and delivery can run
+dependent pull requests as a chain.
+
+- **Execution tracks are the default in plans.** `writing-plans` requires a
+  track breakdown, and a task's Files block is closed at 8 files.
+- **The plan template's RED step names one failure per test.** A guard counts
+  as proven red only when it is shown failing against code that lacks the
+  guard.
+- **The fix loop re-reviews only when it must.** A task returns to the
+  reviewer when its Produces block is non-empty or a finding was Critical;
+  otherwise the orchestrator closes it against a fix-report table.
+- **Delivery runs dependent boundaries as PR chains.** Each chain gets one
+  `pr-monitor`, and ownership of a branch passes to the monitor once the
+  branch is published.
+- **`pr-monitor` owns a chain by four rules** — lowest layer first, fix in the
+  owning layer with a layer-by-layer rebase, one topology writer, merge
+  bottom-up — and stops waiting on a review provider after 20 minutes.
+- **`using-git-worktrees` accepts a caller-named source ref** instead of always
+  branching from the current head.
+- **Plain-language rewrite with enforced word-count ceilings.** The planning,
+  execution, and shipping skills were rewritten to one idea per sentence with
+  restatements and rhetorical framing removed;
+  `tests/toolbelt/test-word-counts.sh` now fails on any of those files that
+  grows past its ceiling.
+
 ## v7.8.0 (2026-08-12)
 
 Adds a second frontend-first path to brainstorming's offer, integrating the
