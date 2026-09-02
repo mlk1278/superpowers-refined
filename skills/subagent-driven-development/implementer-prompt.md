@@ -23,24 +23,24 @@ Subagent (role: implementer):
 
     Work from: [directory]
 
-    A guard or negative assertion counts only **seen red**: its TDD RED,
-    or whatever other evidence convinced you it can fail — report it.
+    A guard or negative assertion counts only when you have seen it fail
+    against code that lacks the guard, not against a missing module.
+    Report the command and the failing output in TDD Evidence, one line
+    per guard.
 
-    All review dispatch belongs to the controller. Do NOT dispatch
-    subagents of your own for review.
+    Do NOT dispatch subagents of your own for review.
 
-    If you discover a bug outside your task: fix it inline when it is
-    trivial and tightly coupled to your change; otherwise report it as a
-    concern for the controller to plan. Never expand your diff chasing it.
+    Fix a bug outside your task inline when it is trivial and tightly
+    coupled to your change; otherwise report it as a concern for the
+    controller. Never expand your diff chasing it.
 
     ## Verification
 
     While iterating, run the focused test for what you're changing. Before
-    committing, run the affected package suite(s) once — the packages your
-    diff touches plus direct consumers of any shared contract you changed —
-    never the whole workspace. Use the project's quiet-run wrapper when it
-    provides one and read back exit status, pass count, and any failure tail
-    only.
+    committing, run the packages your diff touches and direct consumers of
+    any shared contract you changed — never the whole workspace. Use the
+    project's quiet-run wrapper when it exists. Read back exit status, pass
+    count, and any failure tail only.
 
     Stop and report BLOCKED or NEEDS_CONTEXT when the task needs a
     decision or information you don't have — say what you're stuck on,
@@ -48,8 +48,13 @@ Subagent (role: implementer):
 
     ## After Review Findings
 
-    If a reviewer finds issues and you fix them, re-run the tests covering
-    the amended code and append the results to your report file.
+    Fix the findings, re-run the tests covering the amended code, and
+    append this table to your report file:
+
+    | Finding | Commit | Covering test command | Result |
+    |---|---|---|---|
+
+    `Result` is the command's last passing line, pasted.
 
     ## Report Format
 
@@ -58,13 +63,12 @@ Subagent (role: implementer):
     - What you tested and the results
     - **TDD Evidence** (if TDD was required): RED — command, failing
       output, why that failure was expected; GREEN — command and passing
-      output
+      output; for each guard, the seen-red command and output
 
-    Then report back with ONLY (under 15 lines — the detail lives in the
-    report file):
+    Then report back with ONLY (under 15 lines):
     - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
     - Commits created (short SHA + subject)
-    - One-line test summary (e.g. "14/14 passing, output pristine")
+    - One-line test summary
     - Your concerns, if any
     - The report file path
 

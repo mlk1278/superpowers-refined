@@ -5,6 +5,8 @@ set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 sdd="$repo_root/skills/subagent-driven-development/SKILL.md"
+implementer="$repo_root/skills/subagent-driven-development/implementer-prompt.md"
+rereview="$repo_root/skills/subagent-driven-development/re-review-prompt.md"
 
 assert_contains() {
   local file=$1 text=$2 description=$3
@@ -42,5 +44,12 @@ assert_contains "$sdd" 'route <harness>/<model>/<effort>, report <path>' \
   "complete ledger line records the resolved route"
 assert_contains "$sdd" 'Produces: none' \
   "the plan template's empty-produces marker is named"
+
+assert_contains "$implementer" 'against code that lacks the guard' \
+  "seen red means the guard failed against code missing the guard"
+assert_contains "$implementer" '| Finding | Commit | Covering test command | Result |' \
+  "the fix report uses the required findings table"
+assert_contains "$rereview" 'outside the fix diff go to the ledger and never extend the loop' \
+  "out-of-scope findings never extend the fix loop"
 
 echo "PASS"
