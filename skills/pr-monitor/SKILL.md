@@ -9,7 +9,7 @@ Own one chain: one PR, or PRs each targeting the one below it. This skill is the
 
 ## Project policy
 
-Read `.toolbelt/pr-policy.md` at the repository root when it exists. It names the review providers to await, how to request them, complexity lanes, and timeout policy. It overrides this skill. Without it, the required conditions are exact-head green CI, zero unresolved review threads, and no requested-changes review. Never hard-code a provider this file does not name.
+Read `.toolbelt/pr-policy.md` at the repository root if present. It names the review providers to await, how to request them, complexity lanes, and timeouts. It overrides this skill. Without it, the required conditions are exact-head green CI, zero unresolved review threads, and no requested-changes review. Never hard-code a provider this file does not name.
 
 ## Preflight
 
@@ -17,19 +17,17 @@ Record every layer's PR number, branch, full head SHA, base branch, and local-ga
 
 ## Chain rules
 
-**Lowest first.** The lowest unmerged PR gets all attention until it merges. Read and batch review threads on higher layers; never fix them while the bottom is not merge-ready.
+**Lowest first.** The lowest unmerged PR gets all attention until it merges. Read and batch review threads on higher layers. Never fix them while the bottom is not merge-ready.
 
-**Fix in the owner.** A finding lands in the lowest PR whose diff contains the code. After pushing it, rebase every layer above with `git rebase --onto <owner-head> <old-owner-head> <layer-branch>` and push each with `--force-with-lease`. Every rebased head starts a new evidence cycle: exact-head CI, provider review, mergeability, threads. Local review repeats only when a layer's `git patch-id --stable` changed.
+**Fix in the owner.** A finding lands in the lowest PR whose diff contains the code. After pushing the owner, rebase the layers above one at a time, working upward. Record each layer's old head before rebasing it. Run `git rebase --onto <parent-new-head> <parent-old-head> <layer-branch>`, where the parent is the layer directly below. Push each with `--force-with-lease`. Every rebased head starts a new evidence cycle: exact-head CI, provider review, mergeability, threads. Local review repeats only when a layer's `git patch-id --stable` changed.
 
 **One topology writer.** Only the monitor rebases, retargets, or force-pushes a published branch.
 
-**Merge bottom-up.** Squash-merge the bottom layer and delete its branch. GitHub then retargets the next layer to the deleted branch's base; confirm with `gh pr view --json baseRefName` and set it with `gh pr edit --base` if it did not happen. Rebase the next layer with `git rebase --onto <base-branch> <merged-layer-old-head> <layer-branch>` so the squashed commits are not replayed, then push with `--force-with-lease`. Re-run the merge preflight and continue. Stop at the first layer that is not merge-ready and keep monitoring it.
+**Merge bottom-up.** Squash-merge the bottom layer and delete its branch. GitHub then retargets the next layer to the deleted branch's base. Confirm with `gh pr view --json baseRefName`. Set it with `gh pr edit --base` if it did not happen. Rebase the next layer with `git rebase --onto <base-branch> <merged-layer-old-head> <layer-branch>` so the squashed commits are not replayed. Push with `--force-with-lease`. Re-run the merge preflight and continue. Stop at the first layer that is not merge-ready and keep monitoring it.
 
-A rebase conflict stops the operation. Run `git rebase --abort` to leave the branch as it was, and return that layer as blocked with the conflicting paths.
+A rebase conflict stops the operation. Run `git rebase --abort` to leave the branch as it was. Return that layer as blocked with the conflicting paths.
 
 ## Monitor loop
-
-Run this on the lowest unmerged layer.
 
 1. Refresh the PR head, merge state, and unresolved threads. A conflicting PR schedules no CI; resolve the conflict first.
 2. Refresh exact-head CI (`gh pr checks` or the policy file's command). Distinguish failed from pending from unavailable, and fail closed on unavailable.
@@ -43,6 +41,6 @@ A provider that reaches the policy timeout on one head (default 20 minutes), or 
 
 ## Merge and return
 
-Immediately before merging a layer, re-verify on the expected head (or one differing only by recorded docs-only carry-forward): policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, and confirm the remote PR is `MERGED`.
+Immediately before merging a layer, re-verify on the expected head (or a recorded docs-only carry-forward head): policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, and confirm the remote PR is `MERGED`.
 
 Return one entry per layer: PR number, final head SHA, remote state (`MERGED`, `OPEN`, `CLOSED`), merge commit OID when merged, target branch, and blocker reason when not merged. Lower layers that merged before a higher layer blocked appear as `MERGED` with their OIDs. A bottom PR closed without merging returns `CLOSED` for it and a durable blocker for every layer above. The caller owns post-merge reconciliation.
