@@ -388,8 +388,12 @@ New assertions:
   recipe on pr-2, and assert pr-2 contains only its own commit on top of
   main. This is the one mechanic where a wrong recipe destroys work.
 - Word count: a table in `tests/toolbelt/test-word-counts.sh` with one
-  integer ceiling per rewritten file, set at implementation to 60% of the
-  pre-rewrite count, rounded up to the nearest 10.
+  integer ceiling per rewritten file. Files that only lose prose get 60% of
+  the pre-rewrite count, rounded up to the nearest 10. Files that gain rule
+  text under this spec (implementer-prompt, delivery, pr-monitor) or are
+  already under 300 words (quick-task, `docs/WORKFLOW.md`) get the
+  pre-rewrite count rounded up to the nearest 10: no growth. The plan pins
+  the numbers.
 
 Acceptance drill from CLAUDE.md after the cache refresh: "Let's make a react
 todo list" triggers brainstorming in both harnesses.
