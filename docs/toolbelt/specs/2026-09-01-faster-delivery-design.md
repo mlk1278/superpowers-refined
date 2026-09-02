@@ -69,7 +69,7 @@ stays as the example table. Vertical slices qualify under the same rules.
 
 Added to "Task Right-Sizing":
 
-- A task's `**Files:**` block is closed. It lists every file the task
+- A task's **Files:** block is closed. It lists every file the task
   creates or modifies. "Plus every caller," "compiler-led," and "wherever
   else it is referenced" are placeholders and fail the No Placeholders
   check.

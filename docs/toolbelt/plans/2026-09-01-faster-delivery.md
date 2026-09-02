@@ -52,7 +52,6 @@ Repository rules this plan adds:
 - **Edits here do not reach the running session.** Both harnesses install from a cached copy (CLAUDE.md, "Verifying a change"). Tests are the gate; the acceptance drill is a human step after Task 11.
 - **`test-execution-tracks.sh` asserts on three files** across three tracks. Task 2 owns it. Tasks 4 and 9 keep its SDD and worktree needles byte-identical.
 - **`docs/WORKFLOW.md` is asserted by `test-delivery.sh`**, so both belong to Task 7.
-- **The spec's `**Files:**` in backticks is quotation.** The skill text reads `A task's **Files:** block is closed` (bold, no backticks); needles use that form.
 
 ---
 
@@ -231,7 +230,7 @@ git commit -m "brainstorming, writing-specs: plain-language rewrite"
 
 - [ ] **Step 1: Write the test**
 
-`tests/toolbelt/test-fix-loop.sh`: helpers as in Produces; `sdd="$repo_root/skills/subagent-driven-development/SKILL.md"`. Assert the SDD skill contains: `` when the task's `Interfaces: Produces:` block is non-empty ``, `or when any open finding was Critical`, `**Orchestrator close**`, `Task <N>: fix round closed by orchestrator`, `escalate to your human partner as a BLOCKED task`, `route <harness>/<model>/<effort>, report <path>`, `Produces: none`.
+`tests/toolbelt/test-fix-loop.sh`: helpers as in Produces; `sdd="$repo_root/skills/subagent-driven-development/SKILL.md"`. Assert the SDD skill contains: `` when the task's `Interfaces: Produces:` block is non-empty ``, `or when any open finding was Critical`, `**Orchestrator close**`, `Task <N>: fix round closed by orchestrator`, `escalate to your human partner as a BLOCKED task`, `Task N: in-progress (agent <id>, route <harness>/<model>/<effort>)`, `route <harness>/<model>/<effort>, report <path>`, `Produces: none`.
 
 - [ ] **Step 2: Run tests to verify they fail**
 
@@ -556,7 +555,7 @@ Remove the `ENFORCE` guard from `test-word-counts.sh` so any over-ceiling file f
 
 Run:
 ```bash
-for t in test-word-counts test-writing-plans test-execution-tracks test-interactive-design test-fix-loop test-final-review-gate test-reviewer-context test-delivery test-pr-monitor test-chain-rebase test-worktree-source-ref test-worktree-baseline test-quick-task test-workflow-summary; do bash "tests/toolbelt/$t.sh" >/dev/null || { echo "FAIL $t"; exit 1; }; done && scripts/lint-shell.sh tests/toolbelt/test-word-counts.sh && echo ALL-OK
+for t in test-word-counts test-writing-plans test-execution-tracks test-interactive-design test-fix-loop test-final-review-gate test-reviewer-context test-delivery test-pr-monitor test-chain-rebase test-worktree-source-ref test-worktree-baseline test-quick-task test-claude-agent-definitions; do bash "tests/toolbelt/$t.sh" >/dev/null || { echo "FAIL $t"; exit 1; }; done && scripts/lint-shell.sh tests/toolbelt/test-word-counts.sh && echo ALL-OK
 ```
 Expected: `ALL-OK`, exit 0.
 
