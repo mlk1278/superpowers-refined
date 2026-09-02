@@ -1,9 +1,10 @@
 # Faster Delivery Design
 
-**Status:** Approved in conversation on 2026-09-01.
+**Status:** Approved in conversation on 2026-09-01. Revised the same day after
+a Codex (GPT-5.6 Sol, high) spec review: 12 of 14 findings accepted.
 
 Make the brainstorming → spec → plan → subagent-driven development → delivery
-chain faster without changing its shape. Five rule changes, one template fix,
+chain faster without changing its shape. Four rule changes, one template fix,
 and a plain-language rewrite of the planning skills.
 
 ## Goal
@@ -33,17 +34,18 @@ nothing that adds surface area the evidence does not clearly justify.
 
 ## Constraints
 
-- Skills stay project-agnostic. Nothing here names a repo, a provider, or a
-  model. Per-project values live in `.toolbelt/pr-policy.md` and
-  `.toolbelt/worktree-policy.md`.
+- Skills hard-code no consuming repository, review provider, or model.
+  GitHub stays the supported PR host, as it is today. Per-project values live
+  in `.toolbelt/pr-policy.md` and `.toolbelt/worktree-policy.md`.
 - The forceful blocks (`<HARD-GATE>`, `<ENTRY-GATE>`, Red Flags tables,
   rationalization lists) keep their wording except where a rule in this spec
   changes what they say.
 - One skill names exactly one next skill. Handoff chains do not change.
-- Section headings that `tests/toolbelt/*.sh` grep for keep their exact text,
-  or the test changes in the same commit.
-- Version bumps to 7.9.0 in `.claude-plugin/plugin.json` and
-  `.claude-plugin/marketplace.json`.
+- Every `tests/toolbelt/*.sh` assertion that a change makes false is updated
+  in the same commit. The Testing section lists the known ones.
+- Frontmatter descriptions do not change, except pr-monitor's (Component 4).
+- Version bumps to 7.9.0 with `scripts/bump-version.sh 7.9.0`, verified by
+  `scripts/bump-version.sh --check`.
 
 ## Component 1: `skills/writing-plans/SKILL.md`
 
@@ -54,15 +56,11 @@ boundary or more than three tasks has the section. A plan whose tracks are all
 `serial-N` states in one sentence why no tasks can run concurrently, the same
 way a one-PR plan justifies having one PR today.
 
-The three declaration rules stay as written: disjoint file sets, no
-contract-shaped work inside a track, no cross-track `Produces:`/`Consumes:`.
-The threshold rule ("at least 2 tasks, or one large task") stays. The
-concurrency cap stays at 3, lowerable by worktree policy.
-
-The self-review item 6 and the plan-review bullet for tracks change from
-"reject bogus or missing declarations" to: check the three rules
-mechanically; a plan whose tracks pass them is accepted; a plan with no
-concurrent tracks and no one-sentence justification is a defect.
+The declaration rules, threshold, integration-task rule, and the cap of 3 stay
+as written. Self-review item 6 and the plan-review bullet for tracks change
+from "reject bogus or missing declarations" to: check the declaration rules;
+a plan whose tracks pass them is accepted; a plan with no concurrent tracks
+and no one-sentence justification is a defect.
 
 Backend and frontend against a frozen contract is the reference shape and
 stays as the example table. Vertical slices qualify under the same rules.
@@ -75,13 +73,16 @@ Added to "Task Right-Sizing":
   creates or modifies. "Plus every caller," "compiler-led," and "wherever
   else it is referenced" are placeholders and fail the No Placeholders
   check.
-- A task changes at most 8 files or roughly 400 lines of expected change,
-  whichever is hit first. Larger work splits. Mechanical sweeps (a rename
-  across many files) are the one exception and say so on the task.
+- A task lists at most 8 files. This is a hard limit. As a guide, a task's
+  change should be readable in one sitting, around 400 lines; the plan
+  reviewer flags tasks that look larger.
+- The one exception is a mechanical sweep: one uniform, behavior-neutral
+  transformation (a rename, an import path change) with one verification
+  command. The task says "Mechanical sweep:" and names the command.
 - A task that adds or changes a migration, shared schema, shared type, or
-  shared contract owns the code that keeps that change correct. It is a
-  defect to fence that code into a later task. Split the other way: the
-  contract task grows, the consumer task shrinks.
+  shared contract owns the code that keeps that change correct. Fencing
+  that code into a later task is a defect. If the result exceeds 8 files,
+  split it into serial tasks that each leave the contract correct.
 
 ### RED step names the failure
 
@@ -102,6 +103,15 @@ check, a tenant filter, a rejection path) lists its red as the failure seen
 when the guard is absent, not when the module is absent. The implementer
 proves it that way (Component 2).
 
+### Execution handoff
+
+The handoff paragraph changes from one boundary at a time to the whole plan:
+
+> "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`, reviewed
+> through <reviewer harness>. Handing the plan to delivery."
+
+Delivery owns boundary order from there (Component 3).
+
 ### Prose
 
 Rewritten under Component 6. Headings `## Exploration Before Drafting`,
@@ -110,26 +120,12 @@ Rewritten under Component 6. Headings `## Exploration Before Drafting`,
 
 ## Component 2: `skills/subagent-driven-development/`
 
-### Orchestrator-derived tracks
+### Tracks
 
-Replaces the "Active only when the plan declares" opening of Parallel Tracks
-and the two Red Flags about undeclared parallelism.
-
-When a plan has no `## Execution Tracks` section, or its section is all
-`serial-N`, the orchestrator may derive tracks itself before dispatching Task
-1. It applies the same three declaration rules from each task's `Files:` and
-`Interfaces:` blocks, writes the derived table into the ledger under a
-`Derived tracks:` heading with one line per rule stating it was checked, and
-then executes exactly as if the plan had declared it. A derivation that fails
-any rule is not recorded and the plan runs serial. Derived tracks never
-override a plan that declared tracks.
-
-Red Flags change to:
-
-- Dispatch multiple implementation subagents into the same worktree —
-  concurrent implementers are one per track worktree
-- Run tracks concurrently without a declared or derived track table in the
-  ledger that records all three rule checks
+Parallel Tracks keeps "active only when the plan declares." The Red Flag
+"Parallelize tracks the plan did not declare" stays. Runtime derivation was
+considered and dropped: mandatory tracks in the plan, checked by the plan
+reviewer, cover the same ground without a second, unreviewed partition.
 
 ### Conditional re-review
 
@@ -138,17 +134,30 @@ becomes:
 
 The round ends one of two ways.
 
-- **Re-review** when the task's `Files:` block touches a migration, shared
-  schema, shared type, shared contract, or a permission or tenancy check, or
-  when any open finding was Critical. Dispatch the scoped re-review as today.
-- **Orchestrator close** otherwise. Read the fix report. Confirm it names
-  each finding, the change made, and the covering test command with passing
-  output. If every finding is covered, mark the task complete. If any is
-  missing or the evidence is a claim without output, resume the implementer
-  once for the gap, then close. Ledger line:
+- **Re-review** when the task's `Interfaces: Produces:` block is non-empty
+  (a later task builds on this one) or when any open finding was Critical.
+  Dispatch the scoped re-review as today. The plan template writes
+  `Produces: none` when nothing downstream depends on the task, so the
+  block is never ambiguous.
+- **Orchestrator close** otherwise. Read the fix report's findings table
+  (below). Every row must name the finding, the commit, the covering test
+  command, and its passing output. If every row is complete, mark the task
+  complete. If a row is missing or its output is a claim without the
+  command's output, resume the implementer once for that row. If it is still
+  incomplete, escalate to your human partner as a BLOCKED task. Ledger line:
   `Task <N>: fix round closed by orchestrator (<X> findings, commits <a7>..<b7>)`.
 
 Adjudication rules are unchanged and apply after either route.
+
+The fix report gains a required table, added to `implementer-prompt.md` under
+"After Review Findings":
+
+```markdown
+| Finding | Commit | Covering test command | Result |
+|---|---|---|---|
+```
+
+`Result` is the command's last passing line, pasted.
 
 ### Ledger records the implementer route
 
@@ -176,62 +185,104 @@ rounds because of it.)
 
 ## Component 3: `skills/delivery/SKILL.md`
 
+### Entry and loop
+
+Entry: an approved plan. Exit: every PR boundary merged, reconciled, and
+cleaned up.
+
+Delivery runs a loop over the plan's `## PR Boundaries` table in order.
+For each boundary it runs Steps 2–5 as today. Step 5 no longer waits for
+merge before the next boundary starts.
+
 ### Stacked slices
 
-Step 1 selects boundaries in plan order, not one slice at a time. Step 5
-replaces the bulleted conditions with:
+Step 5 replaces the bulleted wait conditions with:
 
-After the slice's broad final review is clean and its PR is open, start the
-next boundary immediately:
+After the boundary's broad final review is clean and its PR is open, start
+the next boundary immediately.
 
-- **Dependent boundary** (its `Depends on` names an open, unmerged PR):
-  branch from that PR's branch, in a new worktree. Its PR targets that
-  branch. This is a GitHub stack.
-- **Independent boundary**: branch from the base branch, in a new worktree.
+- **Dependent boundary** (its `Depends on` names a boundary whose PR is open
+  and unmerged): fetch the predecessor's remote head, then create the
+  worktree from that SHA. Its PR targets the predecessor's branch. This is a
+  manual PR chain; it does not depend on GitHub's native stack feature.
+- **Independent boundary**: create the worktree from the base branch. Its PR
+  targets the base branch.
 
-Any number of boundaries may be open. Each stack has exactly one pr-monitor,
-started when its bottom PR opens and handed each new layer as it opens. An
-independent boundary is its own stack of one.
+Branch names are `<plan-slug>/pr-<N>` where `<plan-slug>` is the plan file's
+basename without date and extension and `<N>` is the boundary number. The
+SDD ledger for the plan records one line per boundary:
+`Boundary <N>: branch <name>, PR #<num>, base <branch>, state <open|merged|blocked>`.
 
-When a stack's bottom PR merges, GitHub retargets the layer above it. The
-monitor confirms the retarget and rebases if needed. In-flight worktrees for
-higher layers rebase at their next task boundary, before their final review.
+Any number of boundaries may be open. Each chain has exactly one pr-monitor,
+started when its bottom PR opens. When a dependent boundary's PR opens,
+delivery hands it to that chain's monitor by resuming the monitor with the
+new layer's number, branch, and head. An independent boundary starts its
+own chain.
+
+### Who rebases
+
+Ownership follows publication. Delivery owns a boundary's branch until its
+PR opens: when a lower PR's branch moves, delivery rebases the unpublished
+branch at its next task boundary, before its final review, and appends
+`Boundary <N>: rebased <old7> → <new7>` to the ledger. Once the PR is open,
+only the monitor moves the branch. Implementers and fixers never rebase.
 
 Never report the plan complete or end the session while a monitor runs. Read
 merge state from the monitor's return and the PR, not from notifications.
 
 The sentence "Dependent work waits for the merge — no stacked branches" and
-the "At most one PR is in background monitoring" bullet are deleted.
+the "At most one PR is in background monitoring" bullet are deleted. Step 6
+runs once per merged boundary, when the monitor returns that layer merged.
+
+### Role table
+
+The pr-monitor row reads "GitHub review, exact-head CI, fix loops, rebases
+and retargets of published branches, merge, for one PR chain." The
+orchestrator row adds "reads fix-report tables to close a fix round (SDD
+orchestrator close); never re-reads test output beyond that table."
 
 ### Prose
 
-Rewritten under Component 6. Role ownership table keeps its rows; the
-pr-monitor row reads "GitHub review, exact-head CI, fix loops, rebases,
-merge, for one stack."
+Rewritten under Component 6.
 
 ## Component 4: `skills/pr-monitor/SKILL.md`
 
-### One monitor, one stack
+### One monitor, one chain
 
-The opening paragraph changes from "Own exactly one PR" to "Own one stack:
-one PR, or a chain of PRs each targeting the one below it." Preflight records
-every layer's number, branch, head SHA, base branch, and local-gate SHA.
+Description becomes: "Own one pull request, or a chain of dependent pull
+requests, from current heads through CI, configured review providers, fix
+loops, rebases, and merge or a durable blocker. Internal helper started by
+delivery after a PR opens."
 
-Added section, `## Stack rules`:
+The opening paragraph changes from "Own exactly one PR" to "Own one chain:
+one PR, or PRs each targeting the one below it." Preflight records every
+layer's number, branch, head SHA, base branch, and local-gate SHA. A resume
+carrying a new layer appends it to the chain.
+
+### Chain rules
+
+Added section, `## Chain rules`:
 
 - **Lowest first.** The lowest unmerged PR gets all attention until it
   merges. Review threads on higher layers are read and batched, never fixed
   while the bottom is not merge-ready.
 - **Fix in the owner.** A finding lands in the lowest PR whose diff contains
-  the code. After pushing, rebase every layer above it (`gh stack rebase` or
-  `git rebase --onto`), push with `--force-with-lease`, and re-verify only
-  layers whose patch changed (compare `git patch-id` before and after).
+  the code. After pushing it, rebase every layer above with
+  `git rebase --onto <owner-head> <old-owner-head> <layer-branch>` and push
+  each with `--force-with-lease`. Every rebased head starts a new evidence
+  cycle: exact-head CI, provider review, mergeability, and threads all
+  re-run. Local review repeats only when a layer's
+  `git patch-id --stable` changed.
 - **One topology writer.** Only the monitor rebases, retargets, or
-  force-pushes a stack branch. Implementers and fixers never do.
-- **Merge bottom-up.** Merge one layer, confirm `MERGED`, confirm the next
-  layer retargeted to the base branch, re-run the merge preflight on it, then
-  continue. Stop at the first layer that is not merge-ready and keep
-  monitoring it.
+  force-pushes a published branch.
+- **Merge bottom-up.** Squash-merge the bottom layer and delete its branch.
+  GitHub then retargets the next layer to the deleted branch's base; confirm
+  it with `gh pr view --json baseRefName`, and set it with
+  `gh pr edit --base` if it did not happen. Rebase the next layer with
+  `git rebase --onto <base-branch> <merged-layer-old-head> <layer-branch>`
+  so the squashed commits are not replayed, push with `--force-with-lease`,
+  re-run the merge preflight, then continue. Stop at the first layer that is
+  not merge-ready and keep monitoring it.
 
 ### Timeout
 
@@ -240,19 +291,34 @@ overrides in either direction.
 
 ### Return
 
-Returns per layer: PR number, merged SHA, merge commit, or the durable
-blocker.
+Per layer: PR number, final head SHA, remote state (`MERGED`, `OPEN`,
+`CLOSED`), the merge commit OID when merged, target branch, and the blocker
+reason when not merged. Lower layers that merged before a higher layer
+blocked appear as `MERGED` with their OIDs.
 
-## Component 5: `skills/quick-task/SKILL.md`, `skills/brainstorming/SKILL.md`, `skills/writing-specs/SKILL.md`, `skills/dispatching-parallel-agents/SKILL.md`
+## Component 5: `skills/using-git-worktrees/SKILL.md`
 
-Prose only, under Component 6. No rule changes. dispatching-parallel-agents'
-"Don't use when: executing plan tasks in parallel" bullet now points at SDD's
-declared or derived tracks.
+The fallback command gains a source ref, and the skill gains a rule that a
+caller may name one:
 
-## Component 6: Plain-language rewrite
+```bash
+git worktree add "$path" -b "$BRANCH_NAME" "${SOURCE_REF:-HEAD}"
+```
 
-Applies to every file in Components 1–5 plus the three SDD prompt templates
+When the caller (delivery) names a source ref, the native tool is used only
+if it accepts one; otherwise the fallback runs. When the session is already
+in a linked worktree and the caller asks for a new sibling, the skill creates
+it rather than skipping creation.
+
+## Component 6: `skills/quick-task/SKILL.md`, `skills/brainstorming/SKILL.md`, `skills/writing-specs/SKILL.md`, `skills/dispatching-parallel-agents/SKILL.md`
+
+Prose only, under Component 7. No rule changes.
+
+## Component 7: Plain-language rewrite
+
+Applies to every file in Components 1–6 plus the three SDD prompt templates
 and `docs/WORKFLOW.md`. Target: roughly half the current word count per file.
+The human partner asked for this directly; it is in scope on that basis.
 
 Rules for the rewrite:
 
@@ -267,51 +333,76 @@ Rules for the rewrite:
   user-facing message, and every table verbatim unless a rule above changes
   it.
 - "Your human partner" stays.
-- Descriptions in frontmatter do not change; they decide triggering.
+- Before rewriting a file, list the lines `tests/toolbelt/*.sh` and
+  `tests/hooks/*` assert on for that file. Those lines are kept verbatim or
+  their tests change in the same commit.
 
 The `<HARD-GATE>`, `<ENTRY-GATE>`, Red Flags, and rationalization blocks are
-excluded from the rewrite except where Component 2 changes two Red Flags
-lines.
+excluded from the rewrite.
 
 ## Error handling
 
-- A derived track table that fails a rule mid-execution (a track touches a
-  file another track touched): stop, surface the paths and the recorded
-  derivation to the human partner, same as a declared-track conflict today.
-- A stack whose bottom PR is closed without merging: the monitor returns a
-  durable blocker for every layer; delivery surfaces it.
-- `gh stack` unavailable: the monitor uses `git rebase --onto` and
-  `gh pr edit --base`. The rules are the same.
-- Orchestrator close finds a fix report with no covering-test output: one
-  resume of the implementer for the evidence, then close or escalate.
+- A chain whose bottom PR is closed without merging: the monitor returns
+  `CLOSED` for it and a durable blocker for every layer above; delivery
+  surfaces it to the human partner.
+- A rebase conflict in the monitor: stop, leave the branch as it was (abort
+  the rebase), return the layer as blocked with the conflicting paths.
+- Orchestrator close finds an incomplete fix-report row after the one
+  resume: BLOCKED, escalate.
+- `git worktree add` with a source ref denied by the sandbox: existing
+  fallback (work in place), reported as today.
 
 ## Testing
 
-`tests/toolbelt/` gains or changes assertions:
+Existing assertions that become false, each replaced in the same commit:
 
-- `test-writing-plans.sh`: Execution Tracks is required; Files block closed;
-  8-file / 400-line ceiling text present; per-test RED expectations in the
-  task template.
-- `test-execution-tracks.sh`: derived-track ledger heading present in SDD;
-  old "opportunistic parallelism is forbidden" text absent.
-- New `test-fix-loop.sh`: conditional re-review text present; orchestrator
-  close ledger line format present; route in in-progress ledger line.
+- `test-writing-plans.sh:103` "one declared PR boundary at a time" → the new
+  handoff line.
+- `test-execution-tracks.sh`: any needle on "Optional." for the tracks
+  section → "required" wording.
+- `test-final-review-gate.sh`: the final-review re-review assertions stay;
+  add the conditional task re-review needles.
+- `test-delivery.sh`: needles on one slice / one monitored PR → chain
+  wording.
+- `test-pr-monitor.sh:30` "Own exactly one PR" → "Own one chain".
+- `test-interactive-design.sh` and `test-workflow-summary.sh`: re-check
+  every needle against brainstorming, writing-specs, and `docs/WORKFLOW.md`
+  after the rewrite.
+
+New assertions:
+
+- `test-writing-plans.sh`: Execution Tracks required; closed Files block;
+  "at most 8 files"; per-test RED expectations; "Mechanical sweep:".
+- New `test-fix-loop.sh`: re-review condition names `Produces:` and
+  Critical; orchestrator-close ledger line format; route in the in-progress
+  ledger line; fix-report table header in `implementer-prompt.md`;
+  re-review prompt's out-of-scope line.
 - `test-delivery.sh`: "no stacked branches" absent; "At most one PR" absent;
-  dependent boundary branches from the open PR's branch.
-- `test-pr-monitor.sh`: `## Stack rules` present with all four rules; default
-  timeout 20.
-- Word-count check: each rewritten SKILL.md is at or under 60% of its
-  pre-rewrite word count, recorded in the test as a fixed number per file.
+  branch name format; boundary ledger line format.
+- `test-pr-monitor.sh`: `## Chain rules` present with all four rule names;
+  default 20 minutes; `--force-with-lease`; `git patch-id --stable`.
+- New `test-worktree-source-ref.sh`: the fallback command carries
+  `SOURCE_REF`.
+- New `test-chain-rebase.sh`: in a temporary git repository, build main →
+  pr-1 → pr-2, squash-merge pr-1 into main, run the Component 4 rebase
+  recipe on pr-2, and assert pr-2 contains only its own commit on top of
+  main. This is the one mechanic where a wrong recipe destroys work.
+- Word count: a table in `tests/toolbelt/test-word-counts.sh` with one
+  integer ceiling per rewritten file, set at implementation to 60% of the
+  pre-rewrite count, rounded up to the nearest 10.
 
 Acceptance drill from CLAUDE.md after the cache refresh: "Let's make a react
 todo list" triggers brainstorming in both harnesses.
 
 ## Out of scope
 
+- Orchestrator-derived tracks at execution time.
 - An Invariants block in the task template.
 - A per-boundary review depth column.
 - Changing the concurrency cap.
 - Dropping the alternate-harness spec or plan review.
+- GitHub's native stacked-PR feature (`gh stack`). The manual chain works
+  with or without it.
 - Any change to agent-routing, ux-gate, interactive-design, or
   finishing-a-development-branch beyond what Component 3's base-branch
   declaration already uses.
