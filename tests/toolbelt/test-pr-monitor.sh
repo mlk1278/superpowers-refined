@@ -63,6 +63,8 @@ assert_contains "$skill" "**Merge bottom-up.**" "merge order is bottom-up"
 assert_contains "$skill" "--force-with-lease" "rebased layers are pushed with a lease"
 assert_contains "$skill" "git patch-id --stable" "local review repeats only on a changed patch id"
 assert_contains "$skill" "gh pr edit --base" "retarget fallback after a bottom merge"
+assert_contains "$skill" "Propagate upward through every higher layer, using each immediate parent's recorded old and new heads." \
+  "a bottom merge propagates the rebase through every layer above"
 assert_contains "$skill" "git rebase --abort" "conflicting rebase is aborted"
 assert_contains "$skill" "default 20 minutes" "provider timeout default"
 

@@ -39,15 +39,15 @@ Task briefs, gate bundles, and dispatch prompts must not reassign these roles.
 
 ## 3. Prepare and execute
 
-A dependent boundary is one whose `Depends on` names a boundary whose PR is open and unmerged. Fetch the predecessor's remote head. Name that SHA as the worktree's source ref. An independent boundary branches from the base branch.
+A dependent boundary is one whose `Depends on` names a boundary whose PR is open and unmerged. A boundary's `Depends on` names at most one predecessor whose PR may still be open when the boundary starts; every other dependency must be merged first. Fetch the predecessor's remote head. Name that SHA as the worktree's source ref. An independent boundary branches from the base branch.
 
-Then create the worktree with toolbelt:using-git-worktrees and apply the repository's worktree rules. Branch names are `<plan-slug>/pr-<N>`, where `<plan-slug>` is the plan file's basename without date and extension and `<N>` is the boundary number.
+Then create the worktree with toolbelt:using-git-worktrees. Branch names are `<plan-slug>/pr-<N>`, where `<plan-slug>` is the plan file's basename without date and extension and `<N>` is the boundary number.
 
-Execute the boundary with toolbelt:subagent-driven-development, supplying the resolved routes. Keep its task briefs, reports, review packages, reviews, and fix loops unchanged.
+Execute the boundary with toolbelt:subagent-driven-development, supplying the resolved routes.
 
 ## 4. Gate the boundary
 
-When the boundary materially changes a user-visible surface, supply ux-gate as SDD's optional pre-final gate. It runs after task reviews.
+When the boundary materially changes a user-visible surface, supply ux-gate as SDD's optional pre-final gate.
 
 That broad final review is the slice gate; do not add another whole-slice review.
 
@@ -59,9 +59,9 @@ Record one line per boundary in the SDD ledger: `Boundary <N>: branch <name>, PR
 
 Once the boundary's broad final review is clean and its PR is open, start the next boundary immediately. Any number of boundaries may be open.
 
-Each chain has exactly one pr-monitor. Start it when its bottom PR opens. Always run it in the background. When a dependent boundary's PR opens, resume that chain's monitor with the new layer's number, branch, and head. An independent boundary starts its own chain.
+Each chain has exactly one pr-monitor. Start it when its bottom PR opens, passing that layer's record — PR number, branch, full head SHA, base branch, and local-gate SHA. Always run it in the background. When a dependent boundary's PR opens, resume that chain's monitor with the new layer's record. An independent boundary starts its own chain.
 
-Process each monitor's return when it arrives — merged: run step 6; blocked: surface it to your human partner. Never report the slice complete or end the session while the monitor runs. A completion notification is not that return. Background agents notify whenever they momentarily hold no live children. Read merge state from the monitor's return and the PR.
+Process each monitor's return when it arrives — merged: run step 6; blocked: surface it to your human partner. Never report the slice complete or end the session while the monitor runs. A completion notification is not that return. Read merge state from the monitor's return and the PR.
 
 A monitor that looks dead is not grounds to start a second one. Before re-dispatching any agent that owns external state, check that state directly. Agents owning only local work re-dispatch as-is.
 
@@ -75,4 +75,4 @@ Ownership follows publication. Delivery owns a boundary's branch until its PR op
 
 Run once per boundary, when the monitor returns that layer merged. Reconcile the issue tracker only when the plan is linked to one. Confirm the remote PR state the monitor returned — never commit ancestry — then remove the worktree, branch, and ignored scratch.
 
-Normal continuation stays in the current session. After an interruption, recover from the approved plan, git history, branch and worktree state, SDD scratch, and current PR state — do not create separate resume bookkeeping.
+After an interruption, recover from the approved plan, git history, branch and worktree state, SDD scratch, and current PR state — do not create separate resume bookkeeping.

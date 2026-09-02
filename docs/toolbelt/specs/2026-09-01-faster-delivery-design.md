@@ -285,9 +285,11 @@ Added section, `## Chain rules`:
   it with `gh pr view --json baseRefName`, and set it with
   `gh pr edit --base` if it did not happen. Rebase the next layer with
   `git rebase --onto <base-branch> <merged-layer-old-head> <layer-branch>`
-  so the squashed commits are not replayed, push with `--force-with-lease`,
-  re-run the merge preflight, then continue. Stop at the first layer that is
-  not merge-ready and keep monitoring it.
+  so the squashed commits are not replayed. Propagate upward through every
+  higher layer, using each immediate parent's recorded old and new heads.
+  Push each with `--force-with-lease`. Every moved layer starts a new
+  evidence cycle. Re-run the merge preflight and continue. Stop at the first
+  layer that is not merge-ready and keep monitoring it.
 
 ### Timeout
 
