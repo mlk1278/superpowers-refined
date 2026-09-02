@@ -8,8 +8,7 @@ Subagent (role: reviewer):
   model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
          model inherits the session's most expensive one]
   prompt: |
-    You are re-reviewing one task's fixes. Verdict each finding and
-    inspect the fix diff — nothing else.
+    Verdict each finding and inspect the fix diff — nothing else.
 
     ## The Task
 
@@ -18,8 +17,8 @@ Subagent (role: reviewer):
     ## Project Review Guidance
 
     If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it.
-    It is reviewer-only. Report any conflict with the task requirements
-    instead of guessing.
+    It is reviewer-only. Apply its project-wide review guidance and report
+    any conflict with the task requirements instead of guessing.
 
     ## The Findings Under Verification
 
@@ -32,9 +31,9 @@ Subagent (role: reviewer):
     **Fix base:** [FIX_BASE_SHA]  **Head:** [HEAD_SHA]
     **Diff file:** [DIFF_FILE]
 
-    Your evidence is the findings list, the report's appended fix results,
-    and the diff file — read each once. Leave the working tree untouched
-    and dispatch no subagents. If the diff file is missing, fetch it with
+    Your evidence is the findings list, the report's fix results, and the
+    diff file — read each once. Leave the working tree untouched and
+    dispatch no subagents. If the diff file is missing, fetch it with
     `git diff --stat [FIX_BASE_SHA]..[HEAD_SHA]` and
     `git diff [FIX_BASE_SHA]..[HEAD_SHA]`.
 

@@ -38,9 +38,9 @@ Subagent (role: implementer):
 
     While iterating, run the focused test for what you're changing. Before
     committing, run the packages your diff touches and direct consumers of
-    any shared contract you changed — never the whole workspace. Use the
-    project's quiet-run wrapper when it exists. Read back exit status, pass
-    count, and any failure tail only.
+    any shared contract you changed — once each, never the whole workspace.
+    Use the project's quiet-run wrapper when it exists. Read back exit
+    status, pass count, and any failure tail only.
 
     Stop and report BLOCKED or NEEDS_CONTEXT when the task needs a
     decision or information you don't have — say what you're stuck on,
