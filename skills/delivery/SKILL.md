@@ -7,7 +7,7 @@ description: Use when an approved implementation plan is ready to be implemented
 
 **Announce:** "I'm using delivery to deliver this approved plan."
 
-**Exit:** every PR boundary merged, reconciled when applicable, and cleaned up.
+**Exit:** every PR boundary merged, reconciled, and cleaned up.
 
 ## 1. Read and loop
 
@@ -19,7 +19,7 @@ Each boundary is one coherent delivery slice, bounded by the independent judgeme
 
 ## 2. Resolve routes
 
-The optional `## Agent Routing` section may route the implementer, task reviewer, and final reviewer; the session agent remains the orchestrator and is never plan-routed. Resolve each role with agent-routing — precedence is plan route, then project route, then bundled default — along with the monitor and, for a UX-gated boundary, an `errand` gate operator. Fail closed when either reviewer lacks an independent route; agent-routing's outage override is the only exception.
+The optional `## Agent Routing` section may route the implementer, task reviewer, and final reviewer; the session agent remains the orchestrator and is never plan-routed. Resolve each role with agent-routing; precedence is plan route, then project route, then bundled default. Resolve the monitor and, for a UX-gated boundary, an `errand` gate operator from project routing or the bundled default. Fail closed when either reviewer lacks an independent route; agent-routing's outage override is the only exception.
 
 ## Role ownership
 
@@ -29,9 +29,9 @@ Task briefs and dispatch prompts must not reassign these roles.
 |---|---|
 | Implementation, tests, commits, task report | Implementer subagent (fresh per task) |
 | Task briefs, review packages, dispatch context, verdicts | Orchestrator (session agent) — dispatch and synthesis only; never implements or captures |
-| UX capture (scripted screenshots) | A gate operator (role `errand`) dispatched to run ux-gate — never the orchestrator, never the implementer |
+| UX capture (scripted screenshots) | A gate operator (role `errand`) dispatched to run ux-gate — never the orchestrator or the implementer |
 | UX judgment | Vision-capable reviewer routed with specialty `ux` |
-| Task reviews and the broad final review | Reviewer subagents routed via agent-routing |
+| Task reviews and the broad final review | Reviewer subagents |
 | PR publication | finishing-a-development-branch (step 5) |
 | Review, exact-head CI, fix loops, rebases, retargets, and merge for one published chain | pr-monitor |
 | Issue-tracker reconciliation and cleanup | This skill, after the monitor returns |
@@ -40,7 +40,7 @@ Task briefs and dispatch prompts must not reassign these roles.
 
 A dependent boundary's `Depends on` may name one still-open predecessor; every other dependency must be merged first. Fetch the predecessor's remote head and branch the worktree from that SHA. An independent boundary branches from the base branch.
 
-Create the worktree with toolbelt:using-git-worktrees, branch `<plan-slug>/pr-<N>` — `<plan-slug>` is the plan file's basename without date and extension.
+Create the worktree with toolbelt:using-git-worktrees, branch `<plan-slug>/pr-<N>` — `<plan-slug>` is the plan file's basename without date and extension, `<N>` the boundary number.
 
 Execute the boundary with toolbelt:subagent-driven-development, supplying the resolved routes.
 
@@ -50,13 +50,13 @@ When the boundary materially changes a user-visible surface, supply ux-gate as S
 
 ## 5. Ship
 
-After approval, invoke toolbelt:finishing-a-development-branch with the pull-request completion route and the target base branch declared: the predecessor's branch for a dependent boundary, the base branch otherwise. The chain is manual, not GitHub's native stack feature.
+After approval, invoke toolbelt:finishing-a-development-branch with the pull-request completion route and the target base branch declared: the predecessor's branch for a dependent boundary, the base branch otherwise. The chain is manual, not GitHub's native stack.
 
-Append one line per boundary to the SDD ledger: `Boundary <N>: branch <name>, PR #<num>, base <branch>, state <open|merged|blocked>`.
+Record per boundary in the SDD ledger: `Boundary <N>: branch <name>, PR #<num>, base <branch>, state <open|merged|blocked>`.
 
-Once the boundary's broad final review is clean and its PR is open, start the next boundary immediately; any number may be open.
+Once the boundary's broad final review is clean and its PR is open, start the next boundary; any number may be open.
 
-Each chain has exactly one pr-monitor. Start it when its bottom PR opens, passing that layer's record — PR number, branch, full head SHA, base branch, and local-gate SHA. Always run it in the background. Resume it when a dependent boundary's PR opens; an independent boundary starts its own chain.
+Each chain has exactly one pr-monitor. Start it when its bottom PR opens, passing that layer's record — PR number, branch, full head SHA, base branch, and local-gate SHA. Always run it in the background. Resume it with the new layer's record when a dependent boundary's PR opens; an independent boundary starts its own chain.
 
 Process each monitor's return: merged, run step 6; blocked, surface it to your human partner. Never report the slice complete or end the session while the monitor runs. A completion notification is not that return.
 

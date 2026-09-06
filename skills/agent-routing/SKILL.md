@@ -56,7 +56,7 @@ The brief carries `reviewer_by_author_harness`, which pre-resolves the same answ
 
 ## Provider-outage emergency override
 
-Reviewer independence has exactly one exception. The trigger is **dispatch-time provider failure, never a resolver error**: resolution succeeded, but dispatching the resolved reviewer and each configured different-harness fallback failed with provider availability errors on repeated attempts. A `RoutingError` means no different-harness route is configured — a configuration problem to fix, never grounds for this override. Then the orchestrator may dispatch a **fresh instance** of the most capable reachable route as the reviewer, even on the author's harness. Constraints:
+Reviewer independence has exactly one exception. The trigger is **dispatch-time provider failure, never a resolver error**: resolution succeeded, but dispatching the resolved reviewer and each configured different-harness fallback failed with provider availability errors on repeated attempts. A `RoutingError` means no different-harness route is configured — a configuration problem to fix, never grounds for this override. When the trigger is met, the orchestrator may dispatch a **fresh instance** of the most capable reachable route as the reviewer, even on the author's harness. Constraints:
 
 - Record the audit trail before invoking it: each failed route, the error, and the attempt times.
 - Never the author's own thread or instance — always a fresh dispatch with independently constructed context.
