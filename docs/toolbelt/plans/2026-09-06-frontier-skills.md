@@ -980,7 +980,7 @@ git commit -m "Per-task UI smoke by the implementer; prototype captures as basel
 - Produces: none (SDD reads the field by the name fixed in the Data Model)
 
 **Gotchas:**
-- Ceiling 1900. Task 8 left it at or under 1600.
+- Ceiling 1900. Task 8 landed the file at 1,804 (its 1,600 interim target was unreachable without cutting keep-listed rules; ruled: the spec ceiling governs). This task's additions are about 115 words, so it must cut elsewhere or disclose: if the file cannot fit under 1,900 with every keep-list rule intact, move the Task Structure worked example (the fenced block) to `skills/writing-plans/task-structure.md` behind a pointer in the Task Structure section, and repoint the needles that block carries (`**Gotchas:**`, `Expected, per test:`, `Produces: none`, and any other needle `grep -n` shows in that block) at the new file in `test-writing-plans.sh`, which this task owns. Add the new file to Files when you do.
 - `scripts/task-brief` carries the field; no script change.
 
 - [ ] **Step 1: Write the failing tests**
