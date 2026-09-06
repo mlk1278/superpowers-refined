@@ -65,9 +65,10 @@ the gate reviewer.
 - One skill names exactly one next skill. Handoff chains do not change.
 - "Your human partner" stays.
 - No new npm dependencies in the plugin. The capture script resolves
-  `playwright` from the consuming project (`require.resolve` from the
-  project root, then `PLAYWRIGHT_MODULE` if set, then a global install) and
-  fails with a one-line instruction when none resolves.
+  `playwright` from `PLAYWRIGHT_MODULE` when set, else from the consuming
+  project's root (`--project-root`, default the working directory), and
+  fails with a one-line instruction and exit 2 when neither resolves. There
+  is no global-install lookup.
 - No paid products. Video is a local Playwright recording, off by default.
 - Every `tests/toolbelt/*.sh` and `tests/hooks/*` assertion a change makes
   false is updated in the same commit. The Testing section lists the known
@@ -601,7 +602,10 @@ Rule, added to Task Right-Sizing:
 The Plan Review Gate gains the bullet: "**Review class** — every task
 stamped, each `gate` stamp consistent with the review-class rule."
 
-Delivery's execution handoff text is unchanged.
+Delivery's skill text for the handoff is unchanged; writing-plans'
+Execution Handoff closing sentence becomes "fresh subagent per task,
+immediate review or a batched gate by review class, broad whole-branch
+review at the end."
 
 ### `skills/subagent-driven-development/SKILL.md`
 
@@ -793,10 +797,13 @@ Existing assertions that become false, each replaced in the same commit:
   the slice gate" stay; check the role-table needles.
 - `tests/toolbelt/test-interactive-design.sh`: "Acceptance criteria" stays;
   brainstorming's "The offer MUST be its own message" → "The offer is its
-  own message"; the "[PENDING]", "a placeholder without", "before §4's
-  reconciliation may run", and "toolbelt:quick-task" needles point at
+  own message"; "[PENDING]" and "a placeholder without" stay in `SKILL.md`
+  (the test requires "[PENDING]" inside the HARD-GATE block); "before §4's
+  reconciliation may run" and "toolbelt:quick-task" point at
   `iteration-mode.md`; "the single route confirmed in §8" → "the route
   confirmed in iteration-mode.md", which is also §4 step 4's new wording.
+  The test's frontmatter `sed` expression is replaced with a portable `awk`
+  so it runs on BSD sed.
 - `tests/toolbelt/test-writing-plans.sh`: needles stay; the Execution
   Tracks needles in `test-execution-tracks.sh` point at
   `execution-tracks.md`.
@@ -830,8 +837,10 @@ New assertions:
   `EXTREMELY-IMPORTANT`, "Violating the letter", "you'll be replaced", or
   "Iron Law" outside `test-driven-development`; every `<HARD-GATE>` and
   `<ENTRY-GATE>` block is at most 80 words; only
-  `test-driven-development/SKILL.md` contains a table whose header is
-  `| Excuse | Reality |` or `| Thought | Reality |`.
+  `test-driven-development/SKILL.md` and
+  `writing-skills/testing-skills-with-subagents.md` (the testing reference
+  Component 1 moves the skipping-tests table into) contain a table whose
+  header is `| Excuse | Reality |` or `| Thought | Reality |`.
 - `tests/toolbelt/test-word-counts.sh` covers every file in the Component 2
   table.
 
