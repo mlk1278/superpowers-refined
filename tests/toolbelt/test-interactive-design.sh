@@ -41,7 +41,7 @@ if [ "$short_description_len" -lt 25 ] || [ "$short_description_len" -gt 64 ]; t
 fi
 echo "ok - short_description within 25-64 characters"
 
-frontmatter=$(sed -n '1{/^---$/!q}; 1d; /^---$/q; p' "$skill")
+frontmatter=$(awk 'NR==1{if($0!="---")exit; next} /^---$/{exit} {print}' "$skill")
 frontmatter_keys=$(printf '%s\n' "$frontmatter" | sed -n 's/^\([a-zA-Z0-9_-]*\):.*/\1/p' | sort | tr '\n' ' ')
 if [ "$frontmatter_keys" != "description name " ]; then
   echo "not ok - frontmatter has exactly the keys name and description" >&2
@@ -78,7 +78,7 @@ writing_specs="$repo_root/skills/writing-specs/SKILL.md"
 
 assert_contains "$brainstorming" "inside that skill is authorized" "HARD-GATE exception present"
 assert_contains "$brainstorming" "we could go frontend-first" "offer text present"
-assert_contains "$brainstorming" "The offer MUST be its own message" "own-message rule"
+assert_contains "$brainstorming" "The offer is its own message" "own-message rule"
 assert_contains "$brainstorming" "invoke it and no other" "After-the-Design fork"
 assert_contains "$brainstorming" "or to interactive-design when they accepted" "checklist item 6 conditional"
 
