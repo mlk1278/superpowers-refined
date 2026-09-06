@@ -5,6 +5,7 @@ set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 plans="$repo_root/skills/writing-plans/SKILL.md"
+tracks="$repo_root/skills/writing-plans/execution-tracks.md"
 sdd="$repo_root/skills/subagent-driven-development/SKILL.md"
 worktrees="$repo_root/skills/using-git-worktrees/SKILL.md"
 
@@ -31,11 +32,11 @@ assert_not_contains() {
 # writing-plans: declaring tracks.
 assert_contains "$plans" '## Execution Tracks' \
   "plans may declare execution tracks"
-assert_contains "$plans" 'No file is created or modified by two concurrent tracks' \
+assert_contains "$tracks" 'No file is created or modified by two concurrent tracks' \
   "concurrent tracks require disjoint file sets"
-assert_contains "$plans" 'contract-freeze' \
+assert_contains "$tracks" 'contract-freeze' \
   "shared contracts freeze on the mainline before the fork"
-assert_contains "$plans" 'Every fork closes with a mainline integration task' \
+assert_contains "$tracks" 'Every fork closes with a mainline integration task' \
   "every merge point gets an integration task"
 assert_contains "$plans" \
   'a plan with no concurrent tracks and no one-sentence justification is a defect' \
