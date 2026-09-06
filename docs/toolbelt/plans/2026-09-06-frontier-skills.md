@@ -83,7 +83,7 @@ Contracts every task derives from. Tasks reference them; none repeats them.
 
 ### `<out>/mechanical.json` (written by `ux-capture`)
 
-An array, one entry per capture:
+An object: `{"projectRoot": "<absolute path>", "captures": [ ... ]}`, one entry per capture in `captures`:
 
 ```json
 {"tag":"settings-save-error-375-dark","pathway":"settings","step":"save",
@@ -116,7 +116,7 @@ An array, one entry per capture:
 | `step-failed` | blocker | `waitFor` or the action timed out; entry carries `error` |
 | `axe` | as reported | `@axe-core/playwright` violations when the module resolves from the project root |
 
-"Visible" means `getBoundingClientRect()` has width and height > 0, computed `visibility` is not `hidden`, and `display` is not `none`. "Leaf" means no element children. `checks[].selector` is `TAG#id.class1.class2` (tag upper-case; `#id` and classes only when present, classes in DOM order) and every check entry also carries `text`: the element's `textContent` trimmed to 40 characters. Document-level checks (`page-overflow`, `font-fallback`, `step-failed`, `console-error`, `failed-request`) carry `selector: null` and `text: null`, plus `message` for `step-failed`, `console-error`, and `failed-request`. `clsSources` uses the same selector format. `console[]` entries are the message strings; `failedRequests[]` entries are `"<status> <url>"` or `"failed <url>"`; `fonts` is `document.fonts.status` (`loaded` | `loading` | `error`). `axe` is `"skipped"` under `--smoke`, `"unavailable"` when the module does not resolve, else the violations array. Reference-screen entries have `tag: reference-<n>-<width>-<theme>`, `state: "default"`. Paths: `storageState` resolves relative to `--project-root`; `--out` and `--baseline` resolve relative to the working directory.
+"Visible" means `getBoundingClientRect()` has width and height > 0, computed `visibility` is not `hidden`, and `display` is not `none`. "Leaf" means no element children. `checks[].selector` is `TAG#id.class1.class2` (tag upper-case; `#id` and classes only when present, classes in DOM order) and every check entry also carries `text`: the element's `textContent` trimmed to 40 characters. Document-level checks (`page-overflow`, `font-fallback`, `step-failed`, `console-error`, `failed-request`) carry `selector: null` and `text: null`, plus `message` for `step-failed`, `console-error`, and `failed-request`. `clsSources` uses the same selector format. `console[]` entries are the message strings of `console` messages of type `error` only; `failedRequests[]` entries are `"<status> <url>"` or `"failed <url>"`; `fonts` is `document.fonts.status` (`loaded` | `loading` | `error`). `axe` is `"skipped"` under `--smoke`, `"unavailable"` when the module does not resolve, else the violations array. Reference-screen entries have `tag: reference-<n>-<width>-<theme>`, `state: "default"`. Paths: `storageState` resolves relative to `--project-root`; `--out` and `--baseline` resolve relative to the working directory.
 
 Theme application: `media` sets `colorScheme` on the context; `class`, `attribute`, and `localStorage` apply in a `context.addInitScript` that runs before any page script — for `class` and `attribute`, patch `document.documentElement` as soon as it exists (immediately when present, else from a `MutationObserver` on `document`), so the first paint is already themed.
 
