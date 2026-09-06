@@ -11,13 +11,21 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 ## Step 1: Verify Tests
 
-**Exact-head evidence reuse:** If the caller supplies evidence of a full-suite run at the exact current head SHA — the command, its passing output (with the final pass/exit state visible), and the head SHA it ran against — read that output yourself and treat this step as satisfied, a narrowly scoped exception to toolbelt:verification-before-completion's run-it-yourself rule. A report missing the command, the output, or the SHA is a claim, not evidence. Without qualifying evidence, run the suite.
+**Exact-head evidence reuse:** If the caller supplies evidence of a full-suite run at the exact current head SHA — the command, its passing output (with the final pass/exit state visible), and the head SHA it ran against — read that output yourself and treat this step as satisfied, an exception to toolbelt:verification-before-completion's run-it-yourself rule. A report missing the command, the output, or the SHA is a claim, not evidence. Without qualifying evidence, run the suite.
 
 **Docs-only case:** if every file the branch changes is Markdown under `docs/**` or at the repository root, or `.toolbelt/**` scratch, no suite is required — never a file the application builds, renders, or serves, or that CI executes, regardless of path.
 
 Both shortcuts require a clean worktree.
 
-**If tests fail:** report the failures and stop. No merge or PR until they pass.
+**If tests fail:** stop here.
+
+```
+Tests failing (<N> failures). Must fix before completing:
+
+[Show failures]
+
+Cannot proceed with merge/PR until tests pass.
+```
 
 ## Step 2: Detect Environment
 
@@ -69,13 +77,13 @@ Implementation complete. You're on a detached HEAD (externally managed workspace
 Which option?
 ```
 
-Present the menu with no added explanation.
+No added explanation.
 
 ## Step 5: Execute Choice
 
 ### Option 1: Merge Locally
 
-Merge and verify before removing anything. From the main repo root (Step 6):
+From the main repo root (Step 6):
 
 ```bash
 git checkout <base-branch>
@@ -95,7 +103,7 @@ gh pr create --base <base-branch> --title <title> --body <body>
 
 End in a named owner: hand the PR to toolbelt:pr-monitor, or return it to a caller that already declared it owns the monitoring (delivery does — don't start a second monitor on top of it). "PR is open" is not a terminal state. Reviews are the owner's to request; requesting here asks providers twice for the same head.
 
-Keep the worktree alive for PR feedback.
+Never force-push without your human partner's explicit request. The worktree stays for PR feedback.
 
 ### Option 3: Keep As-Is
 
@@ -120,7 +128,7 @@ If confirmed, clean up the worktree (Step 6) from the main repo root, then `git 
 
 Runs for Options 1 and 4 only.
 
-Reuse Step 2's `GIT_DIR` and `GIT_COMMON`: equal means a normal repo with no worktree to clean up. Otherwise `WORKTREE_PATH=$(git rev-parse --show-toplevel)`.
+Reuse Step 2's `GIT_DIR` and `GIT_COMMON`; equal means a normal repo, nothing to clean up. Otherwise `WORKTREE_PATH=$(git rev-parse --show-toplevel)`.
 
 If `.toolbelt/worktree-policy.md` defines teardown — sidecar containers, allocated ports, per-worktree data — release those first.
 
