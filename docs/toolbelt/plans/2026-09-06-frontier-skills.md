@@ -42,7 +42,7 @@
 - `tests/toolbelt/test-word-counts.sh` is red at HEAD today (`task-reviewer-prompt.md` 851/850). Task 9 clears it; tracks that run the full loop before Task 9 lands see that one failure and nothing else.
 - `tests/toolbelt/test-interactive-design.sh:44` uses `sed -n '1{/^---$/!q}; 1d; /^---$/q; p'`, which BSD sed on macOS rejects ("extra characters at the end of q command"), so the test exits non-zero before any needle on this machine. Task 4 (track `design`, which owns the file) replaces it with the portable `awk 'NR==1{if($0!="---")exit; next} /^---$/{exit} {print}'`. Until Task 4 lands, every "Expected: PASS" for that test holds only on GNU sed.
 - `sed -n '/<HARD-GATE>/,/<\/HARD-GATE>/p'` prints to end of file when a later line mentions the tag inline without a closing tag (writing-for-agents does today). Task 11's gate-length check anchors to whole-line tags: `/^<HARD-GATE>$/,/^<\/HARD-GATE>$/`. Skills may mention the tags inline only as backticked text on a single line.
-- New `*.sh` test files are linted by `scripts/lint-shell.sh`; Tasks 11, 12, and 18 run `scripts/lint-shell.sh <new file>` in their Verify step so shellcheck findings surface there, not at Task 21.
+- New `*.sh` test files are linted by `scripts/lint-shell.sh`; Tasks 11, 12, and 18 run `scripts/lint-shell.sh <new file>` in their Verify step so shellcheck findings surface there, not at Task 21. `shellcheck` is not on PATH on this machine: when `command -v shellcheck` fails, write "lint skipped: shellcheck not installed" in the report and continue; run `bash -n <file>` instead.
 - `tests/toolbelt/test-quick-task.sh:52` fails if quick-task mentions `pr-monitor`, `ux-gate`, `## Global Constraints`, `toolbelt:subagent-driven-development`, or `toolbelt:finishing-a-development-branch`; `test-delivery.sh` has two `assert_before` orderings ("Fetch the predecessor's remote head" before `toolbelt:using-git-worktrees`; `ux-gate` before "broad final review is the slice gate"). Task 10 keeps both.
 - `tests/toolbelt/test-workflow-summary.sh:28` requires exactly two lines matching `^- \`[a-z-]+\`:` in `docs/AGENTS-SNIPPET.md`; Task 20's new sentence must not be formatted as such a bullet.
 
@@ -722,7 +722,7 @@ git commit -m "Unslop: delivery, pr-monitor, agent-routing, quick-task light pas
 - `no_threats` — `git grep -q -e "you'll be replaced" -e "you will be replaced" -- skills` exits 1
 - `iron_law_only_tdd` — `git grep -l "Iron Law" -- skills` prints only `skills/test-driven-development/SKILL.md` or nothing
 - `one_rationalization_table` — `git grep -l -e "| Excuse | Reality |" -e "| Thought | Reality |" -- skills` prints only the two allowed paths
-- `gates_under_80_words` — for every `skills/*/SKILL.md`, each block extracted with `sed -n '/^<HARD-GATE>$/,/^<\/HARD-GATE>$/p'` and the `ENTRY-GATE` equivalent has `wc -w` ≤ 80 (whole-line anchors; an inline mention never opens a range)
+- `gates_under_80_words` — for every `skills/*/SKILL.md`, each block extracted with `sed -n '/^<HARD-GATE>$/,/^<\/HARD-GATE>$/p' | grep -v '^<'` and the `ENTRY-GATE` equivalent has `wc -w` ≤ 80 (whole-line anchors; the tag lines are excluded from the count; an inline mention never opens a range)
 
 - [ ] **Step 2: Run them to see the state**
 
