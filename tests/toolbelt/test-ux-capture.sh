@@ -32,6 +32,10 @@ case "$help_out" in
   *--smoke*) : ;;
   *) fail "--help output does not mention --smoke" "$help_out" ;;
 esac
+case "$help_out" in
+  *--baseline*"(Task 13)"*) : ;;
+  *) fail "--help does not mark --baseline as Task 13 work" "$help_out" ;;
+esac
 echo "ok - help_runs"
 
 # --- skip_without_playwright ----------------------------------------------
@@ -109,15 +113,15 @@ mech="$tmp/out/mechanical.json"
 
 query() { node -e "$1" "$mech"; }
 
-parses=$(query 'const e=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!Array.isArray(e)||!e.length) throw new Error("not a non-empty array"); console.log("ok")')
-[ "$parses" = "ok" ] || fail "mechanical.json does not parse as a non-empty array"
-echo "ok - mechanical.json parses"
+parses=$(query 'const d=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(typeof d.projectRoot!=="string"||!d.projectRoot) throw new Error("no projectRoot"); if(!Array.isArray(d.captures)||!d.captures.length) throw new Error("captures is not a non-empty array"); console.log("ok")' 2>/dev/null || true)
+[ "$parses" = "ok" ] || fail "mechanical.json is not {projectRoot, captures[]}"
+echo "ok - mechanical.json is an object with projectRoot and captures"
 
 assert_check() {
   local check=$1 selector=$2 theme=$3 desc=$4 found
   found=$(node -e '
     const fs = require("fs");
-    const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
     const [check, selector, theme] = process.argv.slice(2);
     const hit = entries.some((e) => (theme === "any" || e.theme === theme) &&
       (e.checks || []).some((c) => c.check === check && c.selector === selector));
@@ -130,35 +134,47 @@ assert_check() {
 assert_check element-overflow "SPAN.overflow-child" any "element-overflow on the clipped span"
 assert_check unclickable "BUTTON#covered" any "unclickable on the covered button"
 assert_check theme-leak "DIV.hardcoded-white" dark "theme-leak on the hardcoded white block in dark"
+assert_check theme-leak "HTML.dark" dark "theme-leak on the root element in dark"
 
 for name in home-open-default-375-light home-open-default-375-dark \
-            home-panel-default-375-light home-panel-default-375-dark; do
+            home-panel-default-375-light home-panel-default-375-dark \
+            home-away-default-375-light home-away-default-375-dark; do
   [ -f "$tmp/out/$name.png" ] || fail "still missing: $name.png" "$(ls "$tmp/out")"
 done
 echo "ok - stills named per the Data Model"
 
-recorded=$(node -e '
-  const fs = require("fs");
-  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-  console.log(entries.map((e) => e.files.still).sort().join(","));
-' "$mech")
-expected="home-open-default-375-dark.png,home-open-default-375-light.png,home-panel-default-375-dark.png,home-panel-default-375-light.png"
-[ "$recorded" = "$expected" ] || fail "recorded stills differ from expectation" "got: $recorded"
-echo "ok - smoke_finds_fixture_defects"
-
 # --- smoke_uses_first_viewport_only ---------------------------------------
 widths=$(node -e '
   const fs = require("fs");
-  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
   console.log([...new Set(entries.map((e) => e.width))].join(","));
 ' "$mech")
 [ "$widths" = "375" ] || fail "smoke captured widths other than 375" "widths: $widths"
 echo "ok - smoke_uses_first_viewport_only"
 
+recorded=$(node -e '
+  const fs = require("fs");
+  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
+  console.log(entries.map((e) => e.files.still).sort().join(","));
+' "$mech")
+expected="home-away-default-375-dark.png,home-away-default-375-light.png,home-open-default-375-dark.png,home-open-default-375-light.png,home-panel-default-375-dark.png,home-panel-default-375-light.png"
+[ "$recorded" = "$expected" ] || fail "recorded stills differ from expectation" "got: $recorded"
+echo "ok - smoke_finds_fixture_defects"
+
+# --- cls deltas survive an in-pathway navigation ---------------------------
+negative=$(node -e '
+  const fs = require("fs");
+  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
+  const bad = entries.filter((e) => e.cls < 0).map((e) => e.tag + " cls=" + e.cls);
+  console.log(bad.length ? bad.join("; ") : "none");
+' "$mech")
+[ "$negative" = "none" ] || fail "negative cls delta after an in-pathway navigation" "$negative"
+echo "ok - cls delta stays non-negative across a navigating step"
+
 # --- deferred Task 13 fields ----------------------------------------------
 deferred=$(node -e '
   const fs = require("fs");
-  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
   const bad = entries.filter((e) => e.diff !== null || e.files.filmstrip !== null ||
     e.files.diffCrop !== null || e.axe !== "skipped");
   console.log(bad.length ? JSON.stringify(bad[0]) : "ok");
@@ -174,7 +190,7 @@ clean_code=$?
 set -e
 findings=$(node -e '
   const fs = require("fs");
-  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
   const bad = entries.flatMap((e) => (e.checks || [])
     .filter((c) => c.severity === "blocker" || c.severity === "should")
     .map((c) => e.tag + " " + c.check + " " + c.selector));

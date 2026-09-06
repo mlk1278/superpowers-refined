@@ -15,7 +15,7 @@ const USAGE = `Usage: ux-capture <matrix.json> --out <dir> [options]
   --smoke                First viewport only, no reference screens, no axe,
                          no filmstrips
   --pathway <name>       Capture only this pathway (repeatable)
-  --baseline <dir>       Baseline stills to diff against
+  --baseline <dir>       Baseline stills to diff against (Task 13)
   --video                Record a local video per context
   --help                 Print this message
 
@@ -174,7 +174,7 @@ const themeInit = (cfg) => {
     if (cfg.mode === 'class') {
       if (cfg.value) target.classList.add(cfg.value);
     } else {
-      target.setAttribute('data-' + (cfg.key || 'theme'), cfg.value);
+      target.setAttribute('data-theme', cfg.value);
     }
     return true;
   };
@@ -260,7 +260,9 @@ const inPageChecks = (opts) => {
   const isLeaf = (el) => el.children.length === 0;
 
   const skipTags = new Set(['SCRIPT', 'STYLE', 'LINK', 'META', 'TITLE', 'NOSCRIPT', 'HEAD', 'BR']);
-  const all = [document.body].concat(Array.from(document.body.querySelectorAll('*')));
+  const all = [document.documentElement, document.body].concat(
+    Array.from(document.body.querySelectorAll('*')),
+  );
   const elements = all.filter((el) => el && !skipTags.has(el.tagName));
   const visibleEls = elements.filter(visible);
   const leaves = visibleEls.filter(isLeaf);
@@ -589,6 +591,15 @@ async function main() {
 
         let consoleErrors = [];
         let failedRequests = [];
+        let lastCls = 0;
+        let lastSources = 0;
+        page.on('framenavigated', (frame) => {
+          // A navigation re-runs the init script, so window.__uxCls restarts at 0.
+          if (frame === page.mainFrame()) {
+            lastCls = 0;
+            lastSources = 0;
+          }
+        });
         page.on('console', (message) => {
           if (message.type() === 'error') consoleErrors.push(message.text());
         });
@@ -601,8 +612,6 @@ async function main() {
           failedRequests.push(`failed ${request.url()}`);
         });
 
-        let lastCls = 0;
-        let lastSources = 0;
         let navigationError = null;
         try {
           await page.goto(base + pathway.path, { waitUntil: 'networkidle', timeout: 30000 });
@@ -698,7 +707,6 @@ async function main() {
             width: viewport.width,
             theme,
             dpr: viewport.dpr || 1,
-            projectRoot,
             files: {
               still: stillWritten,
               crops,
@@ -782,7 +790,6 @@ async function main() {
           width: viewport.width,
           theme,
           dpr: viewport.dpr || 1,
-          projectRoot,
           files: { still: stillWritten, crops: [], filmstrip: null, diffCrop: null },
           diff: null,
           checks,
@@ -801,7 +808,10 @@ async function main() {
   }
 
   await browser.close();
-  writeFileSync(join(outDir, 'mechanical.json'), `${JSON.stringify(entries, null, 2)}\n`);
+  writeFileSync(
+    join(outDir, 'mechanical.json'),
+    `${JSON.stringify({ projectRoot, captures: entries }, null, 2)}\n`,
+  );
 
   let worst = 0;
   for (const entry of entries) {

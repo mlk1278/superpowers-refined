@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:0",
-  "theme": {"mode": "class", "target": "html", "key": "theme", "values": {"light": "", "dark": "dark"}},
+  "theme": {"mode": "attribute", "target": "html", "key": "scheme", "values": {"light": "light", "dark": "dark"}},
   "themes": ["light", "dark"],
   "viewports": [
     {"name": "sm", "width": 375, "height": 812, "dpr": 2},

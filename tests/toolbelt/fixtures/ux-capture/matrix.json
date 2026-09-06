@@ -11,7 +11,8 @@
     {"name": "home", "path": "/index.html",
      "steps": [
        {"name": "open"},
-       {"name": "panel", "action": "click", "selector": "#open", "motion": true, "waitFor": "#panel:not([hidden])"}
+       {"name": "panel", "action": "click", "selector": "#open", "motion": true, "waitFor": "#panel:not([hidden])"},
+       {"name": "away", "action": "click", "selector": "#leave", "waitFor": "#go"}
      ]}
   ]
 }

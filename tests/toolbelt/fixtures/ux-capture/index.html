@@ -6,12 +6,15 @@
 <link rel="icon" href="data:,">
 <style>
   body { margin: 8px; font: 14px/1.4 system-ui, sans-serif; background: #fafafa; color: #222; }
+  html.dark { background: #fff; }
   .dark body { background: #111; color: #eee; }
   #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 300px; background: rgba(0,0,0,0.01); }
   #panel { border: 1px solid #888; padding: 8px; }
+  #banner { height: 0; }
 </style>
 </head>
 <body>
+  <div id="banner"></div>
   <div class="card" style="width:200px;overflow:hidden">
     <span class="overflow-child" style="display:inline-block;width:300px">Overflowing child text</span>
   </div>
@@ -21,7 +24,11 @@
   <div class="hardcoded-white" style="background:#fff;width:200px;height:200px"></div>
   <button id="open">Open</button>
   <div id="panel" hidden>Panel content</div>
+  <a href="/clean.html" id="leave">Leave</a>
 <script>
+  setTimeout(function () {
+    document.getElementById('banner').style.height = '120px';
+  }, 300);
   document.getElementById('open').addEventListener('click', function () {
     document.getElementById('panel').hidden = false;
   });
