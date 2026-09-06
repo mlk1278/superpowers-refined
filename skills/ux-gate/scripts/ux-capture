@@ -16,7 +16,8 @@ const USAGE = `Usage: ux-capture <matrix.json> --out <dir> [options]
                          no filmstrips
   --pathway <name>       Capture only this pathway (repeatable)
   --baseline <dir>       Baseline stills to diff against (ignored with --smoke)
-  --video                Record a local video per context
+  --video                Record a local video of each pathway context (not the
+                         crop, filmstrip or reduced-motion contexts)
   --help                 Print this message
 
 Exit codes: 0 clean, 1 findings at 'should' or above, 2 cannot run.`;
@@ -287,27 +288,36 @@ const inPageChecks = (opts) => {
   }
 
   // element-overflow (should)
-  const clipAncestor = (el, axis) => {
+  // Per axis, the nearest ancestor that does not overflow visibly decides: a
+  // scroll container (auto/scroll) can bring the element into view, so it is not
+  // a defect; only hidden/clip cuts content off.
+  const overflowAncestor = (el, axis) => {
     let parent = el.parentElement;
     while (parent) {
       const style = getComputedStyle(parent);
       const value = axis === 'x' ? style.overflowX : style.overflowY;
-      if (value === 'hidden' || value === 'clip') return parent;
+      if (value !== 'visible') return { el: parent, value };
       parent = parent.parentElement;
     }
     return null;
   };
+  const clips = (found) => found.value === 'hidden' || found.value === 'clip';
   for (const el of leaves) {
     if (matchesList(el, opts.allowOverflow)) continue;
     const rect = el.getBoundingClientRect();
     let by = 0;
-    const xClip = clipAncestor(el, 'x');
-    const rightLimit = xClip ? xClip.getBoundingClientRect().right : docEl.clientWidth;
-    if (rect.right - rightLimit > 1) by = Math.max(by, rect.right - rightLimit);
-    const yClip = clipAncestor(el, 'y');
-    if (yClip) {
-      const bottomLimit = yClip.getBoundingClientRect().bottom;
-      if (rect.bottom - bottomLimit > 1) by = Math.max(by, rect.bottom - bottomLimit);
+    const x = overflowAncestor(el, 'x');
+    if (!x) {
+      if (rect.right - docEl.clientWidth > 1) by = Math.max(by, rect.right - docEl.clientWidth);
+    } else if (clips(x)) {
+      const limit = x.el.getBoundingClientRect().right;
+      if (rect.right - limit > 1) by = Math.max(by, rect.right - limit);
+    }
+    // With no clipping ancestor the bottom is never compared: normal pages scroll.
+    const y = overflowAncestor(el, 'y');
+    if (y && clips(y)) {
+      const limit = y.el.getBoundingClientRect().bottom;
+      if (rect.bottom - limit > 1) by = Math.max(by, rect.bottom - limit);
     }
     if (by > 1) add('element-overflow', 'should', el, { by: Math.round(by) });
   }
@@ -324,26 +334,37 @@ const inPageChecks = (opts) => {
   }
 
   // overlap (should)
-  const overlapCandidates = leaves
-    .filter((el) => {
-      const style = getComputedStyle(el);
-      if (style.position === 'absolute' || style.position === 'fixed') return false;
-      if (style.display === 'inline') return false;
-      return !matchesList(el, opts.allowOverlap);
-    })
-    .slice(0, 1500);
+  // Anything under a positioned ancestor — overlays, sticky bars, dialogs, fixed
+  // menus — covers content by design, so it is not a candidate.
+  const positionedSubtree = (el) => {
+    let node = el;
+    while (node && node.nodeType === 1) {
+      const position = getComputedStyle(node).position;
+      if (position === 'absolute' || position === 'fixed' || position === 'sticky') return true;
+      node = node.parentElement;
+    }
+    return false;
+  };
+  const overlapEligible = leaves.filter((el) => {
+    if (getComputedStyle(el).display === 'inline') return false;
+    if (positionedSubtree(el)) return false;
+    return !matchesList(el, opts.allowOverlap);
+  });
+  const overlapTruncated = overlapEligible.length > 1500;
+  // Rects are read once: a getBoundingClientRect() inside the pair loop is O(n²) layout.
+  const overlapCandidates = overlapEligible
+    .slice(0, 1500)
+    .map((el) => ({ el, rect: el.getBoundingClientRect() }));
   for (let i = 0; i < overlapCandidates.length; i += 1) {
     for (let j = i + 1; j < overlapCandidates.length; j += 1) {
       const a = overlapCandidates[i];
       const b = overlapCandidates[j];
-      if (a.contains(b) || b.contains(a)) continue;
-      const ra = a.getBoundingClientRect();
-      const rb = b.getBoundingClientRect();
-      const dx = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
-      const dy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+      if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      const dx = Math.min(a.rect.right, b.rect.right) - Math.max(a.rect.left, b.rect.left);
+      const dy = Math.min(a.rect.bottom, b.rect.bottom) - Math.max(a.rect.top, b.rect.top);
       if (dx > 4 && dy > 4) {
-        add('overlap', 'should', a, {
-          with: selectorOf(b),
+        add('overlap', 'should', a.el, {
+          with: selectorOf(b.el),
           by: [Math.round(dx), Math.round(dy)],
         });
       }
@@ -352,12 +373,24 @@ const inPageChecks = (opts) => {
 
   // unclickable (blocker) and tap-target (nit)
   const controls = Array.from(document.querySelectorAll(controlSelector)).filter(visible);
+  // A modal owns the page while it is open: a backdrop over everything else is
+  // the design, not a defect.
+  const modal = document.querySelector('[aria-modal="true"], dialog[open]');
+  const unreachableByDesign = (el) => {
+    if (el.closest('[aria-hidden="true"], [inert]')) return true;
+    const style = getComputedStyle(el);
+    if (style.pointerEvents === 'none' || parseFloat(style.opacity) === 0) return true;
+    const rect = el.getBoundingClientRect();
+    // A visually-hidden input keeps a 1×1 rect so it stays focusable.
+    if (rect.width <= 1 && rect.height <= 1) return true;
+    return Boolean(modal) && !modal.contains(el);
+  };
   for (const el of controls) {
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const inViewport = cx >= 0 && cy >= 0 && cx < docEl.clientWidth && cy < docEl.clientHeight;
-    if (inViewport) {
+    if (inViewport && !unreachableByDesign(el)) {
       const hit = document.elementFromPoint(cx, cy);
       const reachable = hit && (hit === el || el.contains(hit) || hit.contains(el));
       if (!reachable) add('unclickable', 'blocker', el, { blockedBy: selectorOf(hit) });
@@ -412,6 +445,7 @@ const inPageChecks = (opts) => {
 
   return {
     checks,
+    overlapTruncated,
     docId: window.__uxDocId || null,
     cls: window.__uxCls || 0,
     clsSources: (window.__uxClsSources || []).slice(),
@@ -603,6 +637,8 @@ function makeEntry(o) {
     axe: o.axe,
   };
   if (o.error) entry.error = o.error;
+  // Only recorded when the overlap candidate cap actually applied.
+  if (o.overlapTruncated) entry.overlapTruncated = true;
   return entry;
 }
 
@@ -915,7 +951,10 @@ async function main() {
     if (!fullPage) height = Math.min(height, viewport.height - y);
     if (width <= 0 || height <= 0) return null;
     try {
-      await page.evaluate(() => window.scrollTo(0, 0));
+      // A viewport clip is viewport-relative, so the page keeps the scroll
+      // position the step left it at; a fullPage clip is in document
+      // coordinates and needs the top of the document.
+      if (fullPage) await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({
         path: join(outDir, file),
         clip: { x, y, width, height },
@@ -972,11 +1011,12 @@ async function main() {
             try {
               await performAction(page, step);
               // Filmstrip frames come between the action and waitFor, animations live.
-              // Each delay is measured from the action, so only the gap is waited out.
-              let waited = 0;
+              // Each delay is measured from the clock at the action's return, so a
+              // slow screenshot does not push the later labels off their true time.
+              const actionReturned = Date.now();
               for (const delay of motion ? MOTION_DELAYS : []) {
-                if (delay > waited) await page.waitForTimeout(delay - waited);
-                waited = delay;
+                const remaining = actionReturned + delay - Date.now();
+                if (remaining > 0) await page.waitForTimeout(remaining);
                 frames.push(await page.screenshot({ type: 'jpeg', quality: 70 }));
               }
               if (step.waitFor) await page.waitForSelector(step.waitFor, { timeout: WAIT_TIMEOUT });
@@ -1076,13 +1116,39 @@ async function main() {
               failedRequests: listeners.failedRequests.slice(),
               fonts: result.fonts,
               axe,
+              overlapTruncated: result.overlapTruncated,
               error,
             }),
           );
 
           listeners.consoleErrors = [];
           listeners.failedRequests = [];
-          if (error) break;
+          if (error) {
+            // The pathway stops here, but the steps it never reached are recorded
+            // so a reader sees every step of the matrix in mechanical.json.
+            for (let rest = index + 1; rest < pathway.steps.length; rest += 1) {
+              const skipped = pathway.steps[rest];
+              entries.push(
+                makeEntry({
+                  tag: `${pathway.name}-${skipped.name}-${skipped.state}-${viewport.width}-${theme}`,
+                  pathway: pathway.name,
+                  step: skipped.name,
+                  state: skipped.state,
+                  width: viewport.width,
+                  theme,
+                  dpr: viewport.dpr || 1,
+                  still: null,
+                  checks: [
+                    documentCheck('step-failed', 'blocker', `skipped after failure of step ${step.name}`),
+                  ],
+                  fonts: result.fonts,
+                  axe: 'skipped',
+                  error: `skipped after failure of step ${step.name}`,
+                }),
+              );
+            }
+            break;
+          }
         }
 
         await context.close();
@@ -1161,6 +1227,7 @@ async function main() {
             failedRequests: listeners.failedRequests,
             fonts: result.fonts,
             axe,
+            overlapTruncated: result.overlapTruncated,
             error,
           }),
         );

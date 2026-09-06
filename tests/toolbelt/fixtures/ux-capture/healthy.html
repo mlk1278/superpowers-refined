@@ -1,0 +1,83 @@
+<!doctype html>
+<html class="">
+<head>
+<meta charset="utf-8">
+<title>ux-capture healthy fixture</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg: #ffffff; --fg: #1a1a1a; --line: #d8d8d8; --panel: #f2f2f2; }
+  html.dark { --bg: #111318; --fg: #e8e8e8; --line: #333842; --panel: #1b1f27; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+  .shell { height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
+  header.bar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; min-height: 56px;
+    background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  header.bar h1 { font-size: 16px; margin: 0; }
+  main { flex: 1; min-height: 0; min-width: 0; overflow-y: auto; padding: 12px; }
+  .row { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .scroller { overflow-x: auto; max-width: 100%; margin: 16px 0; }
+  table.wide { width: 900px; border-collapse: collapse; }
+  table.wide th, table.wide td { padding: 8px 12px; border: 1px solid var(--line); white-space: nowrap; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border-width: 0;
+  }
+  .dropdown {
+    position: fixed; right: 12px; bottom: 12px; width: 180px;
+    padding: 8px; background: var(--panel); border: 1px solid var(--line);
+  }
+  .dropdown .item { padding: 6px 8px; }
+  button { min-width: 96px; min-height: 44px; background: #2b5; color: #fff; border: 0; font: inherit; }
+  html.dark button { background: #2f6f45; }
+  dialog#modal {
+    background: var(--panel); color: var(--fg); border: 1px solid var(--line);
+    padding: 16px; width: 280px; max-width: 90vw;
+  }
+  dialog#modal::backdrop { background: rgba(0, 0, 0, 0.55); }
+  dialog#modal p { margin: 0 0 12px; }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="bar">
+      <h1>Healthy shell</h1>
+      <button id="open-modal">Open</button>
+    </header>
+    <main id="list">
+      <input class="sr-only" id="pick" type="checkbox" aria-label="Select all">
+      <div class="scroller">
+        <table class="wide">
+          <thead><tr><th>Name</th><th>Owner</th><th>Status</th><th>Updated</th></tr></thead>
+          <tbody><tr><td>Route 41</td><td>Dana</td><td>Active</td><td>Today</td></tr></tbody>
+        </table>
+      </div>
+      <div id="rows"></div>
+    </main>
+  </div>
+  <div class="dropdown">
+    <div class="item">Recent</div>
+    <div class="item">Archived</div>
+  </div>
+  <dialog id="modal" aria-modal="true">
+    <p>Confirm the change?</p>
+    <button id="confirm">Confirm</button>
+  </dialog>
+  <script>
+    const rows = document.getElementById('rows');
+    for (let i = 1; i <= 40; i += 1) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.id = 'row-' + i;
+      row.textContent = 'Job ' + i;
+      rows.appendChild(row);
+    }
+    document.getElementById('open-modal').addEventListener('click', () => {
+      document.getElementById('modal').showModal();
+    });
+  </script>
+</body>
+</html>

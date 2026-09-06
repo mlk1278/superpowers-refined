@@ -104,6 +104,7 @@ rewrite_matrix() {
 }
 rewrite_matrix "$fixtures/matrix.json" "$tmp/matrix.json"
 rewrite_matrix "$fixtures/matrix-clean.json" "$tmp/matrix-clean.json"
+rewrite_matrix "$fixtures/matrix-healthy.json" "$tmp/matrix-healthy.json"
 
 # --- smoke_finds_fixture_defects ------------------------------------------
 set +e
@@ -309,6 +310,39 @@ unavailable=$(each "$tmp/noaxe-out/mechanical.json" '
 [ "$unavailable" = "none" ] || fail "an unresolvable axe module was not recorded as unavailable" "$unavailable"
 echo "ok - axe_unavailable_without_the_module"
 
+# --- steps_after_a_failure_are_recorded ------------------------------------
+# One viewport, one theme, a second step whose waitFor never matches: the third
+# step is never run, and must still appear as a blocker rather than vanish.
+node -e '
+  const fs = require("fs");
+  const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  m.themes = ["light"];
+  m.viewports = m.viewports.slice(0, 1);
+  m.pathways = [{ name: "clean", path: "/clean.html", steps: [
+    { name: "open" },
+    { name: "stuck", waitFor: "#never-appears" },
+    { name: "later" },
+  ] }];
+  fs.writeFileSync(process.argv[2], JSON.stringify(m, null, 2));
+' "$tmp/matrix-clean.json" "$tmp/matrix-fail.json"
+set +e
+PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix-fail.json" \
+  --smoke --out "$tmp/failout" --project-root "$tmp/noaxe" > "$tmp/failout.log" 2>&1
+set -e
+[ -f "$tmp/failout/mechanical.json" ] || fail "the failing run wrote no mechanical.json" "$(cat "$tmp/failout.log")"
+after_failure=$(each "$tmp/failout/mechanical.json" '
+  const e = entries.find((e) => e.step === "later");
+  if (!e) { console.log("the step after the failure was dropped"); }
+  else {
+    const c = (e.checks || []).find((c) => c.check === "step-failed");
+    if (!c) console.log("no step-failed check on the skipped step");
+    else if (c.severity !== "blocker") console.log("severity " + c.severity);
+    else if (c.message !== "skipped after failure of step stuck") console.log("message " + c.message);
+    else console.log("ok");
+  }')
+[ "$after_failure" = "ok" ] || fail "a step after a step-failed was not recorded" "$after_failure"
+echo "ok - steps_after_a_failure_are_recorded"
+
 # --- baseline_unchanged ----------------------------------------------------
 set +e
 again_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix.json" \
@@ -394,5 +428,31 @@ findings=$(node -e '
 [ "$findings" = "none" ] || fail "clean fixture produced should-or-above findings" "$findings"
 [ "$clean_code" -eq 0 ] || fail "expected exit 0 on the clean fixture, got $clean_code" "$clean_out"
 echo "ok - clean_page_has_no_findings"
+
+# --- healthy_patterns_clean ------------------------------------------------
+# Healthy layout patterns a reviewer's scratch pages exposed as false findings:
+# a scrolling app shell, a sticky header, an open modal over the page, a wide
+# table in an overflow-x container, an sr-only checkbox, a fixed dropdown.
+# A full run: all three widths, both themes, no axe module in this project root.
+set +e
+healthy_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix-healthy.json" \
+  --out "$tmp/healthy" --project-root "$tmp/noaxe" 2>&1)
+healthy_code=$?
+set -e
+[ -f "$tmp/healthy/mechanical.json" ] || fail "healthy run wrote no mechanical.json" "$healthy_out"
+healthy_findings=$(each "$tmp/healthy/mechanical.json" '
+  const bad = entries.flatMap((e) => (e.checks || [])
+    .filter((c) => c.severity === "blocker" || c.severity === "should")
+    .map((c) => e.tag + " " + c.check + " " + c.selector));
+  console.log(bad.length ? bad.slice(0, 10).join("; ") : "none");')
+[ "$healthy_findings" = "none" ] || fail "healthy patterns produced should-or-above findings" "$healthy_findings"
+healthy_matrix=$(each "$tmp/healthy/mechanical.json" '
+  const widths = [...new Set(entries.map((e) => e.width))].sort((a, b) => a - b).join(",");
+  const themes = [...new Set(entries.map((e) => e.theme))].sort().join(",");
+  console.log(widths + " / " + themes);')
+[ "$healthy_matrix" = "375,768,1440 / dark,light" ] ||
+  fail "the healthy run did not cover three widths and both themes" "$healthy_matrix"
+[ "$healthy_code" -eq 0 ] || fail "expected exit 0 on the healthy fixture, got $healthy_code" "$healthy_out"
+echo "ok - healthy_patterns_clean"
 
 echo "PASS"
