@@ -7,6 +7,7 @@ repo_root=$(git rev-parse --show-toplevel)
 plans="$repo_root/skills/writing-plans/SKILL.md"
 tracks="$repo_root/skills/writing-plans/execution-tracks.md"
 sdd="$repo_root/skills/subagent-driven-development/SKILL.md"
+sdd_tracks="$repo_root/skills/subagent-driven-development/parallel-tracks.md"
 worktrees="$repo_root/skills/using-git-worktrees/SKILL.md"
 
 assert_contains() {
@@ -45,11 +46,11 @@ assert_contains "$plans" \
 # subagent-driven-development: executing tracks.
 assert_contains "$sdd" '## Parallel Tracks' \
   "sdd carries the parallel-tracks section"
-assert_contains "$sdd" 'At most 3 tracks run concurrently' \
+assert_contains "$sdd_tracks" 'At most 3 tracks run concurrently' \
   "concurrency cap is 3"
-assert_contains "$sdd" '## Decisions & drift risks' \
+assert_contains "$sdd_tracks" '## Decisions & drift risks' \
   "track reports carry a drift log"
-assert_contains "$sdd" 'A textual conflict is a plan defect' \
+assert_contains "$sdd_tracks" 'A textual conflict is a plan defect' \
   "track merge conflicts stop, never hand-resolved"
 assert_contains "$sdd" 'Dispatch multiple implementation subagents into the same worktree' \
   "red flag scopes concurrency to one implementer per track worktree"
