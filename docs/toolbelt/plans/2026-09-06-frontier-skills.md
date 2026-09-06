@@ -714,7 +714,7 @@ git commit -m "Unslop: delivery, pr-monitor, agent-routing, quick-task light pas
 
 - [ ] **Step 1: Write the tests**
 
-`tests/toolbelt/test-word-counts.sh`: replace the `ceilings` array with the spec's Component 2 table (27 entries; `docs/WORKFLOW.md:320`; gate-reviewer-prompt.md:700 added by Task 18 — include it now guarded by `[ -f "$file" ] || continue` so Boundary 1 passes without it).
+`tests/toolbelt/test-word-counts.sh`: replace the `ceilings` array with the spec's Component 2 table (31 entries including the four disclosed side files; `docs/WORKFLOW.md:320`; gate-reviewer-prompt.md:700 added by Task 18 — that one entry alone is optional, marked so a missing file is skipped with a printed `skip` line; every other absent file is `not ok`).
 
 `tests/toolbelt/test-doctrine.sh`, one assertion per line — name — check:
 - `no_extremely_important` — `git grep -q -e "EXTREMELY-IMPORTANT" -e "EXTREMELY_IMPORTANT" -- skills hooks` exits 1
