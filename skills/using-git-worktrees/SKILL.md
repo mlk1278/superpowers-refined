@@ -25,7 +25,7 @@ git rev-parse --show-superproject-working-tree 2>/dev/null
 **`GIT_DIR != GIT_COMMON` and not a submodule:** already in a linked worktree. Skip to Step 2. Report:
 
 - On a branch: "Already in isolated workspace at `<path>` on branch `<name>`."
-- Detached HEAD: the same, plus "(detached HEAD, externally managed). Branch creation needed at finish time."
+- Detached HEAD: "Already in isolated workspace at `<path>` (detached HEAD, externally managed). Branch creation needed at finish time."
 
 Asked for a new sibling worktree, this skill creates it rather than skipping creation.
 
@@ -43,7 +43,7 @@ A policy may also declare **parallel-workspace rules** for worktrees that run co
 
 - How to derive a per-workspace database name (or equivalent) from the branch name.
 - Which resources are per-workspace and which are shared.
-- Setup commands to run per workspace (e.g., codegen, migrations against the derived database).
+- Setup commands to run per workspace (codegen, migrations, and the like).
 - An optional concurrency limit lower than 3 when the machine cannot support three concurrent setups; subagent-driven-development honors the lower number.
 
 subagent-driven-development applies them per track worktree and reports the resources claimed. A track needing isolated stateful resources with no policy declaring how is a gap to report, not improvise around.
@@ -86,10 +86,9 @@ Apply the policy's setup rules first — allocated ports, sidecar containers, pe
 ## Step 3: Verify Clean Baseline
 
 Run the smallest focused checks that prove a clean start: the tests the work
-will rely on, not a workspace or package-wide baseline. A dirty baseline makes
-every later failure ambiguous. When the base commit already has qualifying test
-evidence or authoritative green CI, cite that instead of re-running;
-docs-only work needs no baseline suite.
+will rely on, not a workspace or package-wide baseline. When the base commit
+already has qualifying test evidence or authoritative green CI,
+cite that instead of re-running; docs-only work needs no baseline suite.
 
 **If tests fail:** report them and ask whether to proceed or investigate. Otherwise report ready.
 
