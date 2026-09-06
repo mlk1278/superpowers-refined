@@ -701,6 +701,7 @@ git commit -m "Unslop: delivery, pr-monitor, agent-routing, quick-task light pas
 - Modify: `tests/toolbelt/test-word-counts.sh`
 - Create: `tests/toolbelt/test-doctrine.sh`
 - Modify: `README.md:86-104`
+- Modify: `skills/writing-skills/testing-skills-with-subagents.md`
 
 **Interfaces:**
 - Consumes: every Boundary 1 rewrite; the merged tracks' `Decisions & drift risks` entries are carried in this task's brief
@@ -728,7 +729,10 @@ git commit -m "Unslop: delivery, pr-monitor, agent-routing, quick-task light pas
 Run: `bash tests/toolbelt/test-word-counts.sh; bash tests/toolbelt/test-doctrine.sh`
 Expected: both pass if Tasks 1–10 landed as specified; any failure names the file to cut, and this task cuts it (its brief carries the drift entries naming any file a track left over its ceiling).
 
-- [ ] **Step 3: README**
+- [ ] **Step 3: README and the testing reference**
+
+`skills/writing-skills/testing-skills-with-subagents.md` (Task 1 moved content into it; both its reviews flagged the rest): apply the rewrite rules. Remove `## Red Flags - STOP`, `## Common Mistakes`, `## Quick Reference`, `## The Bottom Line`, and `## Real-World Impact`; keep `## TDD Mapping for Skill Testing`, the three phase sections, `## Testing Checklist (TDD for Skills)`, `## Micro-Testing Wording`, `## Testing by Skill Type`, and `## Common Rationalizations for Skipping Testing` with its table; in `## REFACTOR Phase`, any advice to add rationalization-table rows or red-flag entries carries the gate "only where a brief instruction measurably failed under pressure". Target at most 1,800 words; the doctrine test's allow-list for the excuse table already names this file.
+
 
 Line 86: `- **verification-before-completion** - Audit every claim against a tool result before reporting`. Line 95: `- **receiving-code-review** - Verify feedback against the code before acting on it`. Line 104 is changed in Task 14.
 
@@ -740,7 +744,7 @@ Expected: every script prints `PASS` (or its own pass lines) and the loop exits 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add tests/toolbelt/test-word-counts.sh tests/toolbelt/test-doctrine.sh README.md
+git add tests/toolbelt/test-word-counts.sh tests/toolbelt/test-doctrine.sh README.md skills/writing-skills/testing-skills-with-subagents.md
 git commit -m "Enforce word ceilings and doctrine across skills"
 ```
 
