@@ -84,4 +84,6 @@ Subagent (role: implementer):
   `.toolbelt/ux-policy.md` Launch and Theme
   (`<ux-gate skill dir>/scripts/ux-capture <matrix> --smoke --pathway <name>
   --out .toolbelt/ux/smoke/task-N --project-root <repo root>`), or
-  `not applicable` for a plan with no user-visible surface.
+  `not applicable` for a task that renders nothing.
+- `[BRIEF_FILE]` — path to this task's brief.
+- `[REPORT_FILE]` — path the task report is written to.
