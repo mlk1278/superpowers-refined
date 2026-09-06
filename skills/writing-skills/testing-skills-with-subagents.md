@@ -38,7 +38,7 @@ Don't test:
 | **REFACTOR** | Plug holes | Find new rationalizations, add counters |
 | **Stay GREEN** | Re-verify | Test again, ensure still compliant |
 
-Same cycle as code TDD, different test format.
+Same cycle as code TDD, different test format. Test each skill through the full cycle before starting the next one: batching is not more efficient, it just defers finding out that the first one doesn't work.
 
 ## RED Phase: Baseline Testing (Watch It Fail)
 
@@ -313,21 +313,28 @@ Before deploying skill, verify you followed RED-GREEN-REFACTOR:
 - [ ] Created pressure scenarios (3+ combined pressures)
 - [ ] Ran scenarios WITHOUT skill (baseline)
 - [ ] Documented agent failures and rationalizations verbatim
+- [ ] Identified the patterns in those rationalizations
 
 **GREEN Phase:**
-- [ ] Wrote skill addressing specific baseline failures
-- [ ] Ran scenarios WITH skill
-- [ ] Agent now complies
+- [ ] Frontmatter valid: `name` (letters/numbers/hyphens), `description` starting "Use when...", third person, no workflow summary, under 1024 chars total
+- [ ] Searchable keywords throughout — errors, symptoms, tools
+- [ ] Wrote skill addressing the specific baseline failures, nothing hypothetical
+- [ ] Guidance form matches the failure type
+- [ ] Behavior-shaping wording micro-tested against a no-guidance control (5+ reps, every flagged match read manually) — N/A for pure reference skills
+- [ ] One excellent example; heavy reference and tools in separate files
+- [ ] Ran scenarios WITH skill — agent now complies
 
 **REFACTOR Phase:**
 - [ ] Identified NEW rationalizations from testing
 - [ ] Added explicit counters for each loophole
-- [ ] Updated rationalization table
-- [ ] Updated red flags list
+- [ ] Rationalization table built only where a brief instruction measurably failed under pressure
 - [ ] Updated description with violation symptoms
 - [ ] Re-tested - agent still complies
 - [ ] Meta-tested to verify clarity
 - [ ] Agent follows rule under maximum pressure
+
+**Ship:**
+- [ ] Committed and pushed
 
 ## Common Mistakes (Same as TDD)
 
@@ -383,16 +390,6 @@ From applying TDD to TDD skill itself (2025-10-03):
 - Final VERIFY GREEN: 100% compliance under maximum pressure
 - Same process works for any discipline-enforcing skill
 
-## RED-GREEN-REFACTOR
-
-**RED — baseline.** Run the pressure scenario with a subagent WITHOUT the skill. Document what they chose, which pressures triggered the violation, and the rationalizations **verbatim**. You cannot write the skill until you have seen this.
-
-**GREEN — minimal skill.** Address those specific rationalizations. No content for hypothetical cases. Re-run the same scenarios; the agent should comply.
-
-**REFACTOR — close loopholes.** New rationalization? Add its counter. Re-test until bulletproof.
-
-Test each skill through the full cycle before starting the next one. Batching is not more efficient; it just defers finding out that the first one doesn't work.
-
 ## Micro-Testing Wording
 
 Pressure scenarios are the final gate but are slow per iteration. Verify the wording itself first:
@@ -426,27 +423,3 @@ Micro-tests verify wording; they do not replace pressure scenarios for disciplin
 | "I'm confident it's good" | Confidence is not evidence. Test anyway. |
 | "Academic review is enough" | Reading ≠ using. Test application scenarios. |
 | "No time to test" | Deploying untested skill wastes more time fixing it later. |
-
-## Checklist
-
-**RED:**
-- [ ] Pressure scenarios written (3+ combined pressures for discipline skills)
-- [ ] Run WITHOUT the skill — baseline behavior documented verbatim
-- [ ] Patterns in the rationalizations identified
-
-**GREEN:**
-- [ ] Frontmatter valid: `name` (letters/numbers/hyphens), `description` starting "Use when...", third person, no workflow summary, under 1024 chars total
-- [ ] Searchable keywords throughout — errors, symptoms, tools
-- [ ] Addresses the specific baseline failures, nothing hypothetical
-- [ ] Guidance form matches the failure type
-- [ ] Behavior-shaping wording micro-tested against a no-guidance control (5+ reps, every flagged match read manually) — N/A for pure reference skills
-- [ ] One excellent example; heavy reference and tools in separate files
-- [ ] Run WITH the skill — agents now comply
-
-**REFACTOR:**
-- [ ] New rationalizations from testing identified and countered
-- [ ] Rationalization table and red flags list built from all iterations
-- [ ] Re-tested until bulletproof
-
-**Ship:**
-- [ ] Committed and pushed

@@ -9,7 +9,7 @@ A skill is a reference guide for a proven technique, pattern, or tool, not a sto
 
 **REQUIRED BACKGROUND:** `toolbelt:test-driven-development` defines the RED-GREEN-REFACTOR cycle this adapts; `toolbelt:writing-for-agents` holds the editorial rules every skill edit applies. Anthropic's authoring guidance: [anthropic-best-practices.md](anthropic-best-practices.md).
 
-**Scope.** New behaviour-shaping guidance — a new skill, rule, or gate — needs a baseline first: watch an agent fail without it, write against that failure, then close the loopholes it finds next. Editing what exists does not: condensing, restructuring, fixing a link, or rewording a rule whose behavior you are not changing needs only to be *correct*. Can't tell which you're doing? Ask whether an agent would behave differently after the edit. Yes → baseline first.
+**Scope.** New behaviour-shaping guidance — a new skill, rule, or gate — needs a baseline first: watch an agent fail without it, write against that failure, then close the loopholes it finds next. Editing what exists does not: condensing, restructuring, fixing a link, or rewording a rule whose behavior you are not changing needs only to be *correct*. Can't tell? Ask whether an agent would behave differently after the edit. Yes → baseline first.
 
 ## Testing
 
@@ -33,7 +33,7 @@ skills/skill-name/
 
 Flat namespace; all skills are searchable together. Keep principles, concepts, and code patterns under ~50 lines inline; split out API references, full syntax, and scripts, loaded only when needed.
 
-Frontmatter is exactly `name` and `description`, max 1024 characters ([full spec](https://agentskills.io/specification)); names use letters, numbers, and hyphens.
+Frontmatter is exactly `name` and `description`, max 1024 characters ([full spec](https://agentskills.io/specification)); names use letters, numbers, hyphens.
 
 ## The Description Field
 
@@ -57,16 +57,16 @@ Classify the baseline failure first: the form that bulletproofs one failure meas
 
 | Baseline failure | Right form | Wrong form |
 |---|---|---|
-| Skips a rule under pressure (knows better, does it anyway) | Prohibition + rationalization table + red flags | Soft guidance ("prefer", "consider") |
+| Skips a rule under pressure (knows better, does it anyway) | One-sentence rule + reason; after that measurably fails, prohibition + rationalization table | Soft guidance ("prefer", "consider") |
 | Output has the wrong shape (bloated prompt, buried verdict, restated spec) | Recipe: what the output IS, its parts in order | Prohibitions ("don't restate") |
 | Omits an element from what they already produce | Structural: a REQUIRED slot in the template | Prose reminders near the template |
 | Behavior should depend on a condition | Conditional on an observable predicate ("if the brief exists, reference it") | Unconditional rule + exemptions |
 
-**Why prohibitions backfire on shaping problems:** under a competing incentive, agents negotiate with "don't X". In wording tests on dispatch prompts, the prohibition arm produced clearly more unwanted content than the recipe arm (fully separated distributions), and trended worse than the no-guidance control. A recipe leaves nothing to negotiate. Micro-test your own case.
+**Why prohibitions backfire on shaping problems:** under a competing incentive, agents negotiate with "don't X". In wording tests on dispatch prompts, the prohibition arm produced more unwanted content than the recipe arm (fully separated distributions), and trended worse than the no-guidance control. A recipe leaves nothing to negotiate. Micro-test your own case.
 
 **Whichever form you pick:**
 - **No nuance clauses.** "Don't X unless it matters" reopens the negotiation — one appended to a winning recipe degraded it from consistent to noisy in the same tests. Express a real exception as a conditional on an observable predicate.
-- **Exemption clauses don't scope.** "This limit doesn't apply to code blocks" still suppresses code blocks; restructure so the rule can't reach the exempt part.
+- **Exemption clauses don't scope.** "This limit doesn't apply to code blocks" still suppresses them; restructure so the rule can't reach the exempt part.
 
 ## Bulletproofing Against Rationalization
 
@@ -81,7 +81,7 @@ Why these work: [persuasion-principles.md](persuasion-principles.md) (Cialdini 2
 
 ## Naming
 
-Name by what you DO or by the core insight — verb-first, gerunds for processes:
+Name by what you DO or the core insight — verb-first, gerunds for processes:
 
 - ✅ `condition-based-waiting` > `async-test-helpers`
 - ✅ `root-cause-tracing` > `debugging-techniques`
@@ -89,7 +89,7 @@ Name by what you DO or by the core insight — verb-first, gerunds for processes
 
 ## Cross-Referencing Other Skills
 
-Name the skill with a requirement marker — `**REQUIRED BACKGROUND:** You MUST understand toolbelt:systematic-debugging`. A bare `See skills/testing/test-driven-development` leaves it unclear whether it is required.
+Name the skill with a requirement marker — `**REQUIRED BACKGROUND:** You MUST understand toolbelt:systematic-debugging`. A bare `See skills/testing/test-driven-development` leaves it unclear whether it's required.
 
 **Never use `@` links.** `@skills/.../SKILL.md` force-loads the file, burning context before you need it.
 
@@ -101,4 +101,4 @@ Style rules are in `graphviz-conventions.dot`. Show diagrams to your human partn
 
 ## Code Examples
 
-**One excellent example beats many mediocre ones.** Complete, runnable, from a real scenario, commented to explain WHY, in the language that fits the domain. One is enough; you're good at porting.
+**One excellent example beats many mediocre ones.** Complete, runnable, from a real scenario, commented to explain WHY, in the language that fits the domain — no fill-in templates. One is enough.
