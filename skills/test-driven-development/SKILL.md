@@ -31,6 +31,15 @@ A bug is the same cycle: the failing test reproduces the bug, so it proves the f
 | "Too simple to test" | Simple code breaks too, and the test takes a minute. |
 | "I'll test it manually" | Manual checks are not repeatable and are not evidence. |
 
+## When Stuck
+
+| Problem | Solution |
+|---------|----------|
+| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
+| Test too complicated | Design too complicated. Simplify interface. |
+| Must mock everything | Code too coupled. Use dependency injection. |
+| Test setup huge | Extract helpers. Still complex? Simplify design. |
+
 ## Writing the tests themselves
 
 When writing or changing any test, adding mocks, or adding test-only helpers, read [writing-good-tests.md](writing-good-tests.md):
