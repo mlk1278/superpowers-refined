@@ -21,7 +21,7 @@ Each boundary is one coherent delivery slice, bounded by the independent judgeme
 
 ## 2. Resolve routes
 
-The optional `## Agent Routing` section may route the implementer, task reviewer, and final reviewer; the session agent remains the orchestrator and is never plan-routed. Resolve each role with agent-routing; precedence is plan route, then project route, then bundled default. Resolve the monitor and, for a UX-gated boundary, an `errand` gate operator from project routing or the bundled default. Fail closed when either reviewer lacks an independent route; agent-routing's outage override is the only exception.
+The optional `## Agent Routing` section may route the implementer, task reviewer, and final reviewer; the session agent remains the orchestrator and is never plan-routed. Resolve each role with agent-routing; precedence is plan route, then project route, then bundled default. Resolve the monitor and, for a boundary that runs ux-gate, an `errand` gate operator from project routing or the bundled default. Fail closed when either reviewer lacks an independent route; agent-routing's outage override is the only exception.
 
 ## Role ownership
 
@@ -31,12 +31,15 @@ Task briefs and dispatch prompts must not reassign these roles.
 |---|---|
 | Implementation, tests, commits, task report | Implementer subagent (fresh per task) |
 | Task briefs, review packages, dispatch context, verdicts | Orchestrator (session agent) — dispatch and synthesis only; never implements or captures |
-| UX capture (scripted screenshots) | A gate operator (role `errand`) dispatched to run ux-gate — never the orchestrator or the implementer |
+| UI smoke per task (mechanical checks and stills of the touched pathway) | Implementer, inside its task, before reporting DONE |
+| UX capture at the boundary (full matrix, diff, filmstrips) | Gate operator (role `errand`) dispatched by the orchestrator |
 | UX judgment | Vision-capable reviewer routed with specialty `ux` |
 | Task reviews and the broad final review | Reviewer subagents |
 | PR publication | finishing-a-development-branch (step 5) |
 | Review, exact-head CI, fix loops, rebases, retargets, and merge for one published chain | pr-monitor |
 | Issue-tracker reconciliation and cleanup | This skill, after the monitor returns |
+
+The orchestrator never captures UX evidence; the implementer captures only its own task's smoke pass.
 
 ## 3. Prepare and execute
 

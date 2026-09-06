@@ -71,11 +71,39 @@
       "harness": "codex",
       "model": "gpt-5.6-sol",
       "effort": "high",
-      "instructions": "Never the author's harness. This is a preference order, not a caller mapping: the resolver drops any entry whose harness equals --author-harness case-insensitively and takes the first survivor. Sol leads because the implementer is opus-5, so most work is Claude-authored; Codex-authored work falls through to opus-5 high.",
+      "instructions": "Never the author's harness. This is a preference order, not a caller mapping: the resolver drops any entry whose harness equals --author-harness case-insensitively and takes the first survivor. Sol leads because the implementer is opus-5, so most work is Claude-authored; Codex-authored work falls through to fable-5-1 high.",
       "fallbacks": [
         {
           "harness": "claude",
-          "model": "opus-5",
+          "model": "fable-5-1",
+          "effort": "high"
+        }
+      ]
+    }
+  },
+  "reviewer_specialties": {
+    "ux": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "instructions": "Vision review of UX captures. Must be a vision-capable route.",
+      "fallbacks": [
+        {
+          "harness": "claude",
+          "model": "fable-5-1",
+          "effort": "high"
+        }
+      ]
+    },
+    "gate": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "instructions": "Batched gate review and the boundary's final review. The most capable route on each harness.",
+      "fallbacks": [
+        {
+          "harness": "claude",
+          "model": "fable-5-1",
           "effort": "high"
         }
       ]

@@ -63,6 +63,8 @@ assert_before "$skill" "Fetch the predecessor's remote head" "toolbelt:using-git
   "the source ref is chosen before the worktree is created"
 assert_contains "$skill" "toolbelt:subagent-driven-development" "SDD handoff"
 assert_contains "$skill" "ux-gate" "conditional UX gate"
+assert_contains "$skill" "UI smoke per task" "implementer owns its task's smoke pass"
+assert_contains "$skill" "UX capture at the boundary" "gate operator owns boundary capture"
 assert_contains "$skill" "broad final review is the slice gate" "SDD final review is the slice gate"
 assert_contains "$skill" "toolbelt:finishing-a-development-branch" "branch completion handoff"
 assert_contains "$skill" "pr-monitor" "PR monitor handoff"

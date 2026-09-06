@@ -41,6 +41,17 @@ Subagent (role: implementer):
     decision or information you lack: what you're stuck on, what you tried,
     what you need.
 
+    ## UI smoke
+
+    If your diff touches a file the app renders — a component, template,
+    style, route, or copy shown on screen — run the smoke pass before
+    reporting DONE: [UX_SMOKE_COMMAND] for the pathway your task changes.
+    Fix every finding it reports at `should` or above inside this task.
+    Report the run's `mechanical.json` path and the still paths under
+    **UI smoke** in your report; write `UI smoke: not applicable` when your
+    diff renders nothing. A finding you cannot fix inside this task's Files
+    block means you report DONE_WITH_CONCERNS naming it.
+
     ## After Review Findings
 
     Fix the findings, re-run the tests covering the amended code, and
@@ -67,3 +78,10 @@ Subagent (role: implementer):
     - Your concerns, if any
     - The report file path
 ```
+
+**Placeholders:**
+- `[UX_SMOKE_COMMAND]` — the ux-capture invocation built from
+  `.toolbelt/ux-policy.md` Launch and Theme
+  (`<ux-gate skill dir>/scripts/ux-capture <matrix> --smoke --pathway <name>
+  --out .toolbelt/ux/smoke/task-N --project-root <repo root>`), or
+  `not applicable` for a plan with no user-visible surface.
