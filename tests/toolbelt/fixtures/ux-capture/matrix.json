@@ -11,7 +11,7 @@
   "pathways": [
     {"name": "home", "path": "/index.html",
      "steps": [
-       {"name": "open", "crops": [".card"]},
+       {"name": "open", "crops": [".card"], "fullPage": true},
        {"name": "panel", "action": "click", "selector": "#open", "motion": true, "waitFor": "#panel:not([hidden])"},
        {"name": "route", "action": "click", "selector": "#route", "waitFor": "#shifty.on"},
        {"name": "away", "action": "click", "selector": "#leave", "waitFor": "#go"}

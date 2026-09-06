@@ -28,6 +28,10 @@
   <div id="panel" hidden>Panel content</div>
   <button id="route">Route</button>
   <a href="/clean.html" id="leave">Leave</a>
+  <!-- Pushes .below past the fold at every viewport, so a full-page still holds
+       a diff box the viewport crop could not reach. -->
+  <div class="filler" style="height:1000px"></div>
+  <div class="below" style="width:200px;height:200px"></div>
 <script>
   setTimeout(function () {
     document.getElementById('banner').style.height = '120px';

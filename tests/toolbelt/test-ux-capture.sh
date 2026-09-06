@@ -207,6 +207,30 @@ deferred=$(node -e '
 [ "$deferred" = "ok" ] || fail "smoke entry does not defer Task 13 fields" "$deferred"
 echo "ok - smoke defers diff, filmstrip, diffCrop and axe"
 
+# --- a stubbed @axe-core/playwright in the project root ---------------------
+# The tsc shape the real package ships: a CJS exports object carrying AxeBuilder,
+# with exports.default aliasing it. It must not be mistaken for the constructor.
+stub="$tmp/empty/node_modules/@axe-core/playwright"
+mkdir -p "$stub"
+cat > "$stub/package.json" <<'JSON'
+{"name": "@axe-core/playwright", "version": "0.0.0-stub", "main": "index.js"}
+JSON
+cat > "$stub/index.js" <<'JS'
+exports.AxeBuilder = class {
+  constructor() {}
+  include() { return this; }
+  async analyze() {
+    return { violations: [{
+      id: 'color-contrast',
+      impact: 'serious',
+      help: 'Elements must have sufficient color contrast',
+      nodes: [{ target: ['#covered'] }],
+    }] };
+  }
+};
+exports.default = exports.AxeBuilder;
+JS
+
 # --- full run: the baseline for every diff assertion ------------------------
 # The fixture is defective by design, so the run exits 1; these assertions read
 # the files and the JSON, never the exit code.
@@ -240,17 +264,50 @@ for name in reference-1-375-light reference-1-375-dark; do
 done
 echo "ok - reference_screens_on_full_run"
 
-# --- axe_unavailable_recorded ----------------------------------------------
+# --- axe_violations_recorded -----------------------------------------------
 axe_full=$(each "$tmp/full/mechanical.json" '
-  const bad = entries.filter((e) => e.axe !== "unavailable" && !Array.isArray(e.axe))
-    .map((e) => e.tag + " axe=" + JSON.stringify(e.axe));
-  console.log(bad.length ? bad.join("; ") : "none");')
-[ "$axe_full" = "none" ] || fail "full run recorded neither an axe array nor unavailable" "$axe_full"
+  const bad = [];
+  for (const e of entries) {
+    if (!Array.isArray(e.axe)) { bad.push(e.tag + " axe=" + JSON.stringify(e.axe)); continue; }
+    const v = e.axe.find((v) => v.id === "color-contrast");
+    if (!v || v.impact !== "serious") { bad.push(e.tag + " violations=" + JSON.stringify(e.axe)); continue; }
+    const c = (e.checks || []).find((c) => c.check === "axe:color-contrast");
+    if (!c) { bad.push(e.tag + " has no axe:color-contrast check"); continue; }
+    if (c.severity !== "should" || c.selector !== "#covered" || c.nodes !== 1 ||
+        c.impact !== "serious" || !c.text) {
+      bad.push(e.tag + " check=" + JSON.stringify(c));
+    }
+  }
+  console.log(bad.length ? bad.slice(0, 3).join("; ") : "none");')
+[ "$axe_full" = "none" ] || fail "the full run did not record the stubbed axe violation" "$axe_full"
 axe_smoke=$(each "$mech" '
   const bad = entries.filter((e) => e.axe !== "skipped").map((e) => e.tag + " axe=" + JSON.stringify(e.axe));
   console.log(bad.length ? bad.join("; ") : "none");')
 [ "$axe_smoke" = "none" ] || fail "smoke run did not skip axe" "$axe_smoke"
-echo "ok - axe_unavailable_recorded"
+echo "ok - axe_violations_recorded"
+
+# --- axe_unavailable_without_the_module -------------------------------------
+# A second project root, with no @axe-core/playwright to resolve.
+mkdir -p "$tmp/noaxe"
+echo '{}' > "$tmp/noaxe/package.json"
+node -e '
+  const fs = require("fs");
+  const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  m.themes = ["light"];
+  m.viewports = m.viewports.slice(0, 1);
+  fs.writeFileSync(process.argv[2], JSON.stringify(m, null, 2));
+' "$tmp/matrix-clean.json" "$tmp/matrix-one.json"
+set +e
+noaxe_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix-one.json" \
+  --pathway clean --out "$tmp/noaxe-out" --project-root "$tmp/noaxe" 2>&1)
+set -e
+[ -f "$tmp/noaxe-out/mechanical.json" ] || fail "the no-axe run wrote no mechanical.json" "$noaxe_out"
+unavailable=$(each "$tmp/noaxe-out/mechanical.json" '
+  const bad = entries.filter((e) => e.axe !== "unavailable")
+    .map((e) => e.tag + " axe=" + JSON.stringify(e.axe));
+  console.log(bad.length ? bad.join("; ") : "none");')
+[ "$unavailable" = "none" ] || fail "an unresolvable axe module was not recorded as unavailable" "$unavailable"
+echo "ok - axe_unavailable_without_the_module"
 
 # --- baseline_unchanged ----------------------------------------------------
 set +e
@@ -274,8 +331,8 @@ node -e '
   const fs = require("fs");
   const p = process.argv[1];
   const html = fs.readFileSync(p, "utf8")
-    .replace("#panel { border", ".card { background: #c00; }\n  #panel { border");
-  if (!html.includes(".card { background: #c00; }")) throw new Error("fixture perturbation failed");
+    .replace("#panel { border", ".below { background: #c00; }\n  #panel { border");
+  if (!html.includes(".below { background: #c00; }")) throw new Error("fixture perturbation failed");
   fs.writeFileSync(p, html);
 ' "$site/index.html"
 set +e
@@ -296,6 +353,20 @@ changed=$(each "$tmp/changed/mechanical.json" '
 [ -f "$tmp/changed/home-open-default-375-light-diff-crop.png" ] ||
   fail "no diff crop for the changed capture" "$(ls "$tmp/changed")"
 echo "ok - baseline_changed"
+
+# --- diff_crop_of_a_full_page_still ----------------------------------------
+# .below sits past the fold: the box is outside the viewport, so the crop only
+# exists if the screenshot is taken with fullPage.
+below_fold=$(each "$tmp/changed/mechanical.json" '
+  const e = entries.find((e) => e.tag === "home-open-default-375-light");
+  const box = e && e.diff && e.diff.box;
+  if (!box) { console.log("no box"); }
+  else if (!(box[1] + box[3] > 812 * 2)) { console.log("box within the viewport: " + JSON.stringify(box)); }
+  else { console.log("ok"); }')
+[ "$below_fold" = "ok" ] || fail "the below-the-fold change did not land outside the viewport" "$below_fold"
+crop_bytes=$(wc -c < "$tmp/changed/home-open-default-375-light-diff-crop.png" | tr -d ' ')
+[ "$crop_bytes" -gt 0 ] || fail "the full-page diff crop is empty"
+echo "ok - diff_crop_of_a_full_page_still"
 
 # --- video_flag_writes_webm ------------------------------------------------
 set +e

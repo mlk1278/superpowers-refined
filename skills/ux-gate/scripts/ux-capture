@@ -607,33 +607,65 @@ function makeEntry(o) {
 }
 
 // @axe-core/playwright resolves from the project root or not at all.
+function axeBuilderOf(mod) {
+  const found = mod && (mod.AxeBuilder || (mod.default && mod.default.AxeBuilder) || mod.default);
+  return typeof found === 'function' ? found : null;
+}
+
 async function loadAxe(projectRoot) {
+  let require_;
   let entry;
   try {
-    entry = createRequire(join(projectRoot, 'package.json')).resolve('@axe-core/playwright');
+    require_ = createRequire(join(projectRoot, 'package.json'));
+    entry = require_.resolve('@axe-core/playwright');
   } catch {
     return null;
   }
+  // The package resolves to its CJS build, whose exports object is not itself the
+  // constructor under Node's interop; require() it and read AxeBuilder off it.
   try {
-    const mod = await import(pathToFileURL(entry).href);
-    return mod.default || mod.AxeBuilder || null;
+    const builder = axeBuilderOf(require_('@axe-core/playwright'));
+    if (builder) return builder;
+  } catch {
+    /* an ESM-only build cannot be require()d */
+  }
+  try {
+    return axeBuilderOf(await import(pathToFileURL(entry).href));
   } catch {
     return null;
   }
 }
 
-async function runAxe(AxeBuilder, page) {
+// 'unavailable' is reserved for a module that does not resolve; a failing scan
+// is 'error', with the reason on stderr.
+async function runAxe(AxeBuilder, page, tag) {
   if (!AxeBuilder) return 'unavailable';
   try {
     const results = await new AxeBuilder({ page }).analyze();
-    return (results.violations || []).map((violation) => ({
-      id: violation.id,
-      impact: violation.impact,
-      nodes: (violation.nodes || []).map((node) => (node.target || []).join(' ')),
-    }));
-  } catch {
-    return 'unavailable';
+    return results.violations || [];
+  } catch (err) {
+    console.error(`ux-capture: axe scan for ${tag} failed: ${err.message}`);
+    return 'error';
   }
+}
+
+// One checks[] entry per violation; the raw array stays in the entry's axe field.
+function axeChecks(violations) {
+  if (!Array.isArray(violations)) return [];
+  return violations.map((violation) => {
+    const nodes = violation.nodes || [];
+    const target = (nodes[0] && nodes[0].target) || [];
+    const first = Array.isArray(target[0]) ? target[0][0] : target[0];
+    return {
+      check: `axe:${violation.id}`,
+      severity:
+        violation.impact === 'critical' || violation.impact === 'serious' ? 'should' : 'nit',
+      selector: first === undefined ? null : first,
+      text: violation.help || null,
+      impact: violation.impact || null,
+      nodes: nodes.length,
+    };
+  });
 }
 
 async function settle(page) {
@@ -864,7 +896,7 @@ async function main() {
   };
 
   // box is in head-still pixels; the clip and its padding are in CSS px.
-  const writeDiffCrop = async (page, tag, box, viewport, dpr) => {
+  const writeDiffCrop = async (page, tag, box, viewport, dpr, fullPage) => {
     const file = `${tag}-diff-crop.png`;
     let x = box[0] / dpr - DIFF_CROP_PADDING;
     let y = box[1] / dpr - DIFF_CROP_PADDING;
@@ -879,13 +911,15 @@ async function main() {
       y = 0;
     }
     width = Math.min(width, viewport.width - x);
-    height = Math.min(height, viewport.height - y);
+    // A full-page still can hold a box below the fold, so only a viewport still clamps.
+    if (!fullPage) height = Math.min(height, viewport.height - y);
     if (width <= 0 || height <= 0) return null;
     try {
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({
         path: join(outDir, file),
         clip: { x, y, width, height },
+        fullPage,
         animations: 'disabled',
         caret: 'hide',
       });
@@ -897,11 +931,14 @@ async function main() {
   };
 
   // Diff, then the crop: the crop scrolls the page, so checks must be done.
-  const diffAndCrop = async (page, stillFile, tag, viewport, dpr) => {
+  const diffAndCrop = async (page, stillFile, tag, viewport, dpr, fullPage) => {
     if (!baselineDir || !stillFile) return { diff: null, diffCrop: null };
     const diff = await diffCapture(stillFile, tag);
     if (!diff || diff.status !== 'changed' || !diff.box) return { diff, diffCrop: null };
-    return { diff, diffCrop: await writeDiffCrop(page, tag, diff.box, viewport, dpr) };
+    return {
+      diff,
+      diffCrop: await writeDiffCrop(page, tag, diff.box, viewport, dpr, fullPage === true),
+    };
   };
 
   for (const viewport of viewports) {
@@ -971,7 +1008,7 @@ async function main() {
             if (!error) error = `mechanical checks failed: ${err.message}`;
           }
 
-          const axe = opts.smoke ? 'skipped' : await runAxe(AxeBuilder, page);
+          const axe = opts.smoke ? 'skipped' : await runAxe(AxeBuilder, page, tag);
 
           let filmstrip = null;
           if (motion && frames.length && !error) {
@@ -986,7 +1023,7 @@ async function main() {
             filmstrip = await writeFilmstrip(frames, labels, tag);
           }
 
-          const checks = result.checks.slice();
+          const checks = result.checks.slice().concat(axeChecks(axe));
           // A fresh document restarted window.__uxCls, so the step's delta is the
           // whole new sum; a same-document navigation keeps the running one.
           if (result.docId !== lastDocId) {
@@ -1016,7 +1053,7 @@ async function main() {
           if (error) checks.push(documentCheck('step-failed', 'blocker', error));
 
           const dpr = viewport.dpr || 1;
-          const diffed = await diffAndCrop(page, stillWritten, tag, viewport, dpr);
+          const diffed = await diffAndCrop(page, stillWritten, tag, viewport, dpr, step.fullPage);
 
           entries.push(
             makeEntry({
@@ -1093,8 +1130,8 @@ async function main() {
         } catch (err) {
           error = err.message;
         }
-        const axe = await runAxe(AxeBuilder, page);
-        const checks = result.checks.slice();
+        const axe = await runAxe(AxeBuilder, page, tag);
+        const checks = result.checks.slice().concat(axeChecks(axe));
         for (const message of listeners.consoleErrors) {
           checks.push(documentCheck('console-error', 'should', message));
         }
@@ -1102,7 +1139,7 @@ async function main() {
           checks.push(documentCheck('failed-request', 'should', message));
         }
         if (error) checks.push(documentCheck('step-failed', 'blocker', error));
-        const diffed = await diffAndCrop(page, stillWritten, tag, viewport, dpr);
+        const diffed = await diffAndCrop(page, stillWritten, tag, viewport, dpr, false);
         entries.push(
           makeEntry({
             tag,
