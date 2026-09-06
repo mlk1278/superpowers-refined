@@ -24,14 +24,14 @@ Create a todo per item and complete them in order.
 
 - **Ask about the problem, not the solution.** A named solution hides a problem; find it.
 - **Chase the assumption you are most likely to get wrong.** Who uses this, what failure looks like, what is out of scope.
-- **State inferences instead of asking about them.** "I'm assuming X — correct me."
+- **State inferences instead of asking.** "I'm assuming X — correct me."
 - **Stop when questions stop changing the design.**
 
 ## Presenting the Design
 
-- Scale each section to its complexity, covering architecture, components, data flow, error handling, and testing.
-- Ask after each section whether it looks right.
-- Break the system into units with one purpose and defined interfaces: what each does, what it depends on.
+- Scale each section to its complexity: architecture, components, data flow, error handling, testing.
+- Ask whether each section looks right.
+- Break the system into units with one purpose and defined interfaces: what each does, what it depends on. A consumer that must read the internals means the boundary is wrong.
 - Follow existing patterns; fix existing problems only where they affect this work.
 
 ## After the Design
@@ -40,7 +40,7 @@ Once every section is approved, invoke writing-specs — or toolbelt:interactive
 
 ## Frontend-First Offer
 
-Offer this path when the feature has a real user-facing surface, its frontend and the API it consumes live in this repository, and the intent-level design is approved. Backend-only features never get it.
+Offer this path when the feature has a user-facing surface, its frontend and API live in this repository, and the intent-level design is approved. Backend-only features never get it.
 
 The offer is its own message — only the offer — and wait for the response.
 
@@ -68,7 +68,7 @@ When `design-fidelity-prep` is available, the offer names both paths:
 
 ## Visual Companion
 
-A browser tab for mockups and diagrams. Do not offer it upfront: wait until a question would be clearer shown than told.
+A browser tab for mockups and diagrams. Do not offer upfront: wait until a question would be clearer shown than told.
 
 > "This next part might be easier if I show you — I can put together mockups, diagrams, and comparisons in a browser tab as we go. It's still new and can be token-intensive. Want me to? I'll open it for you."
 
