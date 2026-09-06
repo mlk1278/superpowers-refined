@@ -11,6 +11,7 @@ and read only when present.
 | `.toolbelt/agents.json` | Agent routes — harness, model, effort, and instructions per role. Schema in `skills/agent-routing/SKILL.md`; bundled defaults in `skills/agent-routing/defaults.json`. |
 | `.toolbelt/pr-policy.md` | Which review providers to await, complexity lanes, timeouts. |
 | `.toolbelt/worktree-policy.md` | Port ranges and how to claim a non-conflicting set, sidecar containers and their naming, per-worktree data directories, teardown at finish. Read by `using-git-worktrees` before it creates anything. |
+| `.toolbelt/ux-policy.md` | How `ux-gate` and per-task smoke passes capture this app. Sections, each optional: **Launch** — the command that serves the app and the URL. **Auth** — how to obtain `storageState`, or the login steps. **Theme** — the `theme` object for the capture matrix. **Data** — seed or fixture commands and the actors to use. **Viewports and themes** — the supported set, overriding the defaults. **Allowed exceptions** — the `allowOverflow`, `allowOverlap`, and `allowLight` selectors. **Design reference** — the design-system doc, the catalog route, and any token or palette check command. **Reference screens** — two routes. **Harness notes** — capture gotchas learned in this project. Absent, the gate infers Launch, Auth, and Theme and records each inference. |
 | `docs/REVIEW-GUIDANCE.md` | Review conventions for this codebase, handed to reviewer subagents. |
 | `AGENTS.md` | Entry-point summary. Copy from [AGENTS-SNIPPET.md](AGENTS-SNIPPET.md). |
 
