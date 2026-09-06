@@ -13,7 +13,7 @@ Write the plan for a capable engineer with **zero context for our codebase**: th
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Save plans to:** `docs/toolbelt/plans/YYYY-MM-DD-<feature-name>.md`, or your partner's location when they name one.
+**Save plans to:** `docs/toolbelt/plans/YYYY-MM-DD-<feature-name>.md`, or your human partner's location when they name one.
 
 ## Scope Check
 
