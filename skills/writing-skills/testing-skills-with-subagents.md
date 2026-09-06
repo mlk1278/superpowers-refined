@@ -382,3 +382,71 @@ From applying TDD to TDD skill itself (2025-10-03):
 - Each REFACTOR closed specific loopholes
 - Final VERIFY GREEN: 100% compliance under maximum pressure
 - Same process works for any discipline-enforcing skill
+
+## RED-GREEN-REFACTOR
+
+**RED — baseline.** Run the pressure scenario with a subagent WITHOUT the skill. Document what they chose, which pressures triggered the violation, and the rationalizations **verbatim**. You cannot write the skill until you have seen this.
+
+**GREEN — minimal skill.** Address those specific rationalizations. No content for hypothetical cases. Re-run the same scenarios; the agent should comply.
+
+**REFACTOR — close loopholes.** New rationalization? Add its counter. Re-test until bulletproof.
+
+Test each skill through the full cycle before starting the next one. Batching is not more efficient; it just defers finding out that the first one doesn't work.
+
+## Micro-Testing Wording
+
+Pressure scenarios are the final gate but are slow per iteration. Verify the wording itself first:
+
+1. **One fresh-context sample per call** — a raw API call, or a single-shot subagent if you don't have API access. System prompt = the realistic context the guidance will live in (the full skill or prompt template, not the guidance in isolation); user message = a task that tempts the failure.
+2. **Always include a no-guidance control.** If the control doesn't exhibit the failure, there is nothing to fix — stop, don't author the guidance.
+3. **5+ reps per variant.** Single samples lie.
+4. **Manually read every flagged match.** Score programmatically if you like, but template echoes and quoted counter-examples masquerade as hits; automated counts alone overstate both failure and success.
+5. **Variance is a metric.** When guidance lands, reps converge on the same shape. Five different interpretations across five reps means the wording isn't binding — tighten the form before adding words.
+
+Micro-tests verify wording; they do not replace pressure scenarios for discipline skills.
+
+## Testing by Skill Type
+
+| Type | Test with | Success criteria |
+|---|---|---|
+| **Discipline** (TDD, verification-before-completion) | Academic questions, then pressure scenarios — 3+ pressures combined | Follows the rule under maximum pressure |
+| **Technique** (condition-based-waiting, root-cause-tracing) | Application scenarios, variations, missing-information tests | Applies the technique to a new scenario |
+| **Pattern** (reducing-complexity, information-hiding) | Recognition scenarios, application, counter-examples | Identifies when *and when not* to apply it |
+| **Reference** (APIs, command guides) | Retrieval scenarios, application, gap testing | Finds and correctly applies the information |
+
+## Common Rationalizations for Skipping Testing
+
+| Excuse | Reality |
+|--------|---------|
+| "Skill is obviously clear" | Clear to you ≠ clear to other agents. Test it. |
+| "It's just a reference" | References can have gaps, unclear sections. Test retrieval. |
+| "Testing is overkill" | 15 min testing saves hours of debugging. |
+| "I'll test if problems emerge" | Problems = agents can't use skill. Test BEFORE deploying. |
+| "Too tedious to test" | Testing is less tedious than debugging bad skill in production. |
+| "I'm confident it's good" | Confidence is not evidence. Test anyway. |
+| "Academic review is enough" | Reading ≠ using. Test application scenarios. |
+| "No time to test" | Deploying untested skill wastes more time fixing it later. |
+
+## Checklist
+
+**RED:**
+- [ ] Pressure scenarios written (3+ combined pressures for discipline skills)
+- [ ] Run WITHOUT the skill — baseline behavior documented verbatim
+- [ ] Patterns in the rationalizations identified
+
+**GREEN:**
+- [ ] Frontmatter valid: `name` (letters/numbers/hyphens), `description` starting "Use when...", third person, no workflow summary, under 1024 chars total
+- [ ] Searchable keywords throughout — errors, symptoms, tools
+- [ ] Addresses the specific baseline failures, nothing hypothetical
+- [ ] Guidance form matches the failure type
+- [ ] Behavior-shaping wording micro-tested against a no-guidance control (5+ reps, every flagged match read manually) — N/A for pure reference skills
+- [ ] One excellent example; heavy reference and tools in separate files
+- [ ] Run WITH the skill — agents now comply
+
+**REFACTOR:**
+- [ ] New rationalizations from testing identified and countered
+- [ ] Rationalization table and red flags list built from all iterations
+- [ ] Re-tested until bulletproof
+
+**Ship:**
+- [ ] Committed and pushed
