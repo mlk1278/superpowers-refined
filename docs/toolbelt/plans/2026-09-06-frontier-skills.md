@@ -102,27 +102,27 @@ An array, one entry per capture:
 | Check | Severity | Rule |
 |---|---|---|
 | `page-overflow` | blocker | `documentElement.scrollWidth > documentElement.clientWidth + 1` |
-| `element-overflow` | should | a visible leaf element's `right` or `bottom` exceeds, by more than 1px, the rect of its nearest ancestor whose computed `overflow-x` or `overflow-y` is `hidden` or `clip`, or the viewport (`clientWidth`/`clientHeight`) when no such ancestor exists; skipped when the element or an ancestor matches an `allowOverflow` selector |
+| `element-overflow` | should | a visible leaf element's `right` or `bottom` exceeds, by more than 1px, the rect of its nearest ancestor whose computed `overflow-x` (for `right`) or `overflow-y` (for `bottom`) is `hidden` or `clip`; when no such ancestor exists, only `right` is compared, against the viewport's `clientWidth` (never `bottom` against `clientHeight`, since normal pages scroll); skipped when the element or an ancestor matches an `allowOverflow` selector |
 | `clipped-text` | should | a leaf with non-empty `textContent`, `scrollWidth > clientWidth + 1`, computed `overflow-x` not `visible`, and `text-overflow` not `ellipsis` |
-| `overlap` | should | two visible leaves, neither an ancestor of the other, neither `position: absolute` or `fixed`, whose rects intersect by more than 4px on both axes, unless either matches an `allowOverlap` selector |
+| `overlap` | should | two visible leaves, neither an ancestor of the other, neither `position: absolute` or `fixed`, neither with computed `display` `inline` (wrapped inline boxes have misleading union rects), whose `getBoundingClientRect()` rects intersect by more than 4px on both axes, unless either matches an `allowOverlap` selector |
 | `unclickable` | blocker | for each visible `button, a[href], [role=button], input, select, textarea` whose centre `(cx, cy)` lies inside the viewport, `document.elementFromPoint(cx, cy)` is neither the control, nor inside it, nor an ancestor of it; controls outside the viewport are not checked |
-| `tap-target` | nit | `viewport.width < 500` and an interactive control's rect is under 44×44 CSS px |
+| `tap-target` | nit | `viewport.width < 500` and a control from the `unclickable` selector list has a rect under 44×44 CSS px |
 | `layout-shift` | should | the per-step delta of the running sum of `layout-shift` entries with `hadRecentInput === false` (observer installed before navigation, sum read at each capture, `cls` = this step's delta) exceeds 0.1; `clsSources` lists each source node's selector |
 | `console-error` | should | a `console` message of type `error` during the step |
 | `failed-request` | should | a response with status ≥ 400 or a `requestfailed` event during the step |
 | `broken-image` | should | `img.complete && img.naturalWidth === 0` |
 | `font-fallback` | should | `document.fonts.status !== 'loaded'` after 3 s, or `document.fonts.check('16px "<family>"')` is false for a family in `matrix.fonts` |
-| `theme-leak` | should | theme is `dark`, a visible element's computed background has alpha ≥ 0.99 and relative luminance > 0.9, its rect area exceeds 2000 CSS px², and neither it nor an ancestor matches an `allowLight` selector |
+| `theme-leak` | should | theme is `dark`, a visible element's computed `background-color` (gradients and images ignored) has alpha ≥ 0.99 and relative luminance > 0.9, its rect area exceeds 2000 CSS px², and neither it nor an ancestor matches an `allowLight` selector |
 | `step-failed` | blocker | `waitFor` or the action timed out; entry carries `error` |
 | `axe` | as reported | `@axe-core/playwright` violations when the module resolves from the project root |
 
-"Visible" means `getBoundingClientRect()` has width and height > 0, computed `visibility` is not `hidden`, and `display` is not `none`. "Leaf" means no element children. `checks[].selector` is `TAG#id.class1.class2` (tag upper-case; `#id` and classes only when present, classes in DOM order) and every check entry also carries `text`: the element's `textContent` trimmed to 40 characters. `clsSources` uses the same selector format.
+"Visible" means `getBoundingClientRect()` has width and height > 0, computed `visibility` is not `hidden`, and `display` is not `none`. "Leaf" means no element children. `checks[].selector` is `TAG#id.class1.class2` (tag upper-case; `#id` and classes only when present, classes in DOM order) and every check entry also carries `text`: the element's `textContent` trimmed to 40 characters. Document-level checks (`page-overflow`, `font-fallback`, `step-failed`, `console-error`, `failed-request`) carry `selector: null` and `text: null`, plus `message` for `step-failed`, `console-error`, and `failed-request`. `clsSources` uses the same selector format. `console[]` entries are the message strings; `failedRequests[]` entries are `"<status> <url>"` or `"failed <url>"`; `fonts` is `document.fonts.status` (`loaded` | `loading` | `error`). `axe` is `"skipped"` under `--smoke`, `"unavailable"` when the module does not resolve, else the violations array. Reference-screen entries have `tag: reference-<n>-<width>-<theme>`, `state: "default"`. Paths: `storageState` resolves relative to `--project-root`; `--out` and `--baseline` resolve relative to the working directory.
 
 Theme application: `media` sets `colorScheme` on the context; `class`, `attribute`, and `localStorage` apply in a `context.addInitScript` that runs before any page script — for `class` and `attribute`, patch `document.documentElement` as soon as it exists (immediately when present, else from a `MutationObserver` on `document`), so the first paint is already themed.
 
 Actions: `click`, `hover`, `focus` call the Playwright locator method of that name; `scroll` calls `locator.scrollIntoViewIfNeeded()` then `element.scrollIntoView({block: 'start'})`. Each step performs its action once. Order per step: action → filmstrip frames (motion steps only, animations enabled, at 0, 150, 400 ms after the action returns) → `waitFor` (15 s) → two animation frames → still (`animations: 'disabled'`, `caret: 'hide'`) → crops → mechanical checks. A `motion` step's reduced-motion frame comes from a second context with `reducedMotion: 'reduce'` that repeats the navigation and every earlier step's action on that pathway, then this step's action, and captures one frame 400 ms after it.
 
-Crops: each `crops` selector and each `-diff-crop.png` is captured in a dedicated DPR-2 context (same viewport width and height, same theme, same navigation and step actions replayed) with `page.screenshot({clip})` after `scrollIntoView({block: 'start'})` on the element; never by upscaling the still.
+Crops: captured in a dedicated DPR-2 context (same viewport width and height, same theme, same navigation and step actions replayed), never by upscaling the still. A `crops` selector uses `locator.screenshot()` (Playwright scrolls it into view). A `-diff-crop.png` uses `page.screenshot({clip})` with the page scrolled to the top and `clip = {x: box[0]/dpr, y: box[1]/dpr, width: box[2]/dpr, height: box[3]/dpr}` where `dpr` is the head still's device scale factor and the 24px padding is applied in CSS px.
 
 Diff: `ratio` = changed pixels ÷ (max(widthA, widthB) × max(heightA, heightB)); `box` = `[x, y, w, h]` in image pixels of the head still; images of different dimensions are `changed` with `box` covering the head still.
 
@@ -209,7 +209,7 @@ Acceptance after the chain merges is the orchestrator's step, not a task: reinst
 |---|---|---|---|---|
 | serial-1 | 1 | — | CLAUDE.md, writing-for-agents, writing-skills (+ testing reference) | mainline: doctrine every rewrite follows |
 | discipline | 2–3 | serial-1 | using-toolbelt, hooks/session-start, docs/porting-to-a-new-harness.md, verification-before-completion, receiving-code-review, systematic-debugging, test-driven-development | disjoint from design, delivery-chain, orchestration; owns no test file |
-| design | 4–5 | serial-1 | brainstorming, writing-specs, interactive-design (+ iteration-mode.md), the spec, tests/toolbelt/test-interactive-design.sh | disjoint from the others; owns test-interactive-design.sh |
+| design | 4–5 | serial-1 | brainstorming, writing-specs, interactive-design (+ iteration-mode.md), tests/toolbelt/test-interactive-design.sh | disjoint from the others; owns test-interactive-design.sh |
 | delivery-chain | 6–7 | serial-1 | finishing-a-development-branch, dispatching-parallel-agents, using-git-worktrees, requesting-code-review (+ code-reviewer.md), tests/toolbelt/test-worktree-baseline.sh | disjoint from the others; keeps test-reviewer-context.sh and test-execution-tracks.sh needles verbatim |
 | orchestration | 8–10 | serial-1 | writing-plans (+ execution-tracks.md, − plan-document-reviewer-prompt.md), SDD (+ parallel-tracks.md, three prompts), delivery, pr-monitor, agent-routing, quick-task, tests/toolbelt/test-execution-tracks.sh | disjoint from the others; owns the one test file it edits |
 | serial-2 | 11 | discipline, design, delivery-chain, orchestration | test-word-counts.sh, test-doctrine.sh, README.md | integration: enforces ceilings over the merged rewrite |
@@ -393,7 +393,7 @@ git commit -m "Unslop: receiving-code-review, systematic-debugging, test-driven-
 **Files:**
 - Modify: `skills/brainstorming/SKILL.md`
 - Modify: `skills/writing-specs/SKILL.md`
-- Modify: `tests/toolbelt/test-interactive-design.sh:80-87`
+- Modify: `tests/toolbelt/test-interactive-design.sh:44,80-87`
 
 **Interfaces:**
 - Consumes: Task 1 doctrine
@@ -639,7 +639,7 @@ Expected: 2138 (over 1500); the assertion count.
 
 - [ ] **Step 3: Light pass on the three prompts**
 
-Within the rewrite rules, keep every placeholder, section heading, and needle string. `task-reviewer-prompt.md` at most 650 words: collapse the three "does not override requirements, suppress findings, or set severity" restatements to one (the `[REVIEW_NUANCE]` section keeps `does not override requirements,`); keep Calibration as is (Task 18 replaces it). `implementer-prompt.md` at most 340 words here (Tasks 15 and 18 add about 210; the ceiling is 550): keep every placeholder, the seen-red paragraph, the fix-report table, and the report contract, and tighten the rest. `re-review-prompt.md` at most 420 words.
+Within the rewrite rules, keep every placeholder, section heading, and needle string. `task-reviewer-prompt.md` at most 650 words: collapse the three "does not override requirements, suppress findings, or set severity" restatements to one (the `[REVIEW_NUANCE]` section keeps `does not override requirements,`); keep Calibration as is (Task 18 replaces it). `implementer-prompt.md` at most 320 words here (Tasks 15 and 18 add about 230; the ceiling is 550): keep every placeholder, the seen-red paragraph, the fix-report table, and the report contract, and tighten the rest. `re-review-prompt.md` at most 420 words.
 
 - [ ] **Step 4: Update tests**
 
@@ -647,7 +647,7 @@ In `test-execution-tracks.sh`, add `sdd_tracks="$repo_root/skills/subagent-drive
 
 - [ ] **Step 5: Verify**
 
-Run: `test "$(wc -w < skills/subagent-driven-development/SKILL.md)" -le 1500 && test "$(wc -w < skills/subagent-driven-development/task-reviewer-prompt.md)" -le 650 && test "$(wc -w < skills/subagent-driven-development/implementer-prompt.md)" -le 340 && for t in test-execution-tracks test-final-review-gate test-fix-loop test-reviewer-context; do bash tests/toolbelt/$t.sh || exit 1; done`
+Run: `test "$(wc -w < skills/subagent-driven-development/SKILL.md)" -le 1500 && test "$(wc -w < skills/subagent-driven-development/task-reviewer-prompt.md)" -le 650 && test "$(wc -w < skills/subagent-driven-development/implementer-prompt.md)" -le 320 && for t in test-execution-tracks test-final-review-gate test-fix-loop test-reviewer-context; do bash tests/toolbelt/$t.sh || exit 1; done`
 Expected: four `PASS` lines.
 
 - [ ] **Step 6: Commit**
@@ -822,7 +822,7 @@ Add assertions:
 - `baseline_unchanged` — run again with `--baseline $tmp/full --out $tmp/again` — every entry has `diff.status == "unchanged"` and no `-diff-crop.png` exists
 - `baseline_changed` — edit a copy of the fixture to change the card's background colour, serve it, run with `--baseline $tmp/full` — the `home-open-default-375-light` entry has `diff.status == "changed"`, `ratio > 0.001`, and `home-open-default-375-light-diff-crop.png` exists
 - `video_flag_writes_webm` — run with `--video --smoke` — `$out/video/` contains at least one `.webm`
-- `axe_unavailable_recorded` — in the fixture run, every entry's `axe` is `"unavailable"` or an array
+- `axe_unavailable_recorded` — in the full run (`$tmp/full`), every entry's `axe` is `"unavailable"` or an array; in Task 12's `--smoke` output every entry's `axe` is `"skipped"`
 
 - [ ] **Step 2: Run the test to verify the new assertions fail**
 
