@@ -63,13 +63,13 @@ Subagent (role: reviewer):
     ## Part 2: Code Quality
 
     - **Code:** name any smell in the baseline at [SMELLS_FILE] this diff
-      matches, quoting the hunk — each is a labelled judgment call, and a
-      documented repo standard overrides the baseline.
+      matches, quoting the hunk.
     - **Tests:** every guard, absence, or negative assertion must be **seen
       red** in the report — its TDD RED, or a recorded mutate-and-revert; a
       guard without that evidence is Important whatever the report claims.
-      When the diff deletes tests, name the surfaces that lose assertions
-      and where that coverage moved.
+      Do new and changed tests verify real behavior, not mocks? Are the
+      task's edge cases covered? When the diff deletes tests, name the
+      surfaces that lose assertions and where that coverage moved.
     - **Structure:** does it follow the plan's file structure? judge what
       this change added, not pre-existing file sizes.
 
@@ -119,7 +119,7 @@ Subagent (role: reviewer):
 - `[MODEL]` — reviewer model per SKILL.md Model Selection
 - `[BRIEF_FILE]` — the task brief, from `scripts/task-brief PLAN N`
 - `[GLOBAL_CONSTRAINTS]` — requirements copied verbatim from the plan or spec
-- `[REVIEW_NUANCE]` — task-specific context or risks; `None` when there is none
+- `[REVIEW_NUANCE]` — task-specific context or risks; `None` if none
 - `[REPORT_FILE]` — the implementer's report
 - `[BASE_SHA]` / `[HEAD_SHA]` — commit before this task / current commit
 - `[DIFF_FILE]` — the `scripts/review-package BASE HEAD` path; the package

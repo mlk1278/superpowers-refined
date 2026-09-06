@@ -9,11 +9,11 @@ A skill is a reference guide for a proven technique, pattern, or tool, not a sto
 
 **REQUIRED BACKGROUND:** `toolbelt:test-driven-development` defines the RED-GREEN-REFACTOR cycle this adapts; `toolbelt:writing-for-agents` holds the editorial rules every skill edit applies. Anthropic's authoring guidance: [anthropic-best-practices.md](anthropic-best-practices.md).
 
-**Scope.** New behaviour-shaping guidance — a new skill, rule, or gate — needs a baseline first: watch an agent fail without it, write against that failure, then close the loopholes it finds next. Editing what exists does not: condensing, restructuring, fixing a link, or rewording a rule whose behavior you are not changing needs only to be *correct*. Can't tell? Ask whether an agent would behave differently after the edit. Yes → baseline first.
+**Scope.** New behavior-shaping guidance — a new skill, rule, or gate — needs a baseline first: watch an agent fail without it, write against that failure, then close the loopholes it finds next. Editing what exists does not: condensing, restructuring, fixing a link, or rewording a rule whose behavior you are not changing needs only to be *correct*. Can't tell? Ask whether an agent would behave differently after the edit. Yes → baseline first.
 
 ## Testing
 
-Test a new or changed behaviour-shaping skill before shipping it. The method, pressure scenarios, micro-tests, and the checklist are in [testing-skills-with-subagents.md](testing-skills-with-subagents.md).
+Test a new or changed behavior-shaping skill before shipping it. The method, pressure scenarios, micro-tests, and the checklist are in [testing-skills-with-subagents.md](testing-skills-with-subagents.md).
 
 ## When to Create a Skill
 
@@ -39,7 +39,7 @@ Frontmatter is exactly `name` and `description`, max 1024 characters ([full spec
 
 **The highest-leverage line in any skill.** It answers one question for an agent choosing what to load: "should I read this now?"
 
-**Describe when to use it. Never summarize what it does.** A description that summarised the workflow caused one review instead of two: the agent followed it and never read the body.
+**Describe when to use it. Never summarize what it does.** A description that summarized the workflow caused one review instead of two: the agent followed it and never read the body.
 
 ```yaml
 # ❌ Summarizes workflow

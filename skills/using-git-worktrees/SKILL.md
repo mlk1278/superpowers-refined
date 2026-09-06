@@ -85,10 +85,7 @@ Apply the policy's setup rules first — allocated ports, sidecar containers, pe
 
 ## Step 3: Verify Clean Baseline
 
-Run the smallest focused checks that prove a clean start: the tests the work
-will rely on, not a workspace or package-wide baseline. When the base commit
-already has qualifying test evidence or authoritative green CI,
-cite that instead of re-running; docs-only work needs no baseline suite.
+Run the smallest focused checks that prove a clean start: the tests the work will rely on, not a workspace or package-wide baseline. When the base commit already has qualifying test evidence or authoritative green CI, cite that instead of re-running; docs-only work needs no baseline suite.
 
 **If tests fail:** report them and ask whether to proceed or investigate. Otherwise report ready.
 

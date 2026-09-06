@@ -7,7 +7,7 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 Subagents inherit none of your session's context. Construct exactly what each one needs.
 
-## When to parallelise
+## When to parallelize
 
 Dispatch one agent per independent problem domain when two or more tasks — failing test files with different root causes, subsystems broken independently — are each understandable without the others and share no state.
 

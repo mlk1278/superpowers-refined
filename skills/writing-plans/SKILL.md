@@ -96,7 +96,7 @@ Partition the plan into independently verifiable pull requests before writing ta
 |---|---|---|---|---|
 | 1 | [one reviewable outcome] | [exact task numbers] | [boundary numbers or none] | [command or observable result] |
 
-Every task number appears in exactly one boundary, verified without later boundaries. A one-PR plan states why no smaller independently verifiable outcome exists. A boundary's `Depends on` names at most one predecessor whose PR may still be open when the boundary starts; every other dependency merges first.
+Every task number appears in exactly one boundary; each boundary's verification passes without later boundaries. A one-PR plan states why no smaller independently verifiable outcome exists. A boundary's `Depends on` names at most one predecessor whose PR may still be open when the boundary starts; every other dependency merges first.
 
 For shared substrate, take the core plus one representative consumer first. Later consumers share a PR only when they repeat the same reviewer judgment. Novel lifecycle, export, or rollout work stays separate.
 

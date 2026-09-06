@@ -36,13 +36,13 @@ Create a todo per item and complete them in order.
 
 ## After the Design
 
-Once every section is approved, invoke writing-specs — or toolbelt:interactive-design after an accepted frontend-first offer, or design-fidelity-prep for its Claude Design variant — invoke it and no other.
+Once every section is approved, invoke writing-specs, or the skill an accepted frontend-first offer names below — invoke it and no other.
 
 ## Frontend-First Offer
 
-Offer this path when the feature has a user-facing surface, its frontend and API live in this repository, and the intent-level design is approved. Backend-only features never get it.
+Offer this path when the feature has a user-facing surface, its frontend and API live in this repository, and the intent-level design is approved.
 
-The offer is its own message — only the offer — and wait for the response.
+The offer is its own message — only the offer — and wait.
 
 > "This feature has a real user-facing surface — we could go frontend-first: I build the
 > actual frontend against fixture-backed API routes in one sitdown session, we iterate
@@ -72,4 +72,4 @@ A browser tab for mockups and diagrams. Do not offer upfront: wait until a quest
 
 > "This next part might be easier if I show you — I can put together mockups, diagrams, and comparisons in a browser tab as we go. It's still new and can be token-intensive. Want me to? I'll open it for you."
 
-This offer is its own message — only the offer — and wait. If accepted, read `skills/brainstorming/visual-companion.md` and start the server with `--open`.
+This offer is its own message — only the offer — and wait. If accepted, read `skills/brainstorming/visual-companion.md` and start the server with `--open`. If they decline, continue text-only and do not offer again unless they raise it.

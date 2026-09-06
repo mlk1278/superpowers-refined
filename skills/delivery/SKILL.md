@@ -7,6 +7,8 @@ description: Use when an approved implementation plan is ready to be implemented
 
 **Announce:** "I'm using delivery to deliver this approved plan."
 
+**Entry:** an approved implementation plan.
+
 **Exit:** every PR boundary merged, reconciled, and cleaned up.
 
 ## 1. Read and loop

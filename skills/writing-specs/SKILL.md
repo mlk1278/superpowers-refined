@@ -8,7 +8,7 @@ description: "Use after brainstorming reaches an approved design, or when your h
 **Announce at start:** "I'm using the writing-specs skill to write the spec."
 
 <ENTRY-GATE>
-You normally arrive from brainstorming with a design your human partner approved section by section. Arriving from interactive-design with a reconciled contract ledger is an equivalent entry. Direct entry is allowed when your human partner asks for a spec or supplies written requirements — deciding for yourself that a request is clear enough to skip brainstorming is their call.
+You normally arrive from brainstorming with a design your human partner approved section by section. Arriving from interactive-design with a reconciled contract ledger is an equivalent entry. Direct entry is allowed when your human partner asks for a spec or supplies written requirements; skipping brainstorming is their call, never yours.
 </ENTRY-GATE>
 
 ## Checklist
@@ -38,7 +38,7 @@ Cover architecture, components, data flow, error handling, and testing, scaling 
 - **Follow existing patterns**, fixing existing problems only where they affect this work.
 - **No placeholders** — no "TBD", "add error handling", or "similar to the above"; a deferred decision only relocates into the plan.
 
-Use the elements-of-style:writing-clearly-and-concisely skill if available. Save it to that path (project preferences override the default) and commit it to git.
+Use the elements-of-style:writing-clearly-and-concisely skill if available. Save it to the path in item 2, or your human partner's location when they name one, and commit it to git.
 
 ## Review Gates
 

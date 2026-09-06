@@ -12,6 +12,7 @@ ceilings=(
   "skills/verification-before-completion/SKILL.md:300"
   "skills/receiving-code-review/SKILL.md:300"
   "skills/writing-skills/SKILL.md:1000"
+  "skills/writing-skills/testing-skills-with-subagents.md:1800"
   "skills/writing-for-agents/SKILL.md:750"
   "skills/systematic-debugging/SKILL.md:600"
   "skills/test-driven-development/SKILL.md:600"
@@ -22,12 +23,15 @@ ceilings=(
   "skills/requesting-code-review/SKILL.md:350"
   "skills/requesting-code-review/code-reviewer.md:500"
   "skills/interactive-design/SKILL.md:1200"
+  "skills/interactive-design/iteration-mode.md:500"
   "skills/subagent-driven-development/SKILL.md:1900"
   "skills/subagent-driven-development/task-reviewer-prompt.md:650"
   "skills/subagent-driven-development/implementer-prompt.md:550"
   "skills/subagent-driven-development/re-review-prompt.md:420"
-  "skills/subagent-driven-development/gate-reviewer-prompt.md:700"
+  "skills/subagent-driven-development/gate-reviewer-prompt.md:700:optional"
+  "skills/subagent-driven-development/parallel-tracks.md:420"
   "skills/writing-plans/SKILL.md:1900"
+  "skills/writing-plans/execution-tracks.md:360"
   "skills/ux-gate/SKILL.md:950"
   "skills/writing-specs/SKILL.md:550"
   "skills/delivery/SKILL.md:900"
@@ -38,11 +42,23 @@ ceilings=(
 )
 
 for entry in "${ceilings[@]}"; do
+  optional=0
+  if [[ "$entry" == *:optional ]]; then
+    optional=1
+    entry=${entry%:optional}
+  fi
   path=${entry%:*}
   ceiling=${entry##*:}
   file="$repo_root/$path"
 
-  [ -f "$file" ] || continue
+  if [ ! -f "$file" ]; then
+    if [[ "$optional" -eq 1 ]]; then
+      echo "skip - $path (absent)"
+      continue
+    fi
+    echo "not ok - $path missing" >&2
+    exit 1
+  fi
 
   count=$(wc -w <"$file")
   echo "$count/$ceiling $path"

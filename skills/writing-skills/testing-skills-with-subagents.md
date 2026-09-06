@@ -135,29 +135,30 @@ An agent that violates the rule while holding the skill is a regression. Capture
 
 Then close each hole, cheapest form first.
 
-### 1. Explicit negation in the rule
+### 1. A one-sentence rule with its reason
 
 Before:
 
 ```markdown
-Write code before test? Delete it.
+Prefer writing the test first.
 ```
 
 After:
 
 ```markdown
-Write code before test? Delete it. Start over.
+Write code before test? Delete it. Untested code is unverified code.
+```
 
+### 2. Explicit negation, then a rationalization-table row
+
+Escalate only where the rule measurably failed under pressure — the agent read it and violated it anyway, in a re-test you ran. A prohibition or row added on suspicion costs words and buys nothing.
+
+```markdown
 **No exceptions:**
 - Don't keep it as "reference"
 - Don't "adapt" it while writing tests
-- Don't look at it
 - Delete means delete
 ```
-
-### 2. A rationalization-table row
-
-Add a row only where a brief instruction measurably failed under pressure — the agent read the explicit negation and violated the rule anyway, in a re-test you ran. A row added on suspicion costs words and buys nothing.
 
 ```markdown
 | Excuse | Reality |

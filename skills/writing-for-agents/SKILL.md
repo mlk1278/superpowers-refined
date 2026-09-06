@@ -49,11 +49,11 @@ Split a run of steps when later steps tempt the agent to rush the one in front o
 
 One word the model already knows beats a sentence explaining it. "A fast, deterministic, low-overhead loop" becomes "a tight loop". Invented words recruit nothing: you pay in definition tokens what a familiar word gives free.
 
-State the target behaviour rather than the prohibition. Banning something puts it in context and makes it more available. "Write one-line comments" works where "don't write long comments" does not. Use a prohibition only as a guardrail you cannot phrase positively, and pair it with the positive target.
+State the target behavior rather than the prohibition. Banning something puts it in context and makes it more available. "Write one-line comments" works where "don't write long comments" does not. Use a prohibition only as a guardrail you cannot phrase positively, and pair it with the positive target.
 
 ## Pruning
 
-- Keep each rule in one place, so changing behaviour is a one-place edit. The same rule in two places costs tokens and drifts.
+- Keep each rule in one place, so changing behavior is a one-place edit. The same rule in two places costs tokens and drifts.
 - The environment is a source of truth: `package.json` scripts, config files, `--help` output. Restate it only when the lookup is expensive or the answer is unwritten — the convention, the reason, the gotcha no config confesses.
 - Delete lines that no longer bear on what the document does.
 - Delete instructions the model already follows by default. Whether a line is a no-op is settled by running the document with and without it, not by argument. Delete the whole sentence rather than trimming its words.

@@ -7,17 +7,17 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 **Iron Law: no production code without a failing test first.**
 
-This covers new features, bug fixes, refactoring, and behaviour changes. Throwaway prototypes, generated code, and configuration files are the exceptions, and you ask your human partner before taking one.
+This covers new features, bug fixes, refactoring, and behavior changes. Throwaway prototypes, generated code, and configuration files are the exceptions, and you ask your human partner before taking one.
 
 If you wrote the code first, delete it and start over from the test — delete means delete, not kept open as reference and not adapted while you write the test, because either way the test ends up describing what you built instead of what was required.
 
 ## Red, green, refactor
 
-**Red.** Write one minimal test for one behaviour, named for that behaviour, exercising real code — mock only what you cannot otherwise run. Then run it and watch it fail. Confirm it fails rather than errors, that the message is the one you expected, and that it fails because the behaviour is missing and not because of a typo or a bad import. A test that passes on the first run is testing something that already exists; fix the test. A test that errors is broken; fix it and re-run until it fails for the right reason.
+**Red.** Write one minimal test for one behavior, named for that behavior, exercising real code — mock only what you cannot otherwise run. Then run it and watch it fail. Confirm it fails rather than errors, that the message is the one you expected, and that it fails because the behavior is missing and not because of a typo or a bad import. A test that passes on the first run is testing something that already exists; fix the test. A test that errors is broken; fix it and re-run until it fails for the right reason.
 
 **Green.** Write the simplest code that passes — no extra options, no unrelated refactoring, no improvements beyond what the test demands. Run it and confirm the test passes, the other tests still pass, and the output is clean of new errors and warnings. If the test still fails, fix the code, not the test.
 
-**Refactor.** Once green, remove duplication, improve names, and extract helpers, changing no behaviour and keeping the tests green. Then write the next failing test.
+**Refactor.** Once green, remove duplication, improve names, and extract helpers, changing no behavior and keeping the tests green. Then write the next failing test.
 
 A bug is the same cycle: the failing test reproduces the bug, so it proves the fix and stops the regression from coming back.
 

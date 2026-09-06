@@ -1,8 +1,7 @@
 # Parallel Tracks
 
 Read this when the plan declares a top-level `## Execution Tracks` section. It
-governs how tracks fork, run, and merge; inside a track, the process in
-[SKILL.md](SKILL.md) is unchanged.
+governs how tracks fork, run, and merge.
 
 **Wave execution.** Walk the track DAG:
 

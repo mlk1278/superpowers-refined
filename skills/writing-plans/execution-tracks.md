@@ -1,6 +1,6 @@
 # Execution Tracks
 
-Read this before declaring tracks in a plan. The section follows `## PR Boundaries` in the plan document.
+Read this before declaring tracks in a plan. Tracks are chains of tasks run concurrently, each in its own sub-worktree, merged at a declared integration point.
 
 ```markdown
 ## Execution Tracks

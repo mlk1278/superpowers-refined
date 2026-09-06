@@ -61,7 +61,7 @@ Run the smallest command that proves what the diff touched.
 - **Iterating:** focused tests for the code being changed.
 - **Task gate:** the affected package suite(s) once — packages the diff touches, plus direct consumers of a changed shared contract. High-risk changes (auth, tenancy, migrations, shared schemas, cross-package behavior) add targeted cross-package checks, never a workspace run.
 - **Fix rounds:** covering tests only.
-- **Workspace-wide suite:** once, at the final gate. Its evidence, its reuse, and the **Docs-only case:** belong to toolbelt:finishing-a-development-branch Step 1. Task gates never run it, and nobody reruns it because a PR opened.
+- **Workspace-wide suite:** once, at the final gate. Its evidence, its reuse, and the docs-only rule belong to toolbelt:finishing-a-development-branch Step 1. Task gates never run it, and nobody reruns it because a PR opened.
 
 Reviewers and orchestrators read the implementer's test evidence on unchanged source instead of re-running it. Implementers and fixers always produce their own fresh evidence.
 
@@ -116,7 +116,7 @@ Active only when the plan declares a top-level `## Execution Tracks` section; ot
 
 **Never:**
 
-- Start implementation on main/master without explicit consent
+- Start implementation on main/master without your human partner's explicit consent
 - Dispatch multiple implementation subagents into the same worktree —
   concurrent implementers are only ever one-per-track-worktree, declared by
   the plan's Execution Tracks section
@@ -126,6 +126,3 @@ Active only when the plan declares a top-level `## Execution Tracks` section; ot
 - Fix findings yourself instead of dispatching a fixer — controller fixes pollute context and skip review
 - Re-dispatch a task the ledger already marks complete — check the ledger and `git log` after compaction or resume
 
-## Integration
-
-toolbelt:using-git-worktrees (isolated workspace first), toolbelt:writing-plans (creates the plan), toolbelt:requesting-code-review (final review template), toolbelt:finishing-a-development-branch (completes the branch), toolbelt:test-driven-development (subagents follow TDD).

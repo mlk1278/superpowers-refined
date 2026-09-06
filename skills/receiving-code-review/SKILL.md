@@ -11,7 +11,7 @@ An unclear item blocks the whole batch: items are often related, and partial und
 
 **From your human partner:** trusted. Implement once you understand it; ask if the scope is unclear.
 
-**From an external reviewer:** before implementing, check whether the suggestion is correct for this codebase, whether it breaks existing behaviour, why the current code is the way it is, and whether it holds on every platform and version this project supports. Wrong on any of those, push back with the technical reasoning and the test or code that shows it. Unable to verify, say what you need: "I can't verify this without X. Should I investigate, ask, or proceed?" Conflicts with a decision your human partner already made, take it to them before implementing.
+**From an external reviewer:** before implementing, check whether the suggestion is correct for this codebase, whether it breaks existing behavior, why the current code is the way it is, and whether it holds on every platform and version this project supports. Wrong on any of those, push back with the technical reasoning and the test or code that shows it. Unable to verify, say what you need: "I can't verify this without X. Should I investigate, ask, or proceed?" Conflicts with a decision your human partner already made, take it to them before implementing.
 
 Before accepting "this is unused" or "implement it properly", grep for callers. None, propose removal. Some, implement it properly.
 

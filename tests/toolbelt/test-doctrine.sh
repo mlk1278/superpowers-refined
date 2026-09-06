@@ -80,6 +80,7 @@ for file in skills/*/SKILL.md; do
       $0 == "<" tag ">" { inblock = 1; n = 0; next }
       $0 == "</" tag ">" { if (inblock) print n; inblock = 0; next }
       inblock && $0 !~ /^</ { n += NF }
+      END { if (inblock) print n }
     ' "$file")
   done
 done
