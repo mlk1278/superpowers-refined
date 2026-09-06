@@ -1065,7 +1065,7 @@ git commit -m "One approval for small designs; machine spec review before the hu
 
 **Gotchas:**
 - `test-reviewer-context.sh` requires in task-reviewer-prompt `docs/REVIEW-GUIDANCE.md`, `This file is reviewer-only.`, `[REVIEW_NUANCE]`, `does not override requirements,`, `[SMELLS_FILE]`, `This read is an explicit exception to the limits on`; and forbids `docs/REVIEW-GUIDANCE.md` and `smell-baseline` in implementer-prompt. The gate prompt carries the same reviewer-only line.
-- Ceilings: gate prompt 700, task-reviewer 650, code-reviewer 500, implementer 550.
+- Ceilings: gate prompt 700, task-reviewer 650, code-reviewer 450 after Task 7, implementer 550. After Task 9, task-reviewer-prompt is at exactly 650 and implementer-prompt at 316 (+ Task 15's additions): the severity rule replaces the Calibration paragraph word-for-word in budget, so cut the old Calibration entirely and add nothing else to task-reviewer-prompt; the self-check table (about 75 words) and the UI-smoke sentence must fit implementer-prompt's remaining headroom — tighten the Report Format bullets if they do not.
 - The severity rule replaces Calibration in task-reviewer (keep the plan-mandated sentence) and code-reviewer (keep "If you find significant deviations from the plan, flag them").
 
 - [ ] **Step 1: Write the failing test**
@@ -1117,7 +1117,7 @@ git commit -m "Gate reviewer prompt, failing-input severity rule, implementer se
 **Gotchas:**
 - `test-final-review-gate.sh` needle `If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review.` is replaced by `dispatch ux-gate's capture at the final gate's head in parallel with the gate reviewer`. Every other needle there stays, including `scripts/review-package --plan PLAN_FILE MERGE_BASE HEAD\` for the final review`, `**Final-review findings get ONE fix subagent**`, `Then run exactly one scoped re-review of the fix wave`, `There is no second fix wave`, `**One fix round per task.**`, `Adjudicate **only** after the re-review`.
 - `test-fix-loop.sh` needles all stay; add the three Data Model ledger lines.
-- SDD ceiling 1900; Task 9 left it at or under 1500; Task 15 added two sentences.
+- SDD ceiling 1900. Task 9 landed the file at 1,680 (its 1,500 interim target was unreachable: 28 sentences are pinned verbatim by tests; ruled: the spec ceiling governs) and Task 15 adds two sentences. This task's two sections are about 300 words, so the file will not fit: move `## Constructing Reviewer Prompts` (about 177 words) to `skills/subagent-driven-development/reviewer-prompts.md` behind a one-sentence pointer in SKILL.md, and repoint its needles in `tests/toolbelt/test-reviewer-context.sh` (`Do not read it`, `while orchestrating or pass it to implementers, fixers, explorers, planners,`, `Use \`None\` when there is none.`) at the new file. Add both files to Files (seven total). If the file still exceeds 1,900, move `## File Handoffs` the same way; never cut a contract sentence.
 - Remove the `SDD_READY` guard in `test-review-classes.sh` and add the SDD needles: `**Review:**`, `## Self-check close`, `## Gates`, `four \`gate\` tasks`, `1,500 changed lines`, `four or fewer tasks and no \`immediate\` task`, `Gate <G>: tasks`, `in parallel with the gate reviewer`, `presented to your human partner once, at the gate`.
 
 - [ ] **Step 1: Write the failing tests**
