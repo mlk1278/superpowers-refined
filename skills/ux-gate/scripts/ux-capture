@@ -15,7 +15,7 @@ const USAGE = `Usage: ux-capture <matrix.json> --out <dir> [options]
   --smoke                First viewport only, no reference screens, no axe,
                          no filmstrips
   --pathway <name>       Capture only this pathway (repeatable)
-  --baseline <dir>       Baseline stills to diff against (Task 13)
+  --baseline <dir>       Baseline stills to diff against (ignored with --smoke)
   --video                Record a local video per context
   --help                 Print this message
 
@@ -32,6 +32,13 @@ const DEFAULT_VIEWPORTS = [
   { name: 'lg', width: 1440, height: 900, dpr: 1 },
 ];
 const WAIT_TIMEOUT = 15000;
+// A pixel counts as changed when a channel differs by more than this.
+const DIFF_TOLERANCE = 8;
+// Below this share of changed pixels a capture is 'unchanged'.
+const DIFF_RATIO_FLOOR = 0.001;
+// Filmstrip frames, in ms after the action returns, plus the reduced-motion frame.
+const MOTION_DELAYS = [0, 150, 400];
+const DIFF_CROP_PADDING = 24;
 
 function die(message, code) {
   console.error(message);
@@ -186,6 +193,9 @@ const themeInit = (cfg) => {
 };
 
 const clsInit = () => {
+  // A per-document token. The init script re-runs on every document, so a changed
+  // token means window.__uxCls restarted; a same-document navigation keeps both.
+  window.__uxDocId = String(Math.random());
   window.__uxCls = 0;
   window.__uxClsSources = [];
   const selectorOf = (el) => {
@@ -402,10 +412,116 @@ const inPageChecks = (opts) => {
 
   return {
     checks,
+    docId: window.__uxDocId || null,
     cls: window.__uxCls || 0,
     clsSources: (window.__uxClsSources || []).slice(),
     fonts: fontsStatus,
   };
+};
+
+// ------------------------------------------------- pixel diff (in the browser)
+
+// Both images arrive as data: URLs; file:// is blocked from a blank page.
+const inPageDiff = async (opts) => {
+  const load = (src) =>
+    new Promise((done, failed) => {
+      const img = new Image();
+      img.onload = () => done(img);
+      img.onerror = () => failed(new Error('image failed to decode'));
+      img.src = src;
+    });
+  const head = await load(opts.headUrl);
+  const base = await load(opts.baseUrl);
+  const w = Math.max(head.naturalWidth, base.naturalWidth);
+  const h = Math.max(head.naturalHeight, base.naturalHeight);
+  const pixels = (img) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0);
+    return ctx.getImageData(0, 0, w, h).data;
+  };
+  const a = pixels(head);
+  const b = pixels(base);
+  const tolerance = opts.tolerance;
+  const over = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i += 1) {
+    const p = i * 4;
+    if (
+      Math.abs(a[p] - b[p]) > tolerance ||
+      Math.abs(a[p + 1] - b[p + 1]) > tolerance ||
+      Math.abs(a[p + 2] - b[p + 2]) > tolerance ||
+      Math.abs(a[p + 3] - b[p + 3]) > tolerance
+    ) {
+      over[i] = 1;
+    }
+  }
+  let count = 0;
+  let x0 = w;
+  let y0 = h;
+  let x1 = -1;
+  let y1 = -1;
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const i = y * w + x;
+      if (!over[i]) continue;
+      // Antialias guard: a lone over-tolerance pixel is edge noise.
+      const neighbour =
+        (x > 0 && over[i - 1]) ||
+        (x < w - 1 && over[i + 1]) ||
+        (y > 0 && over[i - w]) ||
+        (y < h - 1 && over[i + w]);
+      if (!neighbour) continue;
+      count += 1;
+      if (x < x0) x0 = x;
+      if (y < y0) y0 = y;
+      if (x > x1) x1 = x;
+      if (y > y1) y1 = y;
+    }
+  }
+  return {
+    ratio: count / (w * h),
+    box: x1 < 0 ? null : [x0, y0, x1 - x0 + 1, y1 - y0 + 1],
+    sameSize: head.naturalWidth === base.naturalWidth && head.naturalHeight === base.naturalHeight,
+    headWidth: head.naturalWidth,
+    headHeight: head.naturalHeight,
+  };
+};
+
+// Frames onto one canvas at half scale, each labelled underneath.
+const inPageStitch = async (opts) => {
+  const load = (src) =>
+    new Promise((done, failed) => {
+      const img = new Image();
+      img.onload = () => done(img);
+      img.onerror = () => failed(new Error('frame failed to decode'));
+      img.src = src;
+    });
+  const images = [];
+  for (const src of opts.frames) images.push(await load(src));
+  const gap = 8;
+  const pad = 8;
+  const labelHeight = 20;
+  const widths = images.map((img) => Math.round(img.naturalWidth / 2));
+  const heights = images.map((img) => Math.round(img.naturalHeight / 2));
+  const canvas = document.getElementById('strip');
+  canvas.width = pad * 2 + widths.reduce((sum, n) => sum + n, 0) + gap * (images.length - 1);
+  canvas.height = pad * 2 + Math.max(...heights) + labelHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  let x = pad;
+  for (let i = 0; i < images.length; i += 1) {
+    ctx.drawImage(images[i], x, pad, widths[i], heights[i]);
+    ctx.fillStyle = '#111111';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(opts.labels[i], x, pad + Math.max(...heights) + 4);
+    x += widths[i] + gap;
+  }
+  return { width: canvas.width, height: canvas.height };
 };
 
 // ------------------------------------------------------------------ helpers
@@ -438,6 +554,86 @@ async function performAction(page, step) {
     await locator.scrollIntoViewIfNeeded({ timeout: WAIT_TIMEOUT });
     await locator.evaluate((el) => el.scrollIntoView({ block: 'start' }));
   } else throw new Error(`step ${step.name}: unknown action ${step.action}`);
+}
+
+// Buffers the per-step console and network findings for one page.
+function attachListeners(page) {
+  const state = { consoleErrors: [], failedRequests: [] };
+  page.on('console', (message) => {
+    if (message.type() === 'error') state.consoleErrors.push(message.text());
+  });
+  page.on('response', (response) => {
+    if (response.status() >= 400) {
+      state.failedRequests.push(`${response.status()} ${response.url()}`);
+    }
+  });
+  page.on('requestfailed', (request) => {
+    state.failedRequests.push(`failed ${request.url()}`);
+  });
+  return state;
+}
+
+function documentCheck(check, severity, message) {
+  return { check, severity, selector: null, text: null, message };
+}
+
+// One capture entry, in the mechanical.json field order.
+function makeEntry(o) {
+  const entry = {
+    tag: o.tag,
+    pathway: o.pathway,
+    step: o.step,
+    state: o.state,
+    width: o.width,
+    theme: o.theme,
+    dpr: o.dpr,
+    files: {
+      still: o.still,
+      crops: o.crops || [],
+      filmstrip: o.filmstrip || null,
+      diffCrop: o.diffCrop || null,
+    },
+    diff: o.diff || null,
+    checks: o.checks,
+    cls: Number((o.cls || 0).toFixed(4)),
+    clsSources: o.clsSources || [],
+    console: o.consoleErrors || [],
+    failedRequests: o.failedRequests || [],
+    fonts: o.fonts,
+    axe: o.axe,
+  };
+  if (o.error) entry.error = o.error;
+  return entry;
+}
+
+// @axe-core/playwright resolves from the project root or not at all.
+async function loadAxe(projectRoot) {
+  let entry;
+  try {
+    entry = createRequire(join(projectRoot, 'package.json')).resolve('@axe-core/playwright');
+  } catch {
+    return null;
+  }
+  try {
+    const mod = await import(pathToFileURL(entry).href);
+    return mod.default || mod.AxeBuilder || null;
+  } catch {
+    return null;
+  }
+}
+
+async function runAxe(AxeBuilder, page) {
+  if (!AxeBuilder) return 'unavailable';
+  try {
+    const results = await new AxeBuilder({ page }).analyze();
+    return (results.violations || []).map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      nodes: (violation.nodes || []).map((node) => (node.target || []).join(' ')),
+    }));
+  } catch {
+    return 'unavailable';
+  }
 }
 
 async function settle(page) {
@@ -505,6 +701,9 @@ async function main() {
     die(`ux-capture: no pathway matches ${opts.pathways.join(', ')}`, 2);
   }
   const fullRun = !opts.smoke && opts.pathways.length === 0;
+  // --smoke skips axe, filmstrips and reference screens, and ignores --baseline.
+  const baselineDir = opts.smoke || !opts.baseline ? null : resolve(opts.baseline);
+  const AxeBuilder = opts.smoke ? null : await loadAxe(projectRoot);
 
   let storageState;
   if (matrix.storageState) {
@@ -581,36 +780,141 @@ async function main() {
     return files;
   };
 
+  // A page with no theme or CLS instrumentation, for canvas work on image data.
+  let scratchPage = null;
+  const scratch = async () => {
+    if (!scratchPage) {
+      const context = await browser.newContext({
+        viewport: { width: 800, height: 600 },
+        deviceScaleFactor: 1,
+      });
+      scratchPage = await context.newPage();
+      await scratchPage.setContent('<body style="margin:0"><canvas id="strip"></canvas></body>');
+    }
+    return scratchPage;
+  };
+
+  const dataUrl = (file) => `data:image/png;base64,${readFileSync(file).toString('base64')}`;
+
+  // The reduced-motion frame: a second context that replays the pathway.
+  const reducedMotionFrame = async (viewport, theme, pathway, steps, upTo, tag) => {
+    const context = await newContext(viewport, theme, { reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    try {
+      await page.goto(base + pathway.path, { waitUntil: 'networkidle', timeout: 30000 });
+      for (let i = 0; i < upTo; i += 1) {
+        await performAction(page, steps[i]);
+        if (steps[i].waitFor) {
+          await page.waitForSelector(steps[i].waitFor, { timeout: WAIT_TIMEOUT });
+        }
+      }
+      await performAction(page, steps[upTo]);
+      await page.waitForTimeout(MOTION_DELAYS[MOTION_DELAYS.length - 1]);
+      return await page.screenshot({ type: 'jpeg', quality: 70 });
+    } catch (err) {
+      console.error(`ux-capture: reduced-motion frame for ${tag} failed: ${err.message}`);
+      return null;
+    } finally {
+      await context.close();
+    }
+  };
+
+  const writeFilmstrip = async (frames, labels, tag) => {
+    if (frames.length === 0) return null;
+    const file = `${tag}-filmstrip.png`;
+    try {
+      const page = await scratch();
+      const size = await page.evaluate(inPageStitch, {
+        frames: frames.map((buffer) => `data:image/jpeg;base64,${buffer.toString('base64')}`),
+        labels,
+      });
+      await page.setViewportSize({
+        width: Math.min(size.width, 4000),
+        height: Math.min(size.height, 4000),
+      });
+      await page.locator('#strip').screenshot({ path: join(outDir, file) });
+      return file;
+    } catch (err) {
+      console.error(`ux-capture: filmstrip for ${tag} failed: ${err.message}`);
+      return null;
+    }
+  };
+
+  const diffCapture = async (stillFile, tag) => {
+    const basePath = join(baselineDir, stillFile);
+    if (!existsSync(basePath)) return { status: 'new', ratio: 0, box: null };
+    let raw;
+    try {
+      raw = await (await scratch()).evaluate(inPageDiff, {
+        headUrl: dataUrl(join(outDir, stillFile)),
+        baseUrl: dataUrl(basePath),
+        tolerance: DIFF_TOLERANCE,
+      });
+    } catch (err) {
+      console.error(`ux-capture: diff for ${tag} failed: ${err.message}`);
+      return null;
+    }
+    const ratio = Number(raw.ratio.toFixed(6));
+    // Images of different sizes are changed, with the box covering the head still.
+    if (!raw.sameSize) {
+      return { status: 'changed', ratio, box: [0, 0, raw.headWidth, raw.headHeight] };
+    }
+    if (raw.ratio < DIFF_RATIO_FLOOR || !raw.box) return { status: 'unchanged', ratio, box: null };
+    return { status: 'changed', ratio, box: raw.box };
+  };
+
+  // box is in head-still pixels; the clip and its padding are in CSS px.
+  const writeDiffCrop = async (page, tag, box, viewport, dpr) => {
+    const file = `${tag}-diff-crop.png`;
+    let x = box[0] / dpr - DIFF_CROP_PADDING;
+    let y = box[1] / dpr - DIFF_CROP_PADDING;
+    let width = box[2] / dpr + DIFF_CROP_PADDING * 2;
+    let height = box[3] / dpr + DIFF_CROP_PADDING * 2;
+    if (x < 0) {
+      width += x;
+      x = 0;
+    }
+    if (y < 0) {
+      height += y;
+      y = 0;
+    }
+    width = Math.min(width, viewport.width - x);
+    height = Math.min(height, viewport.height - y);
+    if (width <= 0 || height <= 0) return null;
+    try {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({
+        path: join(outDir, file),
+        clip: { x, y, width, height },
+        animations: 'disabled',
+        caret: 'hide',
+      });
+      return file;
+    } catch (err) {
+      console.error(`ux-capture: diff crop for ${tag} failed: ${err.message}`);
+      return null;
+    }
+  };
+
+  // Diff, then the crop: the crop scrolls the page, so checks must be done.
+  const diffAndCrop = async (page, stillFile, tag, viewport, dpr) => {
+    if (!baselineDir || !stillFile) return { diff: null, diffCrop: null };
+    const diff = await diffCapture(stillFile, tag);
+    if (!diff || diff.status !== 'changed' || !diff.box) return { diff, diffCrop: null };
+    return { diff, diffCrop: await writeDiffCrop(page, tag, diff.box, viewport, dpr) };
+  };
+
   for (const viewport of viewports) {
     for (const theme of matrix.themes) {
       for (const pathway of selected) {
-        const context = await newContext(viewport, theme, {
-          recordVideo: opts.video && !opts.smoke,
-        });
+        const context = await newContext(viewport, theme, { recordVideo: opts.video });
         const page = await context.newPage();
+        const video = opts.video ? page.video() : null;
 
-        let consoleErrors = [];
-        let failedRequests = [];
+        const listeners = attachListeners(page);
         let lastCls = 0;
         let lastSources = 0;
-        page.on('framenavigated', (frame) => {
-          // A navigation re-runs the init script, so window.__uxCls restarts at 0.
-          if (frame === page.mainFrame()) {
-            lastCls = 0;
-            lastSources = 0;
-          }
-        });
-        page.on('console', (message) => {
-          if (message.type() === 'error') consoleErrors.push(message.text());
-        });
-        page.on('response', (response) => {
-          if (response.status() >= 400) {
-            failedRequests.push(`${response.status()} ${response.url()}`);
-          }
-        });
-        page.on('requestfailed', (request) => {
-          failedRequests.push(`failed ${request.url()}`);
-        });
+        let lastDocId = null;
 
         let navigationError = null;
         try {
@@ -625,9 +929,19 @@ async function main() {
           const still = `${tag}.png`;
           let error = navigationError;
 
+          const motion = step.motion === true && !opts.smoke;
+          const frames = [];
           if (!error) {
             try {
               await performAction(page, step);
+              // Filmstrip frames come between the action and waitFor, animations live.
+              // Each delay is measured from the action, so only the gap is waited out.
+              let waited = 0;
+              for (const delay of motion ? MOTION_DELAYS : []) {
+                if (delay > waited) await page.waitForTimeout(delay - waited);
+                waited = delay;
+                frames.push(await page.screenshot({ type: 'jpeg', quality: 70 }));
+              }
               if (step.waitFor) await page.waitForSelector(step.waitFor, { timeout: WAIT_TIMEOUT });
             } catch (err) {
               error = err.message;
@@ -650,14 +964,36 @@ async function main() {
 
           const crops = error ? [] : await captureCrops(viewport, theme, pathway, pathway.steps, index, tag);
 
-          let result = { checks: [], cls: 0, clsSources: [], fonts: 'loaded' };
+          let result = { checks: [], docId: null, cls: 0, clsSources: [], fonts: 'loaded' };
           try {
             result = await runChecks(page, viewport, theme);
           } catch (err) {
             if (!error) error = `mechanical checks failed: ${err.message}`;
           }
 
+          const axe = opts.smoke ? 'skipped' : await runAxe(AxeBuilder, page);
+
+          let filmstrip = null;
+          if (motion && frames.length && !error) {
+            const reduced = await reducedMotionFrame(
+              viewport, theme, pathway, pathway.steps, index, tag,
+            );
+            const labels = MOTION_DELAYS.map((ms) => `${ms} ms`);
+            if (reduced) {
+              frames.push(reduced);
+              labels.push('reduced motion');
+            }
+            filmstrip = await writeFilmstrip(frames, labels, tag);
+          }
+
           const checks = result.checks.slice();
+          // A fresh document restarted window.__uxCls, so the step's delta is the
+          // whole new sum; a same-document navigation keeps the running one.
+          if (result.docId !== lastDocId) {
+            lastCls = 0;
+            lastSources = 0;
+            lastDocId = result.docId;
+          }
           const clsDelta = result.cls - lastCls;
           const sources = result.clsSources.slice(lastSources);
           lastCls = result.cls;
@@ -671,66 +1007,58 @@ async function main() {
               cls: Number(clsDelta.toFixed(4)),
             });
           }
-          for (const message of consoleErrors) {
-            checks.push({
-              check: 'console-error',
-              severity: 'should',
-              selector: null,
-              text: null,
-              message,
-            });
+          for (const message of listeners.consoleErrors) {
+            checks.push(documentCheck('console-error', 'should', message));
           }
-          for (const message of failedRequests) {
-            checks.push({
-              check: 'failed-request',
-              severity: 'should',
-              selector: null,
-              text: null,
-              message,
-            });
+          for (const message of listeners.failedRequests) {
+            checks.push(documentCheck('failed-request', 'should', message));
           }
-          if (error) {
-            checks.push({
-              check: 'step-failed',
-              severity: 'blocker',
-              selector: null,
-              text: null,
-              message: error,
-            });
-          }
+          if (error) checks.push(documentCheck('step-failed', 'blocker', error));
 
-          const entry = {
-            tag,
-            pathway: pathway.name,
-            step: step.name,
-            state: step.state,
-            width: viewport.width,
-            theme,
-            dpr: viewport.dpr || 1,
-            files: {
+          const dpr = viewport.dpr || 1;
+          const diffed = await diffAndCrop(page, stillWritten, tag, viewport, dpr);
+
+          entries.push(
+            makeEntry({
+              tag,
+              pathway: pathway.name,
+              step: step.name,
+              state: step.state,
+              width: viewport.width,
+              theme,
+              dpr,
               still: stillWritten,
               crops,
-              filmstrip: null,
-              diffCrop: null,
-            },
-            diff: null,
-            checks,
-            cls: Number(clsDelta.toFixed(4)),
-            clsSources: sources,
-            console: consoleErrors.slice(),
-            failedRequests: failedRequests.slice(),
-            fonts: result.fonts,
-            axe: opts.smoke ? 'skipped' : 'unavailable',
-          };
-          if (error) entry.error = error;
-          entries.push(entry);
+              filmstrip,
+              diffCrop: diffed.diffCrop,
+              diff: diffed.diff,
+              checks,
+              cls: clsDelta,
+              clsSources: sources,
+              consoleErrors: listeners.consoleErrors.slice(),
+              failedRequests: listeners.failedRequests.slice(),
+              fonts: result.fonts,
+              axe,
+              error,
+            }),
+          );
 
-          consoleErrors = [];
-          failedRequests = [];
+          listeners.consoleErrors = [];
+          listeners.failedRequests = [];
           if (error) break;
         }
 
         await context.close();
+        // The webm is only finalised once the context is closed.
+        if (video) {
+          const named = `${pathway.name}-${viewport.width}-${theme}.webm`;
+          try {
+            await video.saveAs(join(outDir, 'video', named));
+            await video.delete();
+          } catch (err) {
+            console.error(`ux-capture: video for ${named} failed: ${err.message}`);
+          }
+        }
       }
     }
   }
@@ -738,24 +1066,17 @@ async function main() {
   // Reference screens: full runs only, first viewport, every theme.
   if (fullRun && matrix.referenceScreens.length) {
     const viewport = matrix.viewports[0];
+    const dpr = viewport.dpr || 1;
     for (const theme of matrix.themes) {
       for (let i = 0; i < matrix.referenceScreens.length; i += 1) {
         const n = i + 1;
         const tag = `reference-${n}-${viewport.width}-${theme}`;
         const context = await newContext(viewport, theme, {});
         const page = await context.newPage();
-        const consoleErrors = [];
-        const failedRequests = [];
-        page.on('console', (m) => {
-          if (m.type() === 'error') consoleErrors.push(m.text());
-        });
-        page.on('response', (r) => {
-          if (r.status() >= 400) failedRequests.push(`${r.status()} ${r.url()}`);
-        });
-        page.on('requestfailed', (r) => failedRequests.push(`failed ${r.url()}`));
+        const listeners = attachListeners(page);
         let error = null;
         let stillWritten = null;
-        let result = { checks: [], cls: 0, clsSources: [], fonts: 'loaded' };
+        let result = { checks: [], docId: null, cls: 0, clsSources: [], fonts: 'loaded' };
         try {
           await page.goto(base + matrix.referenceScreens[i], {
             waitUntil: 'networkidle',
@@ -772,36 +1093,40 @@ async function main() {
         } catch (err) {
           error = err.message;
         }
+        const axe = await runAxe(AxeBuilder, page);
         const checks = result.checks.slice();
-        for (const message of consoleErrors) {
-          checks.push({ check: 'console-error', severity: 'should', selector: null, text: null, message });
+        for (const message of listeners.consoleErrors) {
+          checks.push(documentCheck('console-error', 'should', message));
         }
-        for (const message of failedRequests) {
-          checks.push({ check: 'failed-request', severity: 'should', selector: null, text: null, message });
+        for (const message of listeners.failedRequests) {
+          checks.push(documentCheck('failed-request', 'should', message));
         }
-        if (error) {
-          checks.push({ check: 'step-failed', severity: 'blocker', selector: null, text: null, message: error });
-        }
-        const entry = {
-          tag,
-          pathway: 'reference',
-          step: String(n),
-          state: 'default',
-          width: viewport.width,
-          theme,
-          dpr: viewport.dpr || 1,
-          files: { still: stillWritten, crops: [], filmstrip: null, diffCrop: null },
-          diff: null,
-          checks,
-          cls: Number((result.cls || 0).toFixed(4)),
-          clsSources: result.clsSources,
-          console: consoleErrors,
-          failedRequests,
-          fonts: result.fonts,
-          axe: 'unavailable',
-        };
-        if (error) entry.error = error;
-        entries.push(entry);
+        if (error) checks.push(documentCheck('step-failed', 'blocker', error));
+        const diffed = await diffAndCrop(page, stillWritten, tag, viewport, dpr);
+        entries.push(
+          makeEntry({
+            tag,
+            pathway: 'reference',
+            step: String(n),
+            state: 'default',
+            width: viewport.width,
+            theme,
+            dpr,
+            still: stillWritten,
+            crops: [],
+            filmstrip: null,
+            diffCrop: diffed.diffCrop,
+            diff: diffed.diff,
+            checks,
+            cls: result.cls || 0,
+            clsSources: result.clsSources,
+            consoleErrors: listeners.consoleErrors,
+            failedRequests: listeners.failedRequests,
+            fonts: result.fonts,
+            axe,
+            error,
+          }),
+        );
         await context.close();
       }
     }

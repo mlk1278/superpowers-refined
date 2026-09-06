@@ -33,8 +33,8 @@ case "$help_out" in
   *) fail "--help output does not mention --smoke" "$help_out" ;;
 esac
 case "$help_out" in
-  *--baseline*"(Task 13)"*) : ;;
-  *) fail "--help does not mark --baseline as Task 13 work" "$help_out" ;;
+  *--baseline*) : ;;
+  *) fail "--help output does not mention --baseline" "$help_out" ;;
 esac
 echo "ok - help_runs"
 
@@ -64,6 +64,11 @@ if [ -z "$module" ]; then
 fi
 
 # --- static fixture server on an ephemeral port ----------------------------
+# Served from a copy so one assertion can perturb the page and restore it.
+site="$tmp/site"
+mkdir -p "$site"
+cp "$fixtures"/*.html "$site/"
+
 node -e '
 const http = require("http"), fs = require("fs"), path = require("path");
 const root = process.argv[1];
@@ -77,7 +82,7 @@ http.createServer((req, res) => {
     res.end(data);
   });
 }).listen(0, "127.0.0.1", function () { console.log(this.address().port); });
-' "$fixtures" > "$tmp/port.txt" &
+' "$site" > "$tmp/port.txt" &
 server_pid=$!
 
 port=""
@@ -138,6 +143,7 @@ assert_check theme-leak "HTML.dark" dark "theme-leak on the root element in dark
 
 for name in home-open-default-375-light home-open-default-375-dark \
             home-panel-default-375-light home-panel-default-375-dark \
+            home-route-default-375-light home-route-default-375-dark \
             home-away-default-375-light home-away-default-375-dark; do
   [ -f "$tmp/out/$name.png" ] || fail "still missing: $name.png" "$(ls "$tmp/out")"
 done
@@ -157,7 +163,7 @@ recorded=$(node -e '
   const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
   console.log(entries.map((e) => e.files.still).sort().join(","));
 ' "$mech")
-expected="home-away-default-375-dark.png,home-away-default-375-light.png,home-open-default-375-dark.png,home-open-default-375-light.png,home-panel-default-375-dark.png,home-panel-default-375-light.png"
+expected="home-away-default-375-dark.png,home-away-default-375-light.png,home-open-default-375-dark.png,home-open-default-375-light.png,home-panel-default-375-dark.png,home-panel-default-375-light.png,home-route-default-375-dark.png,home-route-default-375-light.png"
 [ "$recorded" = "$expected" ] || fail "recorded stills differ from expectation" "got: $recorded"
 echo "ok - smoke_finds_fixture_defects"
 
@@ -171,6 +177,25 @@ negative=$(node -e '
 [ "$negative" = "none" ] || fail "negative cls delta after an in-pathway navigation" "$negative"
 echo "ok - cls delta stays non-negative across a navigating step"
 
+# --- cls after a same-document navigation is that step's own delta ----------
+same_doc=$(node -e '
+  const fs = require("fs");
+  const entries = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).captures;
+  const bad = [];
+  for (const theme of ["light", "dark"]) {
+    const open = entries.find((e) => e.tag === "home-open-default-375-" + theme);
+    const route = entries.find((e) => e.tag === "home-route-default-375-" + theme);
+    if (!open || !route) { bad.push("missing entries for " + theme); continue; }
+    if (!(route.cls > 0)) bad.push(route.tag + " recorded no shift (cls=" + route.cls + ")");
+    else if (!(route.cls < open.cls)) {
+      bad.push(route.tag + " cls=" + route.cls + " is not below the pathway total (open cls=" + open.cls + ")");
+    }
+  }
+  console.log(bad.length ? bad.join("; ") : "none");
+' "$mech")
+[ "$same_doc" = "none" ] || fail "pushState step reports the pathway total, not its own delta" "$same_doc"
+echo "ok - cls after a pushState step is that step's own delta"
+
 # --- deferred Task 13 fields ----------------------------------------------
 deferred=$(node -e '
   const fs = require("fs");
@@ -181,6 +206,105 @@ deferred=$(node -e '
 ' "$mech")
 [ "$deferred" = "ok" ] || fail "smoke entry does not defer Task 13 fields" "$deferred"
 echo "ok - smoke defers diff, filmstrip, diffCrop and axe"
+
+# --- full run: the baseline for every diff assertion ------------------------
+# The fixture is defective by design, so the run exits 1; these assertions read
+# the files and the JSON, never the exit code.
+set +e
+full_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix.json" \
+  --out "$tmp/full" --project-root "$tmp/empty" 2>&1)
+set -e
+[ -f "$tmp/full/mechanical.json" ] || fail "full run wrote no mechanical.json" "$full_out"
+
+# each() runs a node snippet over the captures of $1 and prints its own output.
+each() { node -e "const fs=require('fs');const entries=JSON.parse(fs.readFileSync(process.argv[1],'utf8')).captures;$2" "$1"; }
+
+# --- filmstrip_for_motion_step ---------------------------------------------
+strip="$tmp/full/home-panel-default-375-light-filmstrip.png"
+[ -f "$strip" ] || fail "no filmstrip for the motion step" "$(ls "$tmp/full")"
+strip_bytes=$(wc -c < "$strip" | tr -d ' ')
+[ "$strip_bytes" -gt 1024 ] || fail "filmstrip is under 1 KB" "$strip_bytes bytes"
+recorded_strip=$(each "$tmp/full/mechanical.json" '
+  const e = entries.find((e) => e.tag === "home-panel-default-375-light");
+  console.log(e ? String(e.files.filmstrip) : "no entry");')
+[ "$recorded_strip" = "home-panel-default-375-light-filmstrip.png" ] ||
+  fail "the motion entry does not record its filmstrip" "$recorded_strip"
+if ls "$tmp/out" | grep -q -- '-filmstrip'; then
+  fail "the smoke run wrote a filmstrip" "$(ls "$tmp/out")"
+fi
+echo "ok - filmstrip_for_motion_step"
+
+# --- reference screens on the full run only --------------------------------
+for name in reference-1-375-light reference-1-375-dark; do
+  [ -f "$tmp/full/$name.png" ] || fail "reference still missing: $name.png" "$(ls "$tmp/full")"
+done
+echo "ok - reference_screens_on_full_run"
+
+# --- axe_unavailable_recorded ----------------------------------------------
+axe_full=$(each "$tmp/full/mechanical.json" '
+  const bad = entries.filter((e) => e.axe !== "unavailable" && !Array.isArray(e.axe))
+    .map((e) => e.tag + " axe=" + JSON.stringify(e.axe));
+  console.log(bad.length ? bad.join("; ") : "none");')
+[ "$axe_full" = "none" ] || fail "full run recorded neither an axe array nor unavailable" "$axe_full"
+axe_smoke=$(each "$mech" '
+  const bad = entries.filter((e) => e.axe !== "skipped").map((e) => e.tag + " axe=" + JSON.stringify(e.axe));
+  console.log(bad.length ? bad.join("; ") : "none");')
+[ "$axe_smoke" = "none" ] || fail "smoke run did not skip axe" "$axe_smoke"
+echo "ok - axe_unavailable_recorded"
+
+# --- baseline_unchanged ----------------------------------------------------
+set +e
+again_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix.json" \
+  --out "$tmp/again" --baseline "$tmp/full" --project-root "$tmp/empty" 2>&1)
+set -e
+[ -f "$tmp/again/mechanical.json" ] || fail "baseline run wrote no mechanical.json" "$again_out"
+unchanged=$(each "$tmp/again/mechanical.json" '
+  const bad = entries.filter((e) => !e.diff || e.diff.status !== "unchanged")
+    .map((e) => e.tag + " " + JSON.stringify(e.diff));
+  console.log(bad.length ? bad.join("; ") : "none");')
+[ "$unchanged" = "none" ] || fail "an unchanged capture did not diff as unchanged" "$unchanged"
+if ls "$tmp/again" | grep -q -- '-diff-crop'; then
+  fail "an unchanged run wrote a diff crop" "$(ls "$tmp/again")"
+fi
+echo "ok - baseline_unchanged"
+
+# --- baseline_changed ------------------------------------------------------
+cp "$site/index.html" "$tmp/index.html.orig"
+node -e '
+  const fs = require("fs");
+  const p = process.argv[1];
+  const html = fs.readFileSync(p, "utf8")
+    .replace("#panel { border", ".card { background: #c00; }\n  #panel { border");
+  if (!html.includes(".card { background: #c00; }")) throw new Error("fixture perturbation failed");
+  fs.writeFileSync(p, html);
+' "$site/index.html"
+set +e
+changed_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix.json" \
+  --out "$tmp/changed" --baseline "$tmp/full" --project-root "$tmp/empty" 2>&1)
+set -e
+cp "$tmp/index.html.orig" "$site/index.html"
+[ -f "$tmp/changed/mechanical.json" ] || fail "changed run wrote no mechanical.json" "$changed_out"
+changed=$(each "$tmp/changed/mechanical.json" '
+  const e = entries.find((e) => e.tag === "home-open-default-375-light");
+  if (!e) { console.log("no entry"); }
+  else if (!e.diff) { console.log("diff is null"); }
+  else if (e.diff.status !== "changed") { console.log("status " + e.diff.status); }
+  else if (!(e.diff.ratio > 0.001)) { console.log("ratio " + e.diff.ratio); }
+  else if (!Array.isArray(e.diff.box) || e.diff.box.length !== 4) { console.log("box " + JSON.stringify(e.diff.box)); }
+  else { console.log("ok"); }')
+[ "$changed" = "ok" ] || fail "the recoloured card did not diff as changed" "$changed"
+[ -f "$tmp/changed/home-open-default-375-light-diff-crop.png" ] ||
+  fail "no diff crop for the changed capture" "$(ls "$tmp/changed")"
+echo "ok - baseline_changed"
+
+# --- video_flag_writes_webm ------------------------------------------------
+set +e
+video_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix.json" \
+  --video --smoke --out "$tmp/vid" --project-root "$tmp/empty" 2>&1)
+set -e
+webms=$(ls "$tmp/vid/video" 2>/dev/null | grep -c '\.webm$' || true)
+[ "$webms" -ge 1 ] || fail "--video wrote no webm" "$video_out"
+echo "ok - video_flag_writes_webm"
 
 # --- clean_page_has_no_findings -------------------------------------------
 set +e

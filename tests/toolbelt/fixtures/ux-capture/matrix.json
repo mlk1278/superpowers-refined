@@ -7,11 +7,13 @@
     {"name": "md", "width": 768, "height": 1024, "dpr": 1},
     {"name": "lg", "width": 1440, "height": 900, "dpr": 1}
   ],
+  "referenceScreens": ["/clean.html"],
   "pathways": [
     {"name": "home", "path": "/index.html",
      "steps": [
-       {"name": "open"},
+       {"name": "open", "crops": [".card"]},
        {"name": "panel", "action": "click", "selector": "#open", "motion": true, "waitFor": "#panel:not([hidden])"},
+       {"name": "route", "action": "click", "selector": "#route", "waitFor": "#shifty.on"},
        {"name": "away", "action": "click", "selector": "#leave", "waitFor": "#go"}
      ]}
   ]
