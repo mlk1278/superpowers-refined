@@ -548,16 +548,19 @@ Changed rules:
 > **UI smoke** in your report; write `UI smoke: not applicable` when your
 > diff renders nothing.
 
-The orchestrator fills `[UX_SMOKE_COMMAND]` from the ux-policy Launch and
-Theme sections and the script path, and writes `not applicable` for a plan
-with no user-visible surface. The task reviewer and gate reviewer treat a
+The orchestrator writes the task's smoke matrix
+(`.toolbelt/ux/smoke/task-<N>/matrix.json`: one pathway covering the task's
+surface, with Launch, Auth, and Theme from the ux-policy), fills
+`[UX_SMOKE_COMMAND]` with the script path and that matrix, and writes
+`not applicable` for a task that renders nothing. The task reviewer and gate reviewer treat a
 missing UI smoke entry on a rendering diff as an Important finding.
 
 ### Baseline from interactive-design
 
 §4 step 2 changes from "keep no prototype screenshots" to: "Run
 `scripts/ux-capture` from the ux-gate skill against the approved prototype
-with the session's `.toolbelt/ux/matrix.json` and keep the output at
+with the session's `.toolbelt/ux/matrix.json` (written per ux-gate §2 before
+this step) and keep the output at
 `.toolbelt/ux/baseline/`. The gate diffs against it." The ledger's
 Acceptance criteria section records the matrix path, and the matrix lists
 every surface the acceptance criteria name.
