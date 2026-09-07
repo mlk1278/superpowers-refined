@@ -82,6 +82,8 @@ Surface any plan or brief mandating broader verification than this policy; neith
 
 ## File Handoffs
 
+Before dispatching a rendering task, read [the UX matrix reference](../ux-gate/matrix.md) and optional `.toolbelt/ux-policy.md`. Write `.toolbelt/ux/smoke/task-<N>/matrix.json` for that task's pathway. Fill `[UX_SMOKE_COMMAND]` with absolute script, matrix, output, and project-root paths so it works in the implementer's workspace. The smoke pass does not invoke a UX reviewer.
+
 - **Task brief:** run `scripts/task-brief PLAN_FILE N`. The dispatch carries: where the task fits, in one line; the brief path, introduced as "read this first — it is your requirements, with the exact values to use verbatim"; interfaces and decisions from earlier tasks; the plan's Global Constraints and Known Gotchas; your resolution of any ambiguity you spotted; the report-file path and report contract; the smoke command for `[UX_SMOKE_COMMAND]`, built from `.toolbelt/ux-policy.md` when the plan has a user-visible surface. Exact values appear only in the brief.
 - **Report file:** named after the brief (`…/task-N-brief.md` → `…/task-N-report.md`). The implementer writes its full report there and returns status, commits, a one-line test summary, and concerns.
 - **Reviewer inputs:** the brief, the report, the review package, the smell baseline (`../requesting-code-review/smell-baseline.md`), and the constraints binding the task.

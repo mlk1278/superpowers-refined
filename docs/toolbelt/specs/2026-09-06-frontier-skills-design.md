@@ -343,7 +343,7 @@ from `--project-root`; all output paths resolve from the working directory.
 Commands accept the matrix path, required `--out`, `--project-root`
 (default cwd), repeatable `--pathway`, `--baseline`, `--smoke`, and `--video`.
 Smoke uses the first viewport and all matrix themes, skipping axe,
-filmstrips, reference screens, and baseline comparison. Every run writes
+filmstrips, reference screens, and baseline comparison. Completed capture runs write
 `mechanical.json` with `projectRoot` and capture entries. Each entry records
 its tag, pathway, step, state, width, theme, DPR, files, diff, checks, CLS,
 console errors, failed requests, fonts, and axe result. Stills use

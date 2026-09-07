@@ -7,7 +7,7 @@ description: "Use when your human partner accepts the frontend-first offer or as
 
 **Announce:** "I'm using interactive-design to prototype the frontend against fixture-backed contracts."
 
-Building the frontend is the design work. You and your human partner iterate on the real UI while every backend-owned datum arrives through a real API route returning fixture data. The output is working frontend code plus a reconciled contract ledger: the API the backend must now implement.
+Building the frontend is the design work. You and your human partner iterate on the real UI while every backend-owned datum arrives through a real API route returning fixture data. The output is working frontend code and a ledger of the API contracts to implement.
 
 <ENTRY-GATE>
 Three ways in: your human partner accepted brainstorming's frontend-first offer, asked directly, or asked to iterate on an existing surface's UI. Never select this path yourself. The first two require brainstorming's approved intent-level design, with UI detail deferred here. For the third, the request itself is the entry. The feature's frontend and the API it consumes must live in this repository or its workspace; if they don't, stop and tell your human partner this path does not apply.

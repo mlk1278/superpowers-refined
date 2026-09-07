@@ -51,7 +51,7 @@ Execute the boundary with toolbelt:subagent-driven-development, supplying the re
 
 ## 4. Gate the boundary
 
-When the boundary materially changes a user-visible surface, supply ux-gate as SDD's optional pre-final gate. That broad final review is the slice gate; add no other whole-slice review.
+When the boundary meets ux-gate's entry condition — new user flows, material interaction/layout/responsive changes, or explicit UX-review requests — supply it as SDD's optional pre-final gate. Routine cosmetic changes need no model review. That broad final review is the slice gate; add no other whole-slice review.
 
 ## 5. Ship
 

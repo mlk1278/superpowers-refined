@@ -33,6 +33,7 @@ ceilings=(
   "skills/writing-plans/SKILL.md:1900"
   "skills/writing-plans/execution-tracks.md:360"
   "skills/ux-gate/SKILL.md:950"
+  "skills/ux-gate/matrix.md:750"
   "skills/writing-specs/SKILL.md:550"
   "skills/delivery/SKILL.md:900"
   "skills/pr-monitor/SKILL.md:850"

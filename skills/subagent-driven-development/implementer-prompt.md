@@ -43,6 +43,8 @@ Subagent (role: implementer):
 
     ## UI smoke
 
+    This scripted check does not invoke a UX reviewer.
+
     If your diff touches a file the app renders — a component, template,
     style, route, or copy shown on screen — run the smoke pass before
     reporting DONE: [UX_SMOKE_COMMAND] for the pathway your task changes.
@@ -80,8 +82,7 @@ Subagent (role: implementer):
 ```
 
 **Placeholders:**
-- `[UX_SMOKE_COMMAND]` — the ux-capture invocation built from
-  `.toolbelt/ux-policy.md` Launch and Theme
+- `[UX_SMOKE_COMMAND]` — the absolute ux-capture invocation and task matrix supplied by the orchestrator
   (`<ux-gate skill dir>/scripts/ux-capture <matrix> --smoke --pathway <name>
   --out .toolbelt/ux/smoke/task-N --project-root <repo root>`), or
   `not applicable` for a task that renders nothing.
