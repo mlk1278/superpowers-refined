@@ -9,7 +9,7 @@ Run the plan to completion. Stop for your human partner only on an unresolvable 
 
 ## The Process
 
-1. Read the plan once. Create todos and the ledger.
+1. Read the plan once. Execute only the caller’s active PR boundary and its tasks; without a caller, select the next unfinished boundary. Create todos and the ledger.
 2. Pre-flight scan, then per task: record BASE (current head), dispatch the implementer with its brief, answer its questions, build the review package on DONE, dispatch the task reviewer, run the fix loop, mark the task complete in todos and the ledger.
 3. After all tasks, dispatch the final whole-branch reviewer ([code-reviewer.md](../requesting-code-review/code-reviewer.md)) before the branch is published. If it runs after PR review rounds landed commits, put those accepted findings in its brief.
 4. Hand off to toolbelt:finishing-a-development-branch.
@@ -104,7 +104,7 @@ The ledger, not the todo list, is the durable record:
 - **Minor findings:** the running roll-up the final review triages, plus findings parked with rulings.
 - **Exactly one `Next:` line** naming the next expected event (e.g. `Next: task 4 review verdict`).
 
-When the final review is clean and its fixes are merged, delete this plan's workspace.
+Retain the workspace through publication, review, and merge. Delivery owns cleanup after confirming the PR merged and reconciling linked issues. Without delivery, retain it until branch completion confirms merge or your human partner explicitly abandons the work; final review alone never triggers deletion.
 
 ## Parallel Tracks
 
