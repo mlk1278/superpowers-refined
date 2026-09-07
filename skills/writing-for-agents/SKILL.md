@@ -5,25 +5,25 @@ description: Use when editing the prose of any agent-consumed document — a ski
 
 # Writing for Agents
 
-Rules for any document an agent reads — a skill, an `AGENTS.md` or `CLAUDE.md`, a dispatch prompt, a linked doc. The packaging differs; the writing does not. The goal is the same process every run, not the same output.
+Rules for any document an agent reads — a skill, an `AGENTS.md` or `CLAUDE.md`, a dispatch prompt, a linked doc. Keep instructions clear enough for agents to follow and your human partner to audit.
 
 When the document is a skill, read [SKILL-MECHANICS.md](SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills.
 
 ## Pointers to other material
 
-A skill's description, or a line in `AGENTS.md` naming a doc, is a pointer: it says what the material is and when to read it. Its wording, not its target, decides whether the agent gets there. If needed material sits behind a weak pointer, sharpen the wording first; inline the material only if that fails.
+A skill's description, or a line in `AGENTS.md` naming a doc, is a pointer: it says what the material is and when to read it. The description must make the reading condition clear. If needed material sits behind a weak pointer, sharpen the wording first; inline the material only if that fails.
 
 - Front-load the trigger: the condition for reading goes before the contents.
 - One trigger per branch. Two synonyms for one case are that case written twice; collapse them.
-- Cut identity the target already states.
+- Avoid repeating the document title or contents in its trigger.
 
 Example: `Use when a test is flaky, order-dependent, or times out` beats `Notes on our async test helpers`.
 
 ## The two loads
 
-Every document spends one of two budgets. Context load is what sits in the agent's window every turn — an `AGENTS.md` line, a skill description — costing tokens and attention whether or not it fires. Cognitive load is what your human partner must remember: which documents exist and when to reach for each.
+Always-loaded instructions and descriptions use context on every task. Documents loaded only when needed save context, but your human partner should not have to remember when to request them.
 
-Material behind a pointer escapes context load for the price of its own line; material with no pointer rides entirely on cognitive load. Spend cognitive load where human judgement matters; remove it where it does not.
+A link keeps the full document out of context until it is needed. Give it a clear reading condition so the agent can find the right reference without prompting.
 
 ## Where material sits
 
@@ -39,7 +39,7 @@ Example: a review skill's four rules belong inline; the API reference they cite 
 
 Every step ends on a condition telling the agent it is done. Make it checkable and exhaustive: "every modified model accounted for" beats "produce a change list", which beats "understanding reached".
 
-A vague bound invites the agent to stop early. Sharpen it first — cheap and local. Split the sequence only when the bound is genuinely fuzzy and you have watched the agent rush it, and only across a real context boundary such as a subagent dispatch.
+If an agent stops too early, clarify the completion condition. Split the sequence only when a clearer condition has not helped and the split creates a useful pause or separate dispatch.
 
 ## When to split
 
@@ -47,14 +47,14 @@ Split a run of steps when later steps tempt the agent to rush the one in front o
 
 ## Word choice
 
-One word the model already knows beats a sentence explaining it. "A fast, deterministic, low-overhead loop" becomes "a tight loop". Invented words recruit nothing: you pay in definition tokens what a familiar word gives free.
+Use familiar terms; define new terms when needed. Remove repetition without deleting requirements: "fast, deterministic, low-overhead" cannot become "tight" if those properties matter. Name the action, owner, and required result directly.
 
-State the target behavior rather than the prohibition. Banning something puts it in context and makes it more available. "Write one-line comments" works where "don't write long comments" does not. Use a prohibition only as a guardrail you cannot phrase positively, and pair it with the positive target.
+State the target behavior directly. "Explain why the code needs the workaround" is more useful than "don't write vague comments". Use a prohibition only as a guardrail you cannot phrase positively, and pair it with the positive target.
 
 ## Pruning
 
 - Keep each rule in one place, so changing behavior is a one-place edit. The same rule in two places costs tokens and drifts.
-- The environment is a source of truth: `package.json` scripts, config files, `--help` output. Restate it only when the lookup is expensive or the answer is unwritten — the convention, the reason, the gotcha no config confesses.
+- The environment is a source of truth: `package.json` scripts, config files, `--help` output. Document conventions and rationale that those sources do not explain. Repeat exact values only when the task needs them inline.
 - Delete lines that no longer bear on what the document does.
 - Delete instructions the model already follows by default. Whether a line is a no-op is settled by running the document with and without it, not by argument. Delete the whole sentence rather than trimming its words.
 

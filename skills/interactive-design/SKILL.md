@@ -31,7 +31,7 @@ Backend-owned means a datum the frontend would obtain from the backend in produc
 
 ## 3. The loop
 
-Edit directly in this session: no subagent dispatch, no per-iteration review. Commit checkpoints frequently. On every shape change, update the fixture and its ledger entry in the same pass. Before the design may be declared nailed, exercise the empty and error variants of each fixture-backed surface through its fixture responses.
+Edit directly in this session: no subagent dispatch, no per-iteration review. Commit checkpoints frequently. On every shape change, update the fixture and its ledger entry in the same pass. Before the design may be declared complete, exercise the empty and error variants of each fixture-backed surface through its fixture responses.
 
 ## 4. Exit
 
@@ -66,10 +66,18 @@ During SDD this is the existing BLOCKED escalation. The human-approved resolutio
 ## 7. The ledger
 
 - Path: `.toolbelt/prototype/<feature-slug>/contracts.md`. Header: feature, branch, marker string, and inferred conventions when `.toolbelt/prototyping.md` was absent.
-- One entry per endpoint at plan altitude (REST: method, path, request/response shapes, status codes; other conventions: the project's API unit — GraphQL operation, RPC procedure — with shapes and error modes). The entry's identifier is what the marker line carries.
-- Statuses: `[FIXTURE]` (new route, canned; fields: fixture `path:line`, shapes, error statuses, `Notes` line for UI-derived semantics), `[EXISTING — EXTENDED]` (delta + fixture location only), `[EXISTING]` (consumed as-is, no marker), `[IMPLEMENTED]` (set during SDD when the fixture is replaced and the marker removed), `[PENDING]` (iteration mode only, iteration-mode.md: a datum rendered with placeholder data while its backing is deferred; lives in a separate **Pending** ledger subsection with a stable id — `P1`, `P2`, … — one per datum, since the endpoint is not yet known; fields: the surface/component showing it, what data is needed, the expected shape; no fixture, no marker yet).
+- One entry per endpoint with its contract (REST: method, path, request/response shapes, status codes; other conventions: the project's API unit — GraphQL operation, RPC procedure — with shapes and error modes). The entry's identifier is what the marker line carries.
+
+| Status | Meaning and fields |
+|---|---|
+| `[FIXTURE]` | New fixture route: fixture `path:line`, request/response shapes, error statuses, and `Notes` for UI-derived semantics. |
+| `[EXISTING — EXTENDED]` | Existing endpoint needs changes: delta and fixture location. |
+| `[EXISTING]` | Consumed as-is; no marker. |
+| `[IMPLEMENTED]` | Fixture replaced during SDD; marker removed. |
+| `[PENDING]` | Iteration mode only: placeholder data in a separate **Pending** subsection. One stable id (`P1`, `P2`, …) per datum, with its surface/component, data needed, and expected shape. No endpoint, fixture, or marker yet; resolve it per iteration-mode.md. |
+
 - After exit reconciliation the ledger adds an **Acceptance criteria** section: visual and interaction criteria from the approved prototype, including the exercised empty and error states.
-- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry. The Pending subsection exists only during an iteration-mode session and never survives iteration-mode.md's materialization.
+- Invariant: marker grep and ledger agree on what is still fake; each marker's endpoint id resolves to exactly one entry. The Pending subsection exists only during an iteration-mode session and never survives the pending-data resolution in iteration-mode.md.
 
 ```markdown
 ### GET /api/projects/:id/insights — [FIXTURE]
@@ -87,4 +95,4 @@ The ledger directory is ignored scratch, removed by delivery's post-merge cleanu
 
 ## 8. Iteration mode
 
-For the third entry — iterating on an existing surface — read [iteration-mode.md](iteration-mode.md) before §1; it changes the announce line, the gate delta, materialization, and exit routing.
+For the third entry — iterating on an existing surface — read [iteration-mode.md](iteration-mode.md) before §1; it changes the announce line, the fixture rule, pending-data resolution, and exit routing.

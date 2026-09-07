@@ -8,15 +8,15 @@ Read this when the entry was a request to iterate on an existing surface's UI. S
 
 §2's HARD-GATE authorizes the `[PENDING]` deferral itself: a datum may render placeholder data only while a `[PENDING]` entry naming it — surface, data needed, expected shape — is recorded in the ledger's Pending subsection, with a stable id, in the same edit. Everything else about the gate holds: backend-owned data only, the exemption list, the marker format for actual fixtures. Creating a real fixture immediately instead of a `[PENDING]` entry is always allowed.
 
-## Materialization
+## Resolve pending data
 
-Runs when the design is declared nailed, before §4's reconciliation. For each pending id, inspect the real API surface and map it to an endpoint entry — several pending ids may coalesce into one endpoint entry — resolving each endpoint to:
+Runs when the design is declared complete, before §4's reconciliation. For each pending id, inspect the real API surface and map it to an endpoint entry — several pending ids may coalesce into one endpoint entry — resolving each endpoint to:
 
 - `[EXISTING]` — an endpoint already serves the data: wire the frontend to it, delete the placeholder.
 - `[EXISTING — EXTENDED]` — an endpoint needs a delta: create the fixture for the delta with its marker, record the delta.
 - `[FIXTURE]` — no endpoint fits: create the fixture route with its marker.
 
-Then delete the emptied Pending subsection. Materialization may change what renders: re-exercise each affected surface — including the empty and error variants of anything newly fixture-backed — and return visible changes to the loop for your human partner's approval. The Pending subsection is empty before §4's reconciliation may run. A pending id that cannot be resolved — the data has no plausible source — goes to your human partner as a design question, never a silent deletion. From reconciliation on, the exit is §4's: same marker/ledger checks, same acceptance criteria, same contract-inventory presentation.
+Then delete the emptied Pending subsection. Resolving pending data may change what renders: re-exercise each affected surface — including the empty and error variants of anything newly fixture-backed — and return visible changes to the loop for your human partner's approval. The Pending subsection is empty before §4's reconciliation may run. A pending id that cannot be resolved — the data has no plausible source — goes to your human partner as a design question, never a silent deletion. From reconciliation on, the exit is §4's: same marker/ledger checks, same acceptance criteria, same contract-inventory presentation.
 
 ## Exit routing
 

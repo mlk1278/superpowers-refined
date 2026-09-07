@@ -7,7 +7,7 @@ Subagent (role: reviewer):
   description: "Re-review Task N fixes"
   model: [MODEL — REQUIRED: per SKILL.md Model Selection]
   prompt: |
-    Verdict each finding and inspect the fix diff — nothing else.
+    Mark each finding addressed or unresolved and inspect the fix diff.
 
     ## The Task
 

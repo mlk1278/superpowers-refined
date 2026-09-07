@@ -9,7 +9,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 Write the plan for a capable engineer with **zero context for our codebase**: the files each task touches, the contracts, each test's purpose, the verification.
 
-**The plan decides everything; the implementer writes the code.**
+**Resolve product and contract decisions in the plan; leave implementation details to the implementer.**
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
@@ -104,21 +104,21 @@ For shared substrate, take the core plus one representative consumer first. Late
 
 Required for every plan with more than one PR boundary or more than three tasks. A plan whose tracks are all `serial-N` states in one sentence why no tasks can run concurrently. The section follows `## PR Boundaries`; its table shape and declaration rules are in [execution-tracks.md](execution-tracks.md) — read it before declaring tracks.
 
-## Plan Altitude: Contracts, Not Implementations
+## Level of Detail
 
-Specify each artifact at the altitude where its decision lives:
+Specify the information needed to implement each artifact:
 
 | Artifact | The plan writes |
 |---|---|
 | Data model — schema, migrations, shared types | Complete code, once, in `## Data Model`; tasks derive from it |
 | Constants, config, fixtures | Exact values |
-| Functions and services | Signature stubs: name, parameters, return type, error behavior. A load-bearing line only when it is itself the decision |
+| Functions and services | Signature stubs: name, parameters, return type, error behavior. Exact implementation lines only when the requirement depends on them |
 | Endpoints | Method, path, request/response shape, status codes, capability |
 | Tests | One line per test: name — setup — assertion. Full code only where the harness is a trap with no in-repo precedent |
 | UI components | Name, props contract, states, primitives to compose |
 | Anything with in-repo precedent | The decision plus the reference to copy: `path:line` |
 
-**The altitude test:** a step is fully specified when two capable implementers working from it independently produce behaviorally interchangeable code.
+**Completeness check:** a step is fully specified when two capable implementers working from it independently produce behaviorally interchangeable code.
 
 ## Task Structure
 
@@ -204,7 +204,7 @@ Dispatch the reviewer with the plan and spec paths. It may fan out its own explo
 - **Task decomposition** — independently testable, within the 8-file limit, workable order
 - **Interface consistency** — types, signatures, and names agree across tasks
 - **Placeholders** — any step that defers a decision
-- **Altitude** — implementation code where a contract belongs; a Data Model missing or repeated
+- **Level of detail** — implementation code where a contract belongs; a Data Model missing or repeated
 - **Unflagged gotchas** — traps the plan does not warn about
 - **Global Constraints** — present, with exact values from the spec
 - **PR boundaries** — missing, horizontal, overlapping, or unjustified boundaries are defects; every task appears once, each independently verifiable
