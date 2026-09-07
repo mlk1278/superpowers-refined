@@ -15,7 +15,7 @@ description: Use when an approved implementation plan is ready to be implemented
 
 Read the plan. Do not redesign approved requirements; return any unresolved product decision to your human partner.
 
-Loop over the plan's `## PR Boundaries` table in order, running steps 2–5 for each.
+Follow `## PR Boundaries` in order, running steps 2–5 for each.
 
 Each boundary is one coherent delivery slice, sized by the independent judgments a reviewer must make. Two slices you would run concurrently and that edit the same files are one PR. Sequential slices may revisit the same file once the first has merged.
 
@@ -61,7 +61,7 @@ Once the boundary's broad final review is clean and its PR is open, start the ne
 
 Each chain has exactly one pr-monitor. Start it when its bottom PR opens, passing that layer's record — PR number, branch, full head SHA, base branch, and local-gate SHA. Always run it in the background. Resume it with the new layer's record when a dependent boundary's PR opens; an independent boundary starts its own chain.
 
-Process each monitor's return: merged, run step 6; blocked, surface it to your human partner. Never report the slice complete or end the session while the monitor runs.
+Process each monitor's return: merged, run step 6; blocked, surface it to your human partner. Never report the slice complete or end the session while the monitor runs. A completion notification is not that return.
 
 A monitor that looks dead is not grounds to start a second one: before re-dispatching any agent that owns external state, check that state directly.
 
