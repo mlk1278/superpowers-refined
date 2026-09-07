@@ -25,11 +25,11 @@ A bug is the same cycle: the failing test reproduces the bug, so it proves the f
 
 | Excuse | Reality |
 |---|---|
-| "I'll write tests after" | Tests written after pass by construction and prove nothing. |
+| "I'll write tests after" | Tests derived from the implementation can repeat its mistakes. First show that the test detects the missing behavior. |
 | "I already wrote the code, it would be a waste to delete it" | Sunk cost. Delete it; the test tells you what to rebuild. |
 | "I'll keep it as reference while I write the test" | Then the test is written to the code. Delete it. |
 | "Too simple to test" | Simple code breaks too, and the test takes a minute. |
-| "I'll test it manually" | Manual checks are not repeatable and are not evidence. |
+| "I'll test it manually" | Automate the reproduction so the same check can catch a regression. |
 
 ## When Stuck
 
