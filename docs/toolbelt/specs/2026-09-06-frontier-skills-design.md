@@ -2,7 +2,7 @@
 
 **Status:** Approved in conversation on 2026-09-06 after three Fable 5.1
 research passes (skill unslopping, visual verification, review cadence).
-Research reports and the fsmcrm evidence they drew on are summarised in
+Research reports and the project observations they drew on are summarised in
 Background; the reports themselves are session scratch and not committed.
 
 Three changes to the toolbelt, shipped as one release, 8.0.0:
@@ -309,7 +309,8 @@ its own task's smoke pass.
 
 ### Capture input and execution
 
-Bundle `skills/ux-gate/scripts/ux-capture` (executable Node ESM) and a
+Bundle `skills/ux-gate/scripts/ux-capture` (executable Node launcher), its
+explicit ESM implementation `ux-capture.mjs`, and a
 skill-relative `matrix.md` reference. The reference documents the JSON
 schema, defaults, actions, auth, theme setup, output, and failure results.
 Link it where the operator and orchestrator write their matrices.
@@ -637,6 +638,22 @@ that.
 
 ## Testing
 
+The plugin has no machine-specific dependency paths. Provision capture-test
+dependencies in a temporary directory when they are not already available:
+
+```bash
+capture_deps=$(mktemp -d)
+npm install --prefix "$capture_deps" --no-package-lock --no-save playwright
+export PLAYWRIGHT_MODULE="$capture_deps/node_modules/playwright"
+node "$PLAYWRIGHT_MODULE/cli.js" install chromium
+bash tests/toolbelt/test-ux-capture.sh
+bash tests/toolbelt/test-ux-capture-regressions.sh
+```
+
+Use the project's installed Playwright for normal UX runs; `--project-root`
+controls resolution. The test font is a bundled synthetic fixture, so its
+availability does not depend on installed operating-system fonts.
+
 Existing assertions that become false, each replaced in the same commit:
 
 - `tests/toolbelt/test-ux-gate.sh`: "throwaway Playwright script",
@@ -706,13 +723,13 @@ Acceptance, run after reinstalling both plugin caches:
 
 - Clean session, "Let's make a react todo list": brainstorming triggers
   before any code, in both harnesses.
-- Clean session in fsmcrm with the dev server running: "run the UX smoke on
-  /r/customers" produces a `mechanical.json` and stills without the agent
+- Clean session in a disposable consuming project with a running fixture
+  route: "run the UX smoke on /settings" produces a `mechanical.json` and stills without the agent
   writing a Playwright script.
 
 ## Out of scope
 
-- fsmcrm project files: the UX paragraph of `docs/REVIEW-GUIDANCE.md`,
+- Consuming-project configuration: the UX paragraph of `docs/REVIEW-GUIDANCE.md`,
   creating `.toolbelt/ux-policy.md` from the existing harness notes, and
   the overlap between its AGENTS.md self-UAT line and the smoke pass. A
   follow-up quick task in that repository.

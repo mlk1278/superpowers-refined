@@ -6,7 +6,7 @@
 
 **Architecture:** Three PR boundaries, chained. Boundary 1 changes the writing doctrine and then rewrites every skill under it, in four concurrent tracks split by which test files they own. Boundary 2 adds a bundled Playwright capture script with mechanical checks and in-browser pixel diff, and rewrites ux-gate around it. Boundary 3 adds the `Review: immediate | gate` task class, the implementer self-check, the gate reviewer, and the release.
 
-**Tech Stack:** Markdown skills, bash tests under `tests/toolbelt/`, Node 22 ESM for the capture script (Playwright resolved from the consuming project), `scripts/bump-version.sh`.
+**Tech Stack:** Markdown skills, bash tests under `tests/toolbelt/`, Node launcher with an explicit `.mjs` capture implementation (Playwright resolved from the consuming project), `scripts/bump-version.sh`.
 
 **Specification:** `docs/toolbelt/specs/2026-09-06-frontier-skills-design.md` (branch `spec/frontier-skills`, PR #5). Section references below (`Spec C2`) point at its components.
 
@@ -38,9 +38,9 @@
 - `tests/toolbelt/test-agent-routing.sh:162-206` pins bundled routes with `--author-harness claude`: the reviewer's Claude fallback is filtered out, so changing it from `opus-5` to `fable-5-1` leaves those expectations true. The specialty tests use `plan`, `security`, and `nonesuch`, none of which Task 15 adds. Task 15 adds new assertions for `ux` and `gate`.
 - `test-word-counts.sh` today ceilings SDD at 2140 and writing-plans at 2300; the spec ceilings are lower and the files gain content in Boundary 3. Boundary 1 rewrites must land SDD at or under 1500 words and writing-plans at or under 1600 so Boundary 3 fits under 1900.
 - `git grep` exits 0 on a match; absence checks in `test-doctrine.sh` (Task 11) must invert: `if git grep -q ...; then fail`.
-- Playwright may be absent on the machine running the tests. `test-ux-capture.sh` (Task 12) must detect that with the script's own exit 2 and print `SKIP` with exit 0, never a false PASS. On this machine a Playwright install with Chromium exists at `/Users/mkirk/projects/fsmcrm/node_modules/playwright` (browsers under `~/Library/Caches/ms-playwright`); run the test with `PLAYWRIGHT_MODULE=/Users/mkirk/projects/fsmcrm/node_modules/playwright` to get a real PASS. The extensionless ESM entry needs Node ≥ 22.7 (syntax detection) because the Codex archive ships no `package.json`; Node 22.23 is installed.
+- Playwright may be absent where tests run. Detect that with the script's exit 2 and report `SKIP`, never a false PASS. For a real run, install Playwright and Chromium in an isolated test environment and set `PLAYWRIGHT_MODULE` to that installation (see Spec Testing). The executable launcher imports an explicit `.mjs` file, so it works regardless of the containing package's module type. Use a Node version supported by the project's Playwright installation.
 - `tests/toolbelt/test-word-counts.sh` is red at HEAD today (`task-reviewer-prompt.md` 851/850). Task 9 clears it; tracks that run the full loop before Task 9 lands see that one failure and nothing else.
-- `tests/toolbelt/test-interactive-design.sh:44` uses `sed -n '1{/^---$/!q}; 1d; /^---$/q; p'`, which BSD sed on macOS rejects ("extra characters at the end of q command"), so the test exits non-zero before any needle on this machine. Task 4 (track `design`, which owns the file) replaces it with the portable `awk 'NR==1{if($0!="---")exit; next} /^---$/{exit} {print}'`. Until Task 4 lands, every "Expected: PASS" for that test holds only on GNU sed.
+- `tests/toolbelt/test-interactive-design.sh:44` uses `sed -n '1{/^---$/!q}; 1d; /^---$/q; p'`, which BSD sed on macOS rejects ("extra characters at the end of q command"), so the test exits non-zero before any needle on macOS. Task 4 (track `design`, which owns the file) replaces it with the portable `awk 'NR==1{if($0!="---")exit; next} /^---$/{exit} {print}'`. Until Task 4 lands, every "Expected: PASS" for that test holds only on GNU sed.
 - `sed -n '/<HARD-GATE>/,/<\/HARD-GATE>/p'` prints to end of file when a later line mentions the tag inline without a closing tag (writing-for-agents does today). Task 11's gate-length check anchors to whole-line tags: `/^<HARD-GATE>$/,/^<\/HARD-GATE>$/`. Skills may mention the tags inline only as backticked text on a single line.
 - New `*.sh` test files are linted by `scripts/lint-shell.sh`; Tasks 11, 12, and 18 run `scripts/lint-shell.sh <new file>` in their Verify step so shellcheck findings surface there, not at Task 21.
 - `tests/toolbelt/test-quick-task.sh:52` fails if quick-task mentions `pr-monitor`, `ux-gate`, `## Global Constraints`, `toolbelt:subagent-driven-development`, or `toolbelt:finishing-a-development-branch`; `test-delivery.sh` has two `assert_before` orderings ("Fetch the predecessor's remote head" before `toolbelt:using-git-worktrees`; `ux-gate` before "broad final review is the slice gate"). Task 10 keeps both.
@@ -211,12 +211,12 @@ and the `reviewer` role's fallback becomes `{"harness": "claude", "model": "fabl
 | PR | Outcome | Tasks | Depends on | Independent verification |
 |---|---|---|---|---|
 | 1 | Doctrine changed and every skill rewritten under it; word ceilings and doctrine test enforced | 1–11 | none | `for t in tests/toolbelt/*.sh tests/hooks/*.sh; do bash "$t" || exit 1; done` passes; `git grep -l 'EXTREMELY-IMPORTANT' skills` exits 1 |
-| 2 | Bundled UX capture script with mechanical checks and diff; ux-gate, implementer smoke, baseline, and routing rewritten around it | 12–15 | 1 | `PLAYWRIGHT_MODULE=/Users/mkirk/projects/fsmcrm/node_modules/playwright bash tests/toolbelt/test-ux-capture.sh` PASS; `test-ux-gate`, `test-agent-routing`, `test-delivery`, `test-interactive-design`, `test-fix-loop`, `test-reviewer-context`, `test-word-counts`, `test-doctrine` pass |
+| 2 | Bundled UX capture script with mechanical checks and diff; ux-gate, implementer smoke, baseline, and routing rewritten around it | 12–15 | 1 | `bash tests/toolbelt/test-ux-capture.sh` PASS; `test-ux-gate`, `test-agent-routing`, `test-delivery`, `test-interactive-design`, `test-fix-loop`, `test-reviewer-context`, `test-word-counts`, `test-doctrine` pass |
 | 3 | Risk-tiered review classes, self-check, gate reviewer, docs, and the 8.0.0 release | 16–21 | 2 | `bash tests/toolbelt/test-review-classes.sh`; `scripts/bump-version.sh --check` reports 8.0.0 everywhere; full `tests/toolbelt` and `tests/hooks` pass |
 
 Boundary 2 depends on 1 because it rewrites ux-gate, implementer-prompt, SDD, and delivery, which Boundary 1 rewrites first. Boundary 3 depends on 2 because its SDD gate section references the smoke pass and the parallel UX gate, and its self-check table carries the `UI smoke` row. Each boundary's verification passes without later boundaries. The base branch for Boundary 1 is `spec/frontier-skills` (the open spec PR), so the chain reviews as one stack.
 
-Acceptance after the chain merges is the orchestrator's step, not a task: reinstall both plugin caches per CLAUDE.md, then in a clean session send "Let's make a react todo list" and confirm brainstorming triggers before any code in both harnesses; and in fsmcrm with its dev server running, "run the UX smoke on /r/customers" produces a `mechanical.json` and stills without the agent writing a Playwright script.
+Acceptance after the chain merges is the orchestrator's step, not a task: reinstall both plugin caches per CLAUDE.md, then in a clean session send "Let's make a react todo list" and confirm brainstorming triggers before any code in both harnesses; and in a disposable consuming project with a running fixture route, "run the UX smoke on /settings" produces a `mechanical.json` and stills without the agent writing a Playwright script.
 
 ## Execution Tracks
 
@@ -763,6 +763,7 @@ git commit -m "Enforce word ceilings and doctrine across skills"
 
 **Files:**
 - Create: `skills/ux-gate/scripts/ux-capture`
+- Create: `skills/ux-gate/scripts/ux-capture.mjs`
 - Create: `tests/toolbelt/fixtures/ux-capture/index.html`
 - Create: `tests/toolbelt/fixtures/ux-capture/matrix.json`
 - Create: `tests/toolbelt/test-ux-capture.sh`
@@ -802,12 +803,12 @@ Expected, per assertion:
 
 - [ ] **Step 3: Implement the script**
 
-`#!/usr/bin/env node`, ESM. Structure: `parseArgs` (matrix path, `--out`, `--project-root`, `--smoke`, `--pathway` repeatable, `--help`; `--baseline` and `--video` accepted and ignored until Task 13); `resolvePlaywright(projectRoot)` per Global Constraints; browser launch wrapped so a failure prints the error and exits 2; `loadMatrix(path)` applying defaults; `applyTheme(context|page, theme, matrix.theme)` per mode; `mechanicalChecks()` — a single function serialised into `page.evaluate` returning `{checks, cls, clsSources, fonts}` implementing every row of the checks table except `axe`; the capture loop `for viewport → for theme → for pathway → newContext → addInitScript(layout-shift observer) → goto(baseUrl + path, networkidle) → for step: action, waitFor (15 s, `step-failed` on timeout), settle, still, crops, mechanical, entry`; reference screens after pathways; write `mechanical.json`; exit code from the max severity across entries. Console, uncaught-page-error, and request listeners are attached per page and drained per step. Validate matrix and configured auth before launching. Preserve blockers for failed scans and requested capture artifacts.
+`#!/usr/bin/env node` launcher using dynamic `import('./ux-capture.mjs')`; the implementation is explicit ESM. Structure: `parseArgs` (matrix path, `--out`, `--project-root`, `--smoke`, `--pathway` repeatable, `--help`; `--baseline` and `--video` accepted and ignored until Task 13); `resolvePlaywright(projectRoot)` per Global Constraints; browser launch wrapped so a failure prints the error and exits 2; `loadMatrix(path)` applying defaults; `applyTheme(context|page, theme, matrix.theme)` per mode; `mechanicalChecks()` — a single function serialised into `page.evaluate` returning `{checks, cls, clsSources, fonts}` implementing every row of the checks table except `axe`; the capture loop `for viewport → for theme → for pathway → newContext → addInitScript(layout-shift observer) → goto(baseUrl + path, networkidle) → for step: action, waitFor (15 s, `step-failed` on timeout), settle, still, crops, mechanical, entry`; reference screens after pathways; write `mechanical.json`; exit code from the max severity across entries. Console, uncaught-page-error, and request listeners are attached per page and drained per step. Validate matrix and configured auth before launching. Preserve blockers for failed scans and requested capture artifacts.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `bash tests/toolbelt/test-ux-capture.sh`
-Expected: `PASS`. If the test prints `SKIP`, rerun as `PLAYWRIGHT_MODULE=/Users/mkirk/projects/fsmcrm/node_modules/playwright bash tests/toolbelt/test-ux-capture.sh` and paste that `PASS` in the report; a report with only `SKIP` is incomplete. Then `scripts/lint-shell.sh tests/toolbelt/test-ux-capture.sh`.
+Expected: `PASS`. If the test prints `SKIP`, provision the isolated Playwright dependency from Spec Testing and rerun `bash tests/toolbelt/test-ux-capture.sh` and paste that `PASS` in the report; a report with only `SKIP` is incomplete. Then `scripts/lint-shell.sh tests/toolbelt/test-ux-capture.sh`.
 
 - [ ] **Step 5: Commit**
 
