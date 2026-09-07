@@ -20,42 +20,18 @@ Three changes to the toolbelt, shipped as one release, 8.0.0:
 
 ## Background
 
-**Unslopping.** Anthropic's Fable 5 prompting page says skills written for
-prior models "are often too prescriptive ... and can degrade output quality"
-and that a brief instruction now steers most behaviour. The prompting
-best-practices page says "CRITICAL: You MUST use this tool when..." phrasing
-now causes overtriggering; the fix is "dial back any aggressive language".
-The Opus 5 page says explicit verify-and-recheck instructions cause
-over-verification and should be removed. Claude Code re-injects the most
-recent invocation of each skill after auto-compaction (5,000 tokens per
-skill, 25,000 combined), so what survives compaction is now decided by
-length, not phrasing. The one measured counter-signal: Superpowers v6.2.0
-found that deleting test-driven-development's rebuttal rows dropped
-test-first behaviour under pressure from 8/10 to 5/10.
+The owner's recent skill runs repeated instructions, spent too much time
+verifying unchanged work, and missed visible frontend defects. The observed
+UX problems included unfinished controls, truncated labels, inconsistent
+loading states, mixed component styles, incorrect focus colours, and unclear
+action hierarchy. Project design rules and existing capture notes were not
+being supplied to the reviewer.
 
-**Visual verification.** No harness we use accepts video; Claude and OpenAI
-APIs take images only. Vision models reason through nameable labels and are
-documented to miss unnamed fine detail: five frontier models missed a removed
-street between two maps offset by 2px. Industry practice is deterministic
-diff first, a vision model only on what changed. The owner's own catches in
-fsmcrm (placeholder columns and disabled controls shipped, truncating
-labels, a loading skeleton that did not match the final layout, shadcn cards
-mixed into a tokenised redesign, wrong focus colour, action hierarchy) are
-consistency and finish problems that the current gate text tells the
-reviewer not to raise ("never personal taste"). fsmcrm now has a documented
-design system (`docs/FRONTEND-RULES.md`, a `/dev/design-system` catalog, a
-token palette CI check) that the reviewer is never pointed at, and a
-hard-won capture harness notes file that no skill reads.
-
-**Review cadence.** Reviewer accuracy collapses on diffs above roughly 150
-lines, so batched review must stay per-task inside the batch. A strong
-cross-model reviewer lifts quality; a weaker one measurably harms it.
-Self-judgment rubber-stamps; self-verification by exogenous evidence does
-not. Of 26 load-bearing findings in the owner's last six SDD workspaces, 13
-came from the brief, not the code, and one task ran seven review rounds.
-The 2026-09-01 spec kept per-task review on that data; this spec trades it
-for risk-tiered review and reinvests the budget in the plan reviewer and
-the gate reviewer.
+The earlier research reports were session scratch and are not available in
+this repository. Their numerical claims about model behaviour, compaction,
+and review accuracy are not requirements or validated benchmarks. This
+change is based on the observed workflow problems above; its tests must
+establish whether the revised instructions and capture process address them.
 
 ## Constraints
 
@@ -94,9 +70,7 @@ The bullet "Preserve forceful blocks verbatim" becomes:
 > instruction measurably failed under pressure; today that is
 > test-driven-development alone. Re-test them when the model changes.
 
-The bullet "Keep them short" gains one sentence: "Claude Code re-injects a
-skill after compaction, up to 5,000 tokens per skill; length, not phrasing,
-decides what survives."
+The bullet "Keep them short" gains one sentence: "Keep the instructions needed for the current task easy to find after compaction."
 
 ### `skills/writing-for-agents/SKILL.md`
 
@@ -195,6 +169,7 @@ Word ceilings, enforced by `tests/toolbelt/test-word-counts.sh`:
 | `skills/subagent-driven-development/gate-reviewer-prompt.md` | new | 700 |
 | `skills/writing-plans/SKILL.md` | 2289 | 1900 |
 | `skills/ux-gate/SKILL.md` | 742 | 950 |
+| `skills/ux-gate/matrix.md` | new | 750 |
 | `skills/writing-specs/SKILL.md` | 648 | 550 |
 | `skills/delivery/SKILL.md` | 936 | 900 |
 | `skills/pr-monitor/SKILL.md` | 856 | 850 |
@@ -311,278 +286,162 @@ inside it is unchanged.
 
 ## Component 3: Visual verification
 
-### Ownership
+### Scope and ownership
 
-Delivery's role table changes two rows and adds one:
+UX review applies to new user flows and material changes to interaction,
+layout, or responsive behaviour, or when explicitly requested. A routine
+button-colour, copy, or isolated CSS adjustment does not trigger a model
+review by itself. Judge the rendered effect, not the number of changed
+lines: a one-line global layout change can still need review. Delivery
+uses this same entry condition instead of treating every rendering diff
+as a request for UX review.
+
+The ux-gate description states that trigger. Its entry bundle contains the
+changed routes, base..head range, approved acceptance criteria, and a
+running isolated environment with queryable data. Its exit is `Pass` bound
+to the reviewed head SHA, or `Changes Required`. The gate does not fix code.
 
 | Work | Owner |
 |---|---|
-| UI smoke per task (mechanical checks and stills of the touched pathway) | Implementer, inside its task, before reporting DONE |
-| UX capture at the boundary (full matrix, diff, filmstrips) | Gate operator (role `errand`) dispatched by the orchestrator |
-| UX judgment | Reviewer routed with specialty `ux` |
+| Task smoke: mechanical checks and stills of the touched pathway | Implementer, before reporting DONE |
+| Task smoke matrix and command | Orchestrator, before dispatching the implementer |
+| Boundary capture and evidence selection | Gate operator, role `errand` |
+| UX judgment | Vision-capable reviewer, specialty `ux` |
 
-The sentence "Neither the orchestrator nor the implementer captures UX
-evidence" becomes "The orchestrator never captures UX evidence; the
-implementer captures only its own task's smoke pass."
+A rendering task still gets a cheap scripted smoke pass; that does not
+invoke a model reviewer. Non-rendering tasks report `UI smoke: not applicable`.
+The orchestrator never captures UX evidence; the implementer captures only
+its own task's smoke pass.
 
-### The capture script
+### Capture input and execution
 
-`skills/ux-gate/scripts/ux-capture` (Node, ESM, executable). Usage:
+Bundle `skills/ux-gate/scripts/ux-capture` (executable Node ESM) and a
+skill-relative `matrix.md` reference. The reference documents the JSON
+schema, defaults, actions, auth, theme setup, output, and failure results.
+Link it where the operator and orchestrator write their matrices.
 
-```
-ux-capture <matrix.json> --out <dir> [--smoke] [--baseline <dir>] [--video] [--pathway <name>]...
-```
+The matrix contains `baseUrl`, nonempty `pathways`, optional `storageState`,
+`themes`, `viewports`, theme configuration, required web-font families,
+allowed overflow/overlap/light-surface selectors, and reference routes.
+Each named pathway has a path and nonempty named steps. A step may have an
+action, selector, state label, wait selector, focus assertion, full-page
+capture, crops, and a motion flag. State labels describe fixtures; they do
+not create an error or loading state by themselves.
 
-- `--smoke`: first viewport only, every theme, mechanical checks, no axe, no
-  filmstrips, no diff. Exit 1 when any mechanical finding is at or above
-  `should`.
-- `--baseline <dir>`: after capture, diff each PNG against the same-named
-  PNG in the baseline. The diff is computed in the browser: both images
-  drawn on canvases in a blank page, pixel compare with a per-channel
-  tolerance of 8 and antialias-aware neighbour check, output the changed
-  bounding box and changed-pixel ratio. Captures with a ratio under 0.001
-  are recorded `unchanged` and excluded from the reviewer set. Changed
-  captures get a crop of the changed box padded by 24px at DPR 2, saved as
-  `<tag>-diff-crop.png`.
-- `--video`: `recordVideo` on every context, saved under `<out>/video/`.
-  Never referenced by the reviewer set.
-- `--pathway <name>`: restrict to named pathways (fix rounds).
+Actions: `click`, `hover`, `focus`, `scroll`, `press`, and `fill`. `press`
+uses page keyboard input when no selector is provided; `key` names the key.
+`fill` uses a selector and string `value`. `expectFocus` asserts which
+selector holds focus. `capture: false` performs the step and its checks
+without emitting images; use it for keyboard setup and assertions.
 
-Per capture the script records in `<out>/mechanical.json` an entry:
+Default viewports: 375×812 at DPR 2, 768×1024 at DPR 1, and 1440×900 at
+DPR 1. Default themes: light and dark. Theme modes are media, class,
+attribute (`data-theme`), and localStorage. Relative auth paths resolve
+from `--project-root`; all output paths resolve from the working directory.
 
-```json
-{"tag":"settings-save-error-375-dark","pathway":"settings","step":"save",
- "state":"error","width":375,"theme":"dark","dpr":2,
- "files":{"still":"settings-save-error-375-dark.png","crops":[],"filmstrip":null,"diffCrop":null},
- "diff":{"status":"changed|unchanged|new","ratio":0.012,"box":[x,y,w,h]},
- "checks":[{"check":"element-overflow","severity":"should","selector":"button.save","by":18}],
- "cls":0.02,"clsSources":["DIV.toolbar"],"console":[],"failedRequests":[],
- "fonts":"loaded","axe":[{"id":"color-contrast","impact":"serious","nodes":2}]}
-```
+Commands accept the matrix path, required `--out`, `--project-root`
+(default cwd), repeatable `--pathway`, `--baseline`, `--smoke`, and `--video`.
+Smoke uses the first viewport and all matrix themes, skipping axe,
+filmstrips, reference screens, and baseline comparison. Every run writes
+`mechanical.json` with `projectRoot` and capture entries. Each entry records
+its tag, pathway, step, state, width, theme, DPR, files, diff, checks, CLS,
+console errors, failed requests, fonts, and axe result. Stills use
+`<pathway>-<step>-<state>-<width>-<theme>.png`.
 
-Mechanical checks, all run in-page after `networkidle` and two animation
-frames, each producing a `check` entry with a severity:
+### Mechanical checks and failure handling
 
-| Check | Severity | Rule |
-|---|---|---|
-| `page-overflow` | blocker | `documentElement.scrollWidth > clientWidth + 1` |
-| `element-overflow` | should | a visible leaf's right or bottom edge exceeds its nearest sized ancestor that is not `overflow: auto|scroll`, unless the element or an ancestor matches an `allowOverflow` selector |
-| `clipped-text` | should | a text-bearing leaf with `scrollWidth > clientWidth + 1`, computed `overflow-x` not `visible`, and `text-overflow` not `ellipsis` |
-| `overlap` | should | two visible leaves, neither an ancestor of the other, neither `position: absolute|fixed`, whose rects intersect by more than 4px on both axes, unless either matches an `allowOverlap` selector |
-| `unclickable` | blocker | for each visible `button`, `a[href]`, `[role=button]`, `input`, `select`, `textarea`: `elementFromPoint` at the centre is neither the control nor inside it nor an ancestor of it |
-| `tap-target` | nit | at widths under 500, an interactive control smaller than 44×44 CSS px |
-| `layout-shift` | should | cumulative `layout-shift` entries without recent input exceed 0.1 between `load` and capture; sources recorded |
-| `console-error` | should | any `console` message of type `error` during the step |
-| `failed-request` | should | any response with status ≥ 400 or a `requestfailed` event during the step |
-| `broken-image` | should | `img.complete && naturalWidth === 0` |
-| `font-fallback` | should | `document.fonts.status !== "loaded"` after 3s, or a declared family in `matrix.fonts` for which `document.fonts.check` is false |
-| `theme-leak` | should | in a dark theme, a visible element whose computed background luminance exceeds 0.9 and whose area exceeds 2,000 CSS px², unless it matches an `allowLight` selector |
-| `axe` | as reported | `@axe-core/playwright` violations when the module resolves from the project; otherwise the entry `"axe":"unavailable"` |
+Keep page overflow, clipped content/text, overlap, covered controls, small
+tap targets, layout shift, console errors, failed requests, broken images,
+required web-font availability, dark-theme leakage, and optional axe checks.
+The plan's Data Model defines their thresholds and severities.
 
-Stills: viewport-height PNG per step, `animations: 'disabled'`,
-`caret: 'hide'`. Full page only when the step sets `fullPage: true`. DPR
-from the viewport entry. Component crops for each selector in the step's
-`crops` list at DPR 2.
+Check overlapping content within a positioned container; exclude intentional
+relationships between different overlay layers, not whole subtrees.
+Required web fonts must have a loaded declaration as well as pass the font
+loading check. Collect uncaught page exceptions alongside console errors.
 
-Filmstrips: for a step with `motion: true`, frames at 0, 150, and 400 ms
-after the action, plus one frame with `reducedMotion: 'reduce'`, stitched in
-the browser onto one canvas with a label under each frame and saved as
-`<tag>-filmstrip.png` at half scale.
+Exit 0 means the requested checks completed without findings at `should`
+or above; exit 1 means findings; exit 2 means the run cannot proceed.
+Reject empty dimensions or step lists, invalid actions, and missing
+configured auth before capture. A failed action, focus assertion, or wait
+is a `step-failed` blocker; record subsequent skipped steps. An installed
+axe scanner that fails is an `axe-error` blocker. Missing optional axe is
+`unavailable`, not a passing scan. Failed requested diffs, crops, or motion
+captures are blockers, with their errors in the report. A missing baseline
+image is `new`; an unreadable baseline image is an error.
 
-File naming: `<pathway>-<step>-<state>-<width>-<theme>[-crop-<n>|-filmstrip|-diff-crop].png`.
+### Evidence selection and cost
 
-The script's dependencies are `playwright` (resolved as the Constraints
-say) and optionally `@axe-core/playwright`. Nothing else.
+There is no fixed image-count limit. Choose coverage from the feature's
+size, acceptance criteria, changed dependencies, and rendering risks.
+Capture relevant breakpoints and supported themes for changed surfaces;
+exercise criteria-named states with isolated fixtures or seeded data.
+Choose additional dimensions only where they can reveal a different defect.
 
-### The matrix file
+Test keyboard navigation once per changed interaction unless responsive
+behaviour changes it. Assert Tab reachability, activation, and dismissal
+where relevant; direct programmatic focus does not establish keyboard
+reachability. Capture focus appearance when it changed. Use filmstrips
+only to review changed motion, rather than every open/close action.
 
-`.toolbelt/ux/matrix.json`, written by whoever runs the script, ignored
-scratch:
+Compare stills in the browser with per-channel tolerance 8 and the neighbour
+noise filter. Record the changed bounding box and pixel ratio. Any surviving
+change is `changed`, even below 0.1%; whole-image ratios do not determine
+whether a label or icon matters. Crop the changed region with 24px padding.
+Send relevant changed/new images, their useful crops or filmstrips, and
+reference screens. Include unchanged images when they are needed to assess
+an acceptance criterion; omit redundant images. Images precede text and are
+labelled `Image N: <tag>`.
 
-```json
-{
-  "baseUrl": "http://localhost:3000",
-  "storageState": ".toolbelt/ux/auth.json",
-  "theme": {"mode": "class", "target": "html", "values": {"light": "", "dark": "dark"}},
-  "themes": ["light", "dark"],
-  "viewports": [
-    {"name": "sm", "width": 375, "height": 812, "dpr": 2},
-    {"name": "md", "width": 768, "height": 1024, "dpr": 1},
-    {"name": "lg", "width": 1440, "height": 900, "dpr": 1}
-  ],
-  "fonts": ["Inter"],
-  "allowOverflow": ["[data-ux-allow-overflow]"],
-  "allowOverlap": ["[data-sonner-toast]"],
-  "allowLight": [".redesign-light"],
-  "referenceScreens": ["/r/customers", "/r/jobs"],
-  "pathways": [
-    {"name": "settings", "path": "/settings",
-     "steps": [
-       {"name": "open", "state": "default", "crops": ["form"]},
-       {"name": "save", "action": "click", "selector": "button[type=submit]", "state": "error", "motion": true, "waitFor": "text=Could not save"}
-     ]}
-  ]
-}
-```
+### Review and fixes
 
-`theme.mode` is one of `media` (emulate `prefers-color-scheme`), `class`
-(set the class on `target`), `attribute` (set `data-theme` on `target`), or
-`localStorage` (set `key` to the value before navigation). `waitFor` is a
-Playwright selector the step waits for before capturing; a step that times
-out is recorded as `{"check":"step-failed","severity":"blocker"}` with the
-error, and the step's still is still taken. `referenceScreens` are two
-unchanged routes captured at the first viewport in every theme and sent to
-the reviewer as design-system exemplars.
+Before model review, route every mechanical finding at `should` or above
+to the fix loop. Run any project token/palette check and attach its result.
+The reviewer reads the project design reference and `docs/REVIEW-GUIDANCE.md`
+when present and does not drive the browser or execute checks.
 
-### The project policy file
+Pass 1: mark each acceptance criterion met, not met, or not evidenced,
+with the relevant evidence. Pass 2: identify visible inconsistencies or
+usability problems in spacing, alignment, typography, contrast, action
+hierarchy, and states, using the project's design rules and reference
+screens. Explain the consequence and the relevant criterion or convention.
+Distinguish legitimate disabled states from unfinished controls. Do not
+infer component imports from screenshots; code review checks those.
 
-`.toolbelt/ux-policy.md`, optional, read by the gate operator and by an
-implementer before its smoke pass. Sections, each optional:
+Findings name severity (`blocker`, `should`, `nit`), evidence, expected and
+actual behaviour, and the component/file when known. Missing evidence itself
+can block a criterion. The operator maps findings to owning files.
 
-- **Launch** — the command that serves the app and the URL.
-- **Auth** — how to obtain `storageState`, or the login steps.
-- **Theme** — the `theme` object for the matrix.
-- **Data** — seed or fixture commands and the actors to use.
-- **Viewports and themes** — the supported set; overrides the defaults
-  above.
-- **Allowed exceptions** — the `allowOverflow`, `allowOverlap`, and
-  `allowLight` selectors.
-- **Design reference** — the design-system doc, the catalog route, and any
-  token or palette check command. The reviewer reads the doc and runs
-  nothing.
-- **Reference screens** — two routes.
-- **Harness notes** — capture gotchas learned in this project.
+Blockers and shoulds go to the owning implementer; nits go in the PR
+summary. Rerun affected pathways on the new head, including the nearest
+previously passing state for each affected component. A shared style/token
+change invalidates every consuming capture. Record carried and recaptured
+evidence and its source head. Diff against each pathway's last capture.
+After two unsuccessful rounds, send your human partner the remaining
+findings and evidence. The final verdict reports pathways covered separately
+from screenshot count and binds to the reviewed head. Use the docs-only
+carry-forward rule from finishing-a-development-branch Step 1.
 
-When the file is absent, the operator infers Launch, Auth, and Theme,
-records each inference in the run manifest, and uses the default viewports
-and both themes.
+### Project policy and prototype baseline
 
-### `skills/ux-gate/SKILL.md`
+Read optional `.toolbelt/ux-policy.md`: Launch, Auth, Theme, Data, viewports
+and themes, allowed exceptions, design reference, reference screens, harness
+notes. Infer missing launch/auth/theme conventions and record them.
 
-Description becomes: "Use to verify changed user-visible surfaces before a
-boundary's final review: scripted capture, mechanical checks, pixel diff
-against a baseline, and a two-pass vision review. Returns Pass or Changes
-Required."
+The orchestrator writes `.toolbelt/ux/smoke/task-<N>/matrix.json` and supplies
+the absolute smoke command before dispatching a rendering task. The
+implementer fixes `should`/blocker findings within its task, reports paths
+under **UI smoke**, or returns `DONE_WITH_CONCERNS` for an out-of-scope fix.
+Reviewers treat missing required smoke evidence as an Important finding.
 
-The skill keeps: the announce line; the entry bundle; the verdict contract
-bound to the head SHA; "The gate does not fix anything."; runtime preflight
-("nothing downstream may claim UX was verified"); pathways derived from the
-diff; the throwaway matrix under `.toolbelt/ux/`; the routed `ux` reviewer
-that must be vision-capable and never drives the browser;
-`docs/REVIEW-GUIDANCE.md` for the reviewer; "a finding, not a skip";
-"rerun the capture script on the new head"; "a new push invalidates prior
-evidence"; "before the final gate verdict"; "One primary UX reviewer by
-default"; "Do not manufacture states by editing app source"; the
-carry-forward invalidation rule; the pathways-vs-screenshot-count report.
+Interactive-design writes `.toolbelt/ux/matrix.json` and captures the
+approved prototype to `.toolbelt/ux/baseline/`, recording the matrix path in
+the ledger's acceptance criteria. Otherwise the gate captures the base
+branch with the same matrix. Both paths use the bundled script.
 
-Changed rules:
-
-1. **Capture is the bundled script.** "Write a throwaway Playwright script"
-   becomes "Write the matrix and run `scripts/ux-capture` from this skill's
-   directory." The naming convention line becomes the script's.
-2. **Every supported theme, every time.** "Themes: supported themes only,
-   and only when theme-specific styles or tokens changed" becomes "Capture
-   every supported theme for every changed surface; new markup with
-   hard-coded colours is where dark-mode regressions come from."
-3. **States beyond the criteria.** After the criteria-named states: "Also
-   exercise hover, focus, and keyboard reach on each changed control, one
-   scroll position past the fold when the surface scrolls, and every step
-   that opens, closes, or transitions, marked `motion`."
-4. **Baseline.** "Diff against the baseline: the interactive-design
-   prototype captures at `.toolbelt/ux/baseline/` when they exist,
-   otherwise a capture of the base branch at the same matrix. Send the
-   reviewer only changed and new captures, their diff crops, filmstrips,
-   and the reference screens."
-5. **Mechanical findings first.** "Every mechanical finding at `should` or
-   above is a finding before any image reaches the reviewer. Route them to
-   the fix loop with the capture; the reviewer sees the remaining set."
-6. **Two-pass review.** The reviewer dispatch carries images before text,
-   each labelled `Image N: <tag>`, then the acceptance criteria, the
-   mechanical report, the design reference doc's path when the policy names
-   one, and this instruction:
-
-   > Pass 1, criteria: for each acceptance criterion, met, not met, or not
-   > evidenced, with the image that shows it.
-   >
-   > Pass 2, design: judge the changed surfaces against the project's design
-   > reference and the two reference screens using these checks: spacing
-   > on the project's scale (default 8pt); alignment to shared edges; type
-   > scale and hierarchy; contrast; internal padding no larger than
-   > external margin; one primary action per context; components composed
-   > from the project's primitives rather than ad hoc equivalents; empty,
-   > loading, and error states that match the loaded layout; no placeholder
-   > or disabled controls shipped as final. Then answer once: where would a
-   > designer wince, and why?
-   >
-   > Every finding carries a severity (blocker, should, nit), the image
-   > reference, the component or file when you can name it, expected, and
-   > actual. A finding without an image reference is not a finding.
-
-   "against the approved criteria — never personal taste" is removed.
-7. **Routing findings.** "A finding the reviewer could not attach to a file
-   is mapped by the operator from the diff, not discarded." The line
-   "findings missing a screenshot or component file are unroutable and do
-   not count" becomes "a finding without a screenshot reference does not
-   count".
-8. **Fix loop.** Blockers and shoulds enter the fix loop; nits are listed in
-   the PR description. Rerun mechanical checks over the whole matrix and
-   stills for affected pathways plus the nearest unchanged neighbour, diff
-   against the previous round's captures, send only changed images. Two
-   rounds, then the owner gets the receipts.
-9. **Budget.** "Per round: at most 25 images, desktop at DPR 1, crops at
-   DPR 2, filmstrips only where motion exists, video never."
-10. **Placement.** Component 4 runs the gate in parallel with the
-    boundary's final code gate over the same head.
-
-### Per-task smoke
-
-`implementer-prompt.md` gains a section after Verification:
-
-> ## UI smoke
->
-> If your diff touches a file the app renders — a component, template,
-> style, route, or copy shown on screen — run the smoke pass before
-> reporting DONE: [UX_SMOKE_COMMAND] for the pathway your task changes.
-> Fix every finding it reports at `should` or above inside this task.
-> Report the run's `mechanical.json` path and the still paths under
-> **UI smoke** in your report; write `UI smoke: not applicable` when your
-> diff renders nothing.
-
-The orchestrator fills `[UX_SMOKE_COMMAND]` from the ux-policy Launch and
-Theme sections and the script path, and writes `not applicable` for a plan
-with no user-visible surface. The task reviewer and gate reviewer treat a
-missing UI smoke entry on a rendering diff as an Important finding.
-
-### Baseline from interactive-design
-
-§4 step 2 changes from "keep no prototype screenshots" to: "Run
-`scripts/ux-capture` from the ux-gate skill against the approved prototype
-with the session's `.toolbelt/ux/matrix.json` and keep the output at
-`.toolbelt/ux/baseline/`. The gate diffs against it." The ledger's
-Acceptance criteria section records the matrix path, and the matrix lists
-every surface the acceptance criteria name.
-
-### Routing
-
-`skills/agent-routing/defaults.json` adds:
-
-```json
-"reviewer_specialties": {
-  "ux": {
-    "harness": "codex", "model": "gpt-5.6-sol", "effort": "high",
-    "instructions": "Vision review of UX captures. Must be a vision-capable route.",
-    "fallbacks": [{"harness": "claude", "model": "fable-5-1", "effort": "high"}]
-  },
-  "gate": {
-    "harness": "codex", "model": "gpt-5.6-sol", "effort": "high",
-    "instructions": "Batched gate review and the boundary's final review. The most capable route on each harness.",
-    "fallbacks": [{"harness": "claude", "model": "fable-5-1", "effort": "high"}]
-  }
-}
-```
-
-The `reviewer` role's fallback changes from `opus-5`/`high` to
-`fable-5-1`/`high`. The agent-routing Roles table lists specialty `gate`.
+Add `ux` and `gate` specialties to agent-routing's bundled defaults, using
+the existing configured cross-harness reviewer routes. Concrete routes
+remain in `defaults.json`; project routing can override them.
 
 ## Component 4: Review cadence
 
@@ -716,8 +575,7 @@ table is unchanged.
 
 ### `skills/delivery/SKILL.md`
 
-Step 4 becomes: "When the boundary materially changes a user-visible
-surface, tell SDD the boundary is UX-gated; SDD runs ux-gate at the final
+Step 4 becomes: "When the boundary meets ux-gate’s entry condition or UX review is explicitly requested, tell SDD the boundary is UX-gated; SDD runs ux-gate at the final
 gate." The role table gains the Component 3 rows. "That broad final review
 is the slice gate; do not add another whole-slice review." stays.
 
