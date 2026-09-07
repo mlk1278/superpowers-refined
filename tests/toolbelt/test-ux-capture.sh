@@ -105,6 +105,7 @@ rewrite_matrix() {
 rewrite_matrix "$fixtures/matrix.json" "$tmp/matrix.json"
 rewrite_matrix "$fixtures/matrix-clean.json" "$tmp/matrix-clean.json"
 rewrite_matrix "$fixtures/matrix-healthy.json" "$tmp/matrix-healthy.json"
+rewrite_matrix "$fixtures/matrix-closed-modal.json" "$tmp/matrix-closed-modal.json"
 
 # --- smoke_finds_fixture_defects ------------------------------------------
 set +e
@@ -454,5 +455,22 @@ healthy_matrix=$(each "$tmp/healthy/mechanical.json" '
   fail "the healthy run did not cover three widths and both themes" "$healthy_matrix"
 [ "$healthy_code" -eq 0 ] || fail "expected exit 0 on the healthy fixture, got $healthy_code" "$healthy_out"
 echo "ok - healthy_patterns_clean"
+
+# --- unclickable_survives_closed_aria_modal --------------------------------
+# A closed <dialog aria-modal="true"> matches the modal selector but owns
+# nothing; it must not silence unclickable on the covered button page-wide.
+set +e
+closed_out=$(PLAYWRIGHT_MODULE="$module" node "$script" "$tmp/matrix-closed-modal.json" \
+  --out "$tmp/closed-modal" --project-root "$tmp/noaxe" 2>&1)
+closed_code=$?
+set -e
+[ -f "$tmp/closed-modal/mechanical.json" ] || fail "closed-modal run wrote no mechanical.json" "$closed_out"
+closed_hit=$(each "$tmp/closed-modal/mechanical.json" '
+  const hit = entries.some((e) => (e.checks || [])
+    .some((c) => c.check === "unclickable" && c.selector === "BUTTON#buy"));
+  console.log(hit ? "yes" : "no");')
+[ "$closed_hit" = "yes" ] || fail "a closed aria-modal dialog silenced unclickable on BUTTON#buy" "$closed_out"
+[ "$closed_code" -eq 1 ] || fail "expected exit 1 on the closed-modal fixture, got $closed_code" "$closed_out"
+echo "ok - unclickable_survives_closed_aria_modal"
 
 echo "PASS"

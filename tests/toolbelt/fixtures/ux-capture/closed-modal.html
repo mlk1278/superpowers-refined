@@ -1,0 +1,23 @@
+<!doctype html>
+<html class="">
+<head>
+<meta charset="utf-8">
+<title>ux-capture closed aria-modal fixture</title>
+<link rel="icon" href="data:,">
+<style>
+  body { margin: 8px; font: 14px/1.4 system-ui, sans-serif; background: #fafafa; color: #222; }
+  html.dark body { background: #111; color: #eee; }
+  #buy { display: block; min-width: 120px; min-height: 44px; background: #2b5; color: #fff; border: 0; }
+  .cover { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.4); }
+</style>
+</head>
+<body>
+  <h1>Covered button beside a closed dialog</h1>
+  <button id="buy">Buy</button>
+  <div class="cover"></div>
+  <dialog id="confirm" aria-modal="true">
+    <p>Confirm?</p>
+    <button id="yes">Yes</button>
+  </dialog>
+</body>
+</html>

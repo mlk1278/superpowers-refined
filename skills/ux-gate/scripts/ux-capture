@@ -374,8 +374,9 @@ const inPageChecks = (opts) => {
   // unclickable (blocker) and tap-target (nit)
   const controls = Array.from(document.querySelectorAll(controlSelector)).filter(visible);
   // A modal owns the page while it is open: a backdrop over everything else is
-  // the design, not a defect.
-  const modal = document.querySelector('[aria-modal="true"], dialog[open]');
+  // the design, not a defect. Only a rendered modal counts — a closed
+  // <dialog aria-modal="true"> matches the selector but owns nothing.
+  const modal = Array.from(document.querySelectorAll('[aria-modal="true"], dialog[open]')).find(visible) || null;
   const unreachableByDesign = (el) => {
     if (el.closest('[aria-hidden="true"], [inert]')) return true;
     const style = getComputedStyle(el);
