@@ -1,0 +1,54 @@
+<!doctype html>
+<html class="">
+<head>
+<meta charset="utf-8">
+<title>ux-capture fixture</title>
+<link rel="icon" href="data:,">
+<style>
+  body { margin: 8px; font: 14px/1.4 system-ui, sans-serif; background: #fafafa; color: #222; }
+  html.dark { background: #fff; }
+  .dark body { background: #111; color: #eee; }
+  #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 300px; background: rgba(0,0,0,0.01); }
+  #panel { border: 1px solid #888; padding: 8px; }
+  #banner { height: 0; }
+  #shifty { height: 0; }
+</style>
+</head>
+<body>
+  <div id="banner"></div>
+  <div id="shifty"></div>
+  <div class="card" style="width:200px;overflow:hidden">
+    <span class="overflow-child" style="display:inline-block;width:300px">Overflowing child text</span>
+  </div>
+  <button id="covered">Covered</button>
+  <div id="overlay"></div>
+  <div class="spacer" style="height:260px"></div>
+  <div class="hardcoded-white" style="background:#fff;width:200px;height:200px"></div>
+  <button id="open">Open</button>
+  <div id="panel" hidden>Panel content</div>
+  <button id="route">Route</button>
+  <a href="/clean.html" id="leave">Leave</a>
+  <!-- Pushes .below past the fold at every viewport, so a full-page still holds
+       a diff box the viewport crop could not reach. -->
+  <div class="filler" style="height:1000px"></div>
+  <div class="below" style="width:200px;height:200px"></div>
+<script>
+  setTimeout(function () {
+    document.getElementById('banner').style.height = '120px';
+  }, 300);
+  document.getElementById('open').addEventListener('click', function () {
+    document.getElementById('panel').hidden = false;
+  });
+  // A same-document navigation: the init script does not re-run, so window.__uxCls
+  // keeps its sum. The shift lands after 500 ms so it is not hadRecentInput.
+  document.getElementById('route').addEventListener('click', function () {
+    history.pushState({}, '', '/index.html?route=1');
+    setTimeout(function () {
+      var shifty = document.getElementById('shifty');
+      shifty.style.height = '40px';
+      shifty.className = 'on';
+    }, 700);
+  });
+</script>
+</body>
+</html>

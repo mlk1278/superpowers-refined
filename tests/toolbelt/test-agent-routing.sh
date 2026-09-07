@@ -206,6 +206,22 @@ assert_route "unknown specialty falls through to role" \
   '{"role":"reviewer","harness":"codex","model":"gpt-5.6-sol","effort":"high","fallbacks":[],"source":"bundled:role","fallback_reason":null}' \
   --project-root "$tmp/empty" --role reviewer --reviewer-specialty nonesuch --author-harness claude
 
+assert_route "bundled gate specialty, author claude" \
+  '{"role":"reviewer","harness":"codex","model":"gpt-5.6-sol","effort":"high","fallbacks":[],"source":"bundled:reviewer-specialty","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty gate --author-harness claude
+
+assert_route "bundled gate specialty, author codex" \
+  '{"role":"reviewer","harness":"claude","model":"fable-5-1","effort":"high","fallbacks":[],"source":"bundled:reviewer-specialty:fallback[0]","fallback_reason":"reviewer harness matches author harness"}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty gate --author-harness codex
+
+assert_route "bundled ux specialty, author claude" \
+  '{"role":"reviewer","harness":"codex","model":"gpt-5.6-sol","effort":"high","fallbacks":[],"source":"bundled:reviewer-specialty","fallback_reason":null}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty ux --author-harness claude
+
+assert_route "bundled ux specialty, author codex" \
+  '{"role":"reviewer","harness":"claude","model":"fable-5-1","effort":"high","fallbacks":[],"source":"bundled:reviewer-specialty:fallback[0]","fallback_reason":"reviewer harness matches author harness"}' \
+  --project-root "$tmp/empty" --role reviewer --reviewer-specialty ux --author-harness codex
+
 assert_route "explicit override" \
   '{"role":"implementer","harness":"run-harness","model":"run-model","effort":"medium","fallbacks":[{"harness":"run-fallback","model":"run-fallback-model","effort":"low"}],"source":"explicit","fallback_reason":null}' \
   --project-root "$tmp/project" --role implementer --override-harness run-harness \
@@ -282,8 +298,8 @@ for role, route in brief["roles"].items():
         if not route.get(field):
             fail(f"{role} is missing {field}")
 
-if "reviewer_specialties" in brief:
-    fail(f"unexpected specialties were {sorted(brief['reviewer_specialties'])}")
+if set(brief.get("reviewer_specialties", {})) != {"gate", "ux"}:
+    fail(f"brief specialties were {sorted(brief.get('reviewer_specialties', {}))}")
 
 if not brief.get("instructions"):
     fail("brief is missing project-wide instructions")

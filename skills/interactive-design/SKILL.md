@@ -7,13 +7,13 @@ description: "Use when your human partner accepts the frontend-first offer or as
 
 **Announce:** "I'm using interactive-design to prototype the frontend against fixture-backed contracts."
 
-Building the frontend is the design work. You and your human partner iterate on the real UI while every backend-owned datum arrives through a real API route returning fixture data. The output is working frontend code plus a reconciled contract ledger: the API the backend must now implement, settled by use rather than by argument.
+Building the frontend is the design work. You and your human partner iterate on the real UI while every backend-owned datum arrives through a real API route returning fixture data. The output is working frontend code and a ledger of the API contracts to implement.
 
 <ENTRY-GATE>
 Three ways in: your human partner accepted brainstorming's frontend-first offer, asked directly, or asked to iterate on an existing surface's UI. Never select this path yourself. The first two require brainstorming's approved intent-level design, with UI detail deferred here. For the third, the request itself is the entry. The feature's frontend and the API it consumes must live in this repository or its workspace; if they don't, stop and tell your human partner this path does not apply.
 </ENTRY-GATE>
 
-The intent-level design states what the feature does, who uses it, the data it needs, and a first sketch of the contracts.
+The intent-level design names the feature, audience, data needs, and initial contracts.
 
 ## 1. Setup
 
@@ -36,7 +36,7 @@ Edit directly in this session: no subagent dispatch, no per-iteration review. Co
 ## 4. Exit
 
 1. Reconcile. Every marker has a ledger entry matching its endpoint id, and every `[FIXTURE]` / `[EXISTING — EXTENDED]` entry has a marker (`[EXISTING]` and `[IMPLEMENTED]` entries carry none). Recorded shapes match what the fixtures actually return. Delete dead routes.
-2. Write the **Acceptance criteria** section into the ledger — visual and interaction criteria from the approved prototype, including the exercised empty and error states. ux-gate consumes these criteria later and captures its own screenshots; keep no prototype screenshots.
+2. Write `.toolbelt/ux/matrix.json` per ux-gate §2, listing every surface the criteria name, then run `scripts/ux-capture` from the ux-gate skill against the approved prototype into `.toolbelt/ux/baseline/`; the gate diffs against it. In the ledger’s **Acceptance criteria**, record absolute matrix and baseline paths and the prototype commit SHA.
 3. Present the final contract inventory to your human partner.
 4. On approval, invoke the mode's terminal skill — new-feature mode: `toolbelt:writing-specs`; iteration mode: the route confirmed in iteration-mode.md. Do NOT invoke any other skill.
 

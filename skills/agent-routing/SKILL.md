@@ -35,7 +35,7 @@ It returns every role at once — harness, model, effort, and per-role instructi
 | `implementer` | All code operations. Every repository edit. |
 | `errand` | Tracker tickets, notifications, status checks, scripted browser capture. Never edits repository files. |
 | `monitor` | A pull request through CI, review providers, inline review-finding fixes, and merge. |
-| `reviewer` | Review, with optional specialty `code`, `spec`, `plan`, or `ux`. |
+| `reviewer` | Review, with optional specialty `code`, `spec`, `plan`, `ux`, or `gate`. |
 
 The boundary that matters: **planning goes to the planner, always; code goes to the implementer — except review findings on the monitor's own PR, which it fixes inline.** `errand` is cheap because its work is small, not because it is a shortcut for real work.
 

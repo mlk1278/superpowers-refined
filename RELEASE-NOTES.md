@@ -2,6 +2,15 @@
 
 Toolbelt is a fork of [Superpowers](https://github.com/obra/superpowers). It diverged at upstream v6.1.1 (2026-07-02); every release up to and including that one is upstream's work, and those notes live at https://github.com/obra/superpowers.
 
+## v7.10.0 (2026-09-07)
+
+Shortens skill instructions and adds portable browser evidence capture for frontend verification.
+
+- Removes repeated instructions, vague wording, unsupported claims, and project-specific examples.
+- Limits UX model review to new flows, material interaction/layout/responsive changes, or explicit requests. Screenshot coverage scales with the change; task smoke checks need no model reviewer.
+- Adds browser capture with keyboard and focus assertions, optional image-free steps, accessibility and font checks, and errors that block verification instead of passing silently.
+- Keeps parallel tracks within one PR boundary, serializes primary-worktree operations, and preserves recovery records until delivery finishes.
+
 ## v7.9.0 (2026-09-01)
 
 Rewrites the planning and delivery skills in plain language and changes the

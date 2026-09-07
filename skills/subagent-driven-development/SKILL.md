@@ -9,7 +9,7 @@ Run the plan to completion. Stop for your human partner only on an unresolvable 
 
 ## The Process
 
-1. Read the plan once. Create todos and the ledger.
+1. Read the plan once. Execute only the caller’s active PR boundary and its tasks; without a caller, select the next unfinished boundary. Create todos and the ledger.
 2. Pre-flight scan, then per task: record BASE (current head), dispatch the implementer with its brief, answer its questions, build the review package on DONE, dispatch the task reviewer, run the fix loop, mark the task complete in todos and the ledger.
 3. After all tasks, dispatch the final whole-branch reviewer ([code-reviewer.md](../requesting-code-review/code-reviewer.md)) before the branch is published. If it runs after PR review rounds landed commits, put those accepted findings in its brief.
 4. Hand off to toolbelt:finishing-a-development-branch.
@@ -20,7 +20,7 @@ Run the plan to completion. Stop for your human partner only on an unresolvable 
 
 ## Model Selection
 
-Caller routing takes precedence: plan route, then project route, then the session routing brief. Every role you dispatch comes from the brief; you stay the orchestrator. If no route resolves, stop and tell your human partner; do not substitute your own judgment for a missing route. The final whole-branch review gets the most capable route offered. Name the model in every dispatch; an omitted model inherits your session's model.
+Caller routing takes precedence: plan route, then project route, then the session routing brief. Every role you dispatch comes from the brief; you stay the orchestrator. If no route resolves, stop and tell your human partner; do not substitute your own judgment for a missing route. Resolve the final whole-branch review with specialty `gate`, honoring caller overrides. Name the model in every dispatch; an omitted model inherits your session's model.
 
 ## Handling Implementer Status
 
@@ -35,7 +35,7 @@ Resolve every reviewer "⚠️ Cannot verify from diff" item yourself before mar
 
 ## The Fix Loop
 
-Trigger: spec ❌, any Critical or Important finding, or a ⚠️ item you confirmed. Two routes leave first:
+Trigger: spec ❌, any Critical or Important finding, or a ⚠️ item you confirmed. Handle these separately:
 
 - **Minor findings** go to the ledger roll-up.
 - **Plan-mandated findings** are the human's decision: present the finding beside the plan text and ask which governs.
@@ -82,7 +82,9 @@ Surface any plan or brief mandating broader verification than this policy; neith
 
 ## File Handoffs
 
-- **Task brief:** run `scripts/task-brief PLAN_FILE N`. The dispatch carries: where the task fits, in one line; the brief path, introduced as "read this first — it is your requirements, with the exact values to use verbatim"; interfaces and decisions from earlier tasks; the plan's Global Constraints and Known Gotchas; your resolution of any ambiguity you spotted; the report-file path and report contract. Exact values appear only in the brief.
+Before dispatching a rendering task, read [the UX matrix reference](../ux-gate/matrix.md) and optional `.toolbelt/ux-policy.md`. Write `.toolbelt/ux/smoke/task-<N>/matrix.json` for that task's pathway. Include the resolved Launch command, working directory, and isolated server URL in the brief; the implementer starts it and checks readiness before smoke capture. Fill `[UX_SMOKE_COMMAND]` with absolute script, matrix, output, and project-root paths so it works in the implementer's workspace. The smoke pass does not invoke a UX reviewer.
+
+- **Task brief:** run `scripts/task-brief PLAN_FILE N`. The dispatch carries: where the task fits, in one line; the brief path, introduced as "read this first — it is your requirements, with the exact values to use verbatim"; interfaces and decisions from earlier tasks; the plan's Global Constraints and Known Gotchas; your resolution of any ambiguity you spotted; the report-file path and report contract; the smoke command for `[UX_SMOKE_COMMAND]`, built from `.toolbelt/ux-policy.md` when the plan has a user-visible surface. Exact values appear only in the brief.
 - **Report file:** named after the brief (`…/task-N-brief.md` → `…/task-N-report.md`). The implementer writes its full report there and returns status, commits, a one-line test summary, and concerns.
 - **Reviewer inputs:** the brief, the report, the review package, the smell baseline (`../requesting-code-review/smell-baseline.md`), and the constraints binding the task.
 - **Review package:** `scripts/review-package --plan PLAN_FILE BASE HEAD` for tasks, `scripts/review-package --plan PLAN_FILE MERGE_BASE HEAD` for the final review (MERGE_BASE = `git merge-base main HEAD`). Pass the printed path as `[DIFF_FILE]`.
@@ -98,11 +100,12 @@ The ledger, not the todo list, is the durable record:
 
 - **Header:** branch, plan path, current exact head SHA. The plan path is the ledger's identity.
 - **One line per task:** `Task N: in-progress (agent <id>, route <harness>/<model>/<effort>)`, `Task N: blocked (<why>)`, or `Task N: complete (commits <base7>..<head7>, review clean, route <harness>/<model>/<effort>, report <path>)`. The route is the resolved one from agent-routing, copied from the dispatch.
+- **Final review:** save the reviewer’s report and record `Final review: clean at <full SHA>, route <harness/model/effort>, report <absolute path>`; write it before handoff. After interruption, reuse only when the report verifies that verdict at the current head.
 - **Active agents:** one line per live dispatch; remove it when that agent's final answer arrives.
 - **Minor findings:** the running roll-up the final review triages, plus findings parked with rulings.
 - **Exactly one `Next:` line** naming the next expected event (e.g. `Next: task 4 review verdict`).
 
-When the final review is clean and its fixes are merged, delete this plan's workspace.
+Retain the workspace through publication, review, and merge. Delivery owns cleanup after confirming the PR merged and reconciling linked issues. Without delivery, retain it until branch completion confirms merge or your human partner explicitly abandons the work; final review alone never triggers deletion.
 
 ## Parallel Tracks
 

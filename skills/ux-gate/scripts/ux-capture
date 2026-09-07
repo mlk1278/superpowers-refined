@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+// Dynamic import works in both CommonJS and ESM package scopes.
+import('./ux-capture.mjs').catch((error) => {
+  console.error(`ux-capture: ${error.message}`);
+  process.exitCode = 2;
+});
