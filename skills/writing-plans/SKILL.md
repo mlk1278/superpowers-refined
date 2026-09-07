@@ -218,4 +218,4 @@ After the review is clean, hand your human partner the whole plan; delivery owns
 
 > "Plan complete and saved to `docs/toolbelt/plans/<filename>.md`, reviewed through <reviewer harness>. Handing the plan to delivery."
 
-Delivery runs toolbelt:subagent-driven-development per boundary: fresh subagent per task, task review after each, broad whole-branch review at the end.
+Once the plan is approved, invoke toolbelt:delivery. Do NOT invoke any other skill. Delivery owns execution and review per boundary.

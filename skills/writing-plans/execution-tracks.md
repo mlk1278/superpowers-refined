@@ -8,14 +8,14 @@ Read this before declaring task chains and their integration points.
 | Track | PR | Tasks | Depends on | Files touched (summary) | Why safe |
 |---|---|---|---|---|---|
 | serial-1 | 1 | 1–2 | — | shared types, API contract | mainline (contract freeze) |
-| backend | 1 | 3–6 | serial-1 | 1 | src/server/** | disjoint from frontend, e2e-specs |
-| frontend | 1 | 7–9 | serial-1 | 1 | src/app/settings/** | disjoint from backend, e2e-specs |
-| e2e-specs | 1 | 10 | serial-1 | 1 | e2e/** | disjoint from backend, frontend |
+| backend | 1 | 3–6 | serial-1 | src/server/** | disjoint from frontend, e2e-specs |
+| frontend | 1 | 7–9 | serial-1 | src/app/settings/** | disjoint from backend, e2e-specs |
+| e2e-specs | 1 | 10 | serial-1 | e2e/** | disjoint from backend, frontend |
 | serial-2 | 1 | 11 | backend, frontend, e2e-specs | (integration) | merge point |
 ```
 
 - Track ids are kebab-case branch/worktree names. `serial-N` tracks run in the primary worktree, named tracks in sub-worktrees.
-- Each track belongs to one PR boundary; all its tasks and its fork’s integration task stay within that boundary. Tasks appear once, in numeric order within its track.
+- Each track belongs to one PR boundary; all its tasks and its fork’s integration task stay within that boundary. Tasks appear once, in numeric order within each track.
 - `Depends on` names tracks, forming a DAG. Earlier-boundary dependencies must be present in the starting commit. Within the active boundary, a track is ready when all its dependencies are complete and reviewed.
 
 - **Disjoint file sets.** No file is created or modified by two concurrent tracks, including tests, fixtures, and generated-file sources.

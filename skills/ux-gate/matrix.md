@@ -70,7 +70,7 @@ mutating pathways so repeated actions reach the same state.
 `--smoke` uses the first viewport and every matrix theme, skipping axe,
 filmstrips, references, and diffs. `--pathway <name>` is repeatable.
 `--baseline <dir>` compares same-named stills. `--video` records optional
-local video; reviewers receive images.
+local video on a best-effort basis: saving failures are reported on stderr and do not change the exit code. Reviewers receive images, which remain required evidence.
 
 `mechanical.json` records checks and artifact paths per step. Exit 0 means
 no findings at `should` or above, 1 means findings, and 2 means cannot run.

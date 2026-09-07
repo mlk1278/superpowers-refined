@@ -82,7 +82,7 @@ Subagent (role: implementer):
 ```
 
 **Placeholders:**
-- `[UX_SMOKE_COMMAND]` — the absolute ux-capture invocation and task matrix supplied by the orchestrator
+- `[UX_SMOKE_COMMAND]` — the absolute ux-capture invocation and task matrix, plus Launch command, working directory, and isolated server URL supplied by the orchestrator
   (`<ux-gate skill dir>/scripts/ux-capture <matrix> --smoke --pathway <name>
   --out .toolbelt/ux/smoke/task-N --project-root <repo root>`), or
   `not applicable` for a task that renders nothing.

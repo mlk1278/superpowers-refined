@@ -99,7 +99,7 @@
       "harness": "codex",
       "model": "gpt-5.6-sol",
       "effort": "high",
-      "instructions": "Batched gate review and the boundary's final review. The most capable route on each harness.",
+      "instructions": "The boundary's final review. The most capable route on each harness.",
       "fallbacks": [
         {
           "harness": "claude",

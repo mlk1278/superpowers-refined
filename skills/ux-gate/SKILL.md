@@ -12,7 +12,7 @@ description: "Use before final review of new user flows or material changes to i
 
 ## Ownership
 
-The gate operator captures evidence; a reviewer routed with specialty `ux` judges it. The orchestrator never captures UX evidence; the implementer captures only its own task's smoke pass. A task smoke pass runs scripted checks without invoking this reviewer.
+The orchestrator runs this skill: it dispatches the gate operator for every capture and recapture, the reviewer with specialty `ux` for judgment, and implementers for fixes. The orchestrator never captures UX evidence; the implementer captures only its own task's smoke pass. A task smoke pass runs scripted checks without invoking this reviewer.
 
 ## 0. Runtime preflight
 
@@ -36,7 +36,7 @@ Record the reason for omitted dimensions. Choose enough evidence for the feature
 
 ## 2. Capture
 
-Read [matrix.md](matrix.md) for the input schema and actions. Write `.toolbelt/ux/matrix.json`. Resolve this skill's absolute directory as `UX_SKILL_DIR` from its loaded path, then run from the project root:
+Read [matrix.md](matrix.md) for the input schema and actions. Write `.toolbelt/ux/matrix.json`. Give the gate operator this skill’s absolute directory as `UX_SKILL_DIR` and the capture command to run from the project root:
 
 ```bash
 "$UX_SKILL_DIR/scripts/ux-capture" .toolbelt/ux/matrix.json \
@@ -44,7 +44,7 @@ Read [matrix.md](matrix.md) for the input schema and actions. Write `.toolbelt/u
   --baseline .toolbelt/ux/baseline/
 ```
 
-Use interactive-design's prototype baseline when present; otherwise capture the base branch with the same matrix into the baseline directory first. Stills are `<pathway>-<step>-<state>-<width>-<theme>.png`. A step the script cannot complete is a finding, not a skip. Exit 2 means capture could not run; resolve it before review.
+Use the prototype ledger’s absolute baseline path when present. Otherwise have the operator serve the base branch in an isolated environment and capture the same matrix first. If no baseline can be served, omit `--baseline`, review all stills as `new`, and record the limitation. A supplied but inaccessible prototype baseline is missing evidence to resolve. Stills are `<pathway>-<step>-<state>-<width>-<theme>.png`. A step the script cannot complete is a finding, not a skip. Exit 2 means capture could not run; resolve it before review.
 
 ## 3. Mechanical findings first
 
@@ -62,7 +62,7 @@ Put images first, labelled `Image N: <tag>`, then criteria, mechanical results, 
 >
 > Each finding names a severity (blocker, should, nit), the evidence, expected and actual behavior, and component/file when known. Missing evidence can block a criterion.
 
-The operator maps findings to owning files when the reviewer cannot.
+The orchestrator maps findings to owning files when needed.
 
 ## 5. Fix loop
 

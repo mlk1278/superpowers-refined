@@ -65,4 +65,27 @@ assert_contains "$worktrees" 'parallel-workspace rules' \
 assert_contains "$worktrees" 'concurrency limit lower than 3' \
   "policy may lower the track cap, never raise it"
 
+# Validate the copyable example as structured input, including task partition
+# and dependency order. Phrase assertions alone cannot catch a shifted cell.
+python3 - "$tracks" <<'PY_TABLE'
+import re, sys
+from pathlib import Path
+rows = [line for line in Path(sys.argv[1]).read_text().splitlines() if line.startswith('|')]
+columns = [[cell.strip() for cell in row.strip('|').split('|')] for row in rows]
+assert columns and all(len(row) == 6 for row in columns), 'track table must have six cells per row'
+seen_tracks, seen_tasks = set(), set()
+for track, boundary, tasks, depends, files, why in columns[2:]:
+    assert track not in seen_tracks and boundary.isdecimal(), (track, boundary)
+    assert files and why, track
+    for dependency in depends.split(', '):
+        assert dependency == '—' or dependency in seen_tracks, (track, dependency)
+    ends = [int(n) for n in re.split('[–-]', tasks)]
+    numbers = set(range(ends[0], ends[-1] + 1))
+    assert not numbers & seen_tasks, (track, 'duplicate task')
+    seen_tracks.add(track)
+    seen_tasks.update(numbers)
+assert seen_tasks == set(range(1, 12)), 'example must assign every task exactly once'
+print('ok - track example has valid columns, task partition, and dependencies')
+PY_TABLE
+
 echo "PASS"
