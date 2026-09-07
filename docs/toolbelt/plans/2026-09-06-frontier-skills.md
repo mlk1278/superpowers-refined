@@ -42,7 +42,7 @@
 - `tests/toolbelt/test-word-counts.sh` is red at HEAD today (`task-reviewer-prompt.md` 851/850). Task 9 clears it; tracks that run the full loop before Task 9 lands see that one failure and nothing else.
 - `tests/toolbelt/test-interactive-design.sh:44` uses `sed -n '1{/^---$/!q}; 1d; /^---$/q; p'`, which BSD sed on macOS rejects ("extra characters at the end of q command"), so the test exits non-zero before any needle on macOS. Task 4 (track `design`, which owns the file) replaces it with the portable `awk 'NR==1{if($0!="---")exit; next} /^---$/{exit} {print}'`. Until Task 4 lands, every "Expected: PASS" for that test holds only on GNU sed.
 - `sed -n '/<HARD-GATE>/,/<\/HARD-GATE>/p'` prints to end of file when a later line mentions the tag inline without a closing tag (writing-for-agents does today). Task 11's gate-length check anchors to whole-line tags: `/^<HARD-GATE>$/,/^<\/HARD-GATE>$/`. Skills may mention the tags inline only as backticked text on a single line.
-- New `*.sh` test files are linted by `scripts/lint-shell.sh`; Tasks 11, 12, and 18 run `scripts/lint-shell.sh <new file>` in their Verify step so shellcheck findings surface there, not at Task 21. `shellcheck` is not on PATH on this machine: when `command -v shellcheck` fails, write "lint skipped: shellcheck not installed" in the report and continue; run `bash -n <file>` instead.
+- New `*.sh` test files are linted by `scripts/lint-shell.sh`; Tasks 11, 12, and 18 run `scripts/lint-shell.sh <new file>` in their Verify step so shellcheck findings surface there, not at Task 21. When `command -v shellcheck` fails, write "lint skipped: shellcheck not installed" in the report and continue; run `bash -n <file>` instead.
 - `tests/toolbelt/test-quick-task.sh:52` fails if quick-task mentions `pr-monitor`, `ux-gate`, `## Global Constraints`, `toolbelt:subagent-driven-development`, or `toolbelt:finishing-a-development-branch`; `test-delivery.sh` has two `assert_before` orderings ("Fetch the predecessor's remote head" before `toolbelt:using-git-worktrees`; `ux-gate` before "broad final review is the slice gate"). Task 10 keeps both.
 - `tests/toolbelt/test-workflow-summary.sh:28` requires exactly two lines matching `^- \`[a-z-]+\`:` in `docs/AGENTS-SNIPPET.md`; Task 20's new sentence must not be formatted as such a bullet.
 
@@ -80,7 +80,7 @@ selector and use `page.keyboard.press(key)`.
   "allowOverflow": ["[data-ux-allow-overflow]"],
   "allowOverlap": ["[data-sonner-toast]"],
   "allowLight": [".redesign-light"],
-  "referenceScreens": ["/r/customers", "/r/jobs"],
+  "referenceScreens": ["/settings", "/projects"],
   "pathways": [
     {"name": "settings", "path": "/settings",
      "steps": [
@@ -771,8 +771,6 @@ git commit -m "Enforce word ceilings and doctrine across skills"
 - Create: `tests/toolbelt/fixtures/ux-capture/index.html`
 - Create: `tests/toolbelt/fixtures/ux-capture/matrix.json`
 - Create: `tests/toolbelt/test-ux-capture.sh`
-- Create: `tests/toolbelt/test-ux-capture-regressions.sh`
-- Create: `tests/toolbelt/ux-capture-regressions.cjs`
 - Create: `skills/ux-gate/matrix.md`
 
 **Interfaces:**
@@ -794,7 +792,7 @@ git commit -m "Enforce word ceilings and doctrine across skills"
 - `skip_without_playwright` — run the script on the fixture matrix with `PLAYWRIGHT_MODULE` unset and `--project-root "$tmp/empty"` (a directory holding only `{}` in `package.json`) — exit 2 and stderr contains `cannot resolve 'playwright'`; the test then decides the real run's module: `$PLAYWRIGHT_MODULE` if set, else `node -e "console.log(require.resolve('playwright'))"` from the repo root if that succeeds; if neither, print `SKIP - playwright unavailable` and exit 0
 - `smoke_finds_fixture_defects` — serve `fixtures/ux-capture/`, rewrite `baseUrl` into a temp matrix, run `--smoke --out $tmp/out --project-root "$tmp/empty"` with `PLAYWRIGHT_MODULE` set to the module found above — exit 1; `mechanical.json` parses; contains a `checks[]` entry `element-overflow` with selector `SPAN.overflow-child`, `unclickable` with selector `BUTTON#covered`, and, for the dark capture, `theme-leak` with selector `DIV.hardcoded-white`; every still named per Data Model exists
 - `smoke_uses_first_viewport_only` — same run — every entry has `width == 375`
-- Regression cases in `ux-capture-regressions.cjs`, run by `test-ux-capture-regressions.sh`: reject empty dimensions/steps and missing configured auth; collect uncaught application errors; detect overlapping siblings inside positioned containers and missing declared web fonts; retain a one-character label diff; fail an installed axe scan and a corrupt baseline; use Tab/Enter/Escape with focus/outcome assertions and omit images for `capture: false` steps. Exercise the broken behavior before implementing the fixes.
+
 
 The fixture `index.html`: a `<div class="card" style="width:200px;overflow:hidden">` containing a `<span class="overflow-child" style="display:inline-block;width:300px">`; a `<button id="covered">Covered</button>` in the first 300px of the page under a `position:absolute` full-width overlay `div`; a `<div class="hardcoded-white" style="background:#fff;width:200px;height:200px">`; `<html class="">` with CSS `.dark body{background:#111;color:#eee}`; a `<button id="open">Open</button>` that toggles a `<div id="panel" hidden>` (used by Task 13's motion test). `matrix.json`: `theme.mode: "class"`, `target: "html"`, both themes, the three default viewports, one pathway `home` at `/index.html` with steps `open` (default) and `panel` (`action: click`, `selector: #open`, `motion: true`, `waitFor: #panel:not([hidden])`).
 
@@ -829,6 +827,10 @@ git commit -m "ux-capture: scripted stills with mechanical checks and smoke mode
 - Modify: `tests/toolbelt/test-ux-capture.sh`
 - Modify: `tests/toolbelt/fixtures/ux-capture/index.html`
 
+- Create: `tests/toolbelt/test-ux-capture-regressions.sh`
+- Create: `tests/toolbelt/ux-capture-regressions.cjs`
+- Create: `tests/toolbelt/fixtures/ux-capture/test-font.ttf`
+
 **Interfaces:**
 - Consumes: Task 12's script and test
 - Produces: `--baseline <dir>` (diff per Data Model, `-diff-crop.png` for changed captures), filmstrips for `motion` steps, `--video`, `axe` entries or `"unavailable"`
@@ -842,6 +844,7 @@ git commit -m "ux-capture: scripted stills with mechanical checks and smoke mode
 - [ ] **Step 1: Extend the test**
 
 Add assertions:
+- Regression cases in `ux-capture-regressions.cjs`, run by `test-ux-capture-regressions.sh`: reject empty dimensions/steps and missing configured auth; collect uncaught application errors; detect overlapping siblings inside positioned containers and missing declared web fonts; retain a one-character label diff; fail an installed axe scan and a corrupt baseline; use Tab/Enter/Escape with focus/outcome assertions and omit images for `capture: false` steps. Exercise the broken behavior before implementing the fixes.
 - `filmstrip_for_motion_step` — a full run (`--out $tmp/full`, same `--project-root` and `PLAYWRIGHT_MODULE` as Task 12's run; exit 1 is expected because the fixture has defects, and the assertion checks only the files) — file `home-panel-default-375-light-filmstrip.png` exists and is larger than 1 KB, and no filmstrip exists under Task 12's `--smoke` output
 - `baseline_unchanged` — run again with `--baseline $tmp/full --out $tmp/again` — every entry has `diff.status == "unchanged"` and no `-diff-crop.png` exists
 - `baseline_changed` — edit a copy of the fixture to change the card's background colour, serve it, run with `--baseline $tmp/full` — the `home-open-default-375-light` entry has `diff.status == "changed"`, `ratio > 0.001`, and `home-open-default-375-light-diff-crop.png` exists
